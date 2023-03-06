@@ -1,5 +1,6 @@
-use std::io::{stdin, stdout, Read, Write};
+use std::io::{stdin, stdout, Write};
 use termion::event::Key;
+use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
 fn main() {
@@ -10,10 +11,25 @@ fn main() {
     write!(stdout, "Press any key to continue...\r\n").unwrap();
     stdout.flush().unwrap();
 
-    // Read a single byte from stdin
-    let mut input = stdin().bytes();
-    let key = input.next().unwrap().unwrap();
+    // Read input from stdin
+    let input = stdin().keys();
 
-    // Print the key that was pressed
-    write!(stdout, "You pressed: {:?}\r\n", Key::Char(key as char)).unwrap();
+    // Loop over each key that is pressed
+    for key in input {
+        // Match the key against different patterns
+        match key.unwrap() {
+            // If the key is the "q" key, exit the program
+            Key::Char('q') => {
+                write!(stdout, "Exiting...\r\n").unwrap();
+                break;
+            }
+            // If the key is any other printable character, print it to the screen
+            Key::Char(c) => {
+                write!(stdout, "You pressed: {}\r\n", c).unwrap();
+                stdout.flush().unwrap();
+            }
+            // If the key is anything else, ignore it
+            _ => {}
+        }
+    }
 }
