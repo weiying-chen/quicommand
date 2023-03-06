@@ -8,7 +8,9 @@ fn main() {
     let mut stdout = stdout().into_raw_mode().unwrap();
 
     // Print the message to the terminal
-    write!(stdout, "Press any key to continue...\r\n").unwrap();
+    write!(stdout, "Please select a commit type:\r\n").unwrap();
+    write!(stdout, "f  Feat\r\n").unwrap();
+    write!(stdout, "x  Fix\r\n").unwrap();
     stdout.flush().unwrap();
 
     // Read input from stdin
@@ -18,9 +20,12 @@ fn main() {
     for key in input {
         // Match the key against different patterns
         match key.unwrap() {
-            // If the key is the "q" key, exit the program
-            Key::Char('q') => {
-                write!(stdout, "Exiting...\r\n").unwrap();
+            Key::Char('f') => {
+                write!(stdout, "Feat\r\n").unwrap();
+                break;
+            }
+            Key::Char('x') => {
+                write!(stdout, "Fix\r\n").unwrap();
                 break;
             }
             // If the key is any other printable character, print it to the screen
