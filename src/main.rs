@@ -4,18 +4,15 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
-struct CustomCommand {
+struct KeyboardShortcut {
     key: char,
     description: &'static str,
-    shell_command: &'static str,
+    command: &'static str,
 }
 
-impl CustomCommand {
-    fn execute_shell_command(&self, stdout: &mut impl Write) {
-        let output = Command::new("sh")
-            .arg("-c")
-            .arg(self.shell_command)
-            .status();
+impl KeyboardShortcut {
+    fn execute_command(&self, stdout: &mut impl Write) {
+        let output = Command::new("sh").arg("-c").arg(self.command).status();
 
         match output {
             Ok(status) => {
@@ -38,24 +35,29 @@ fn main() {
 
     // Define the available commands
 
-    let commands = vec![
-        CustomCommand {
+    let keyboard_shortcuts = vec![
+        KeyboardShortcut {
             key: 'c',
             description: "This is a custom command",
-            shell_command: "echo 'Custom command executed\r\n'",
+            command: "echo 'Custom command executed\r\n'",
         },
-        CustomCommand {
+        KeyboardShortcut {
             key: 'g',
             description: "This is a custom command",
-            shell_command: "git status",
+            command: "git status",
         },
     ];
 
     // Print the messages to the terminal
     write!(stdout, "Please select a command:\r\n").unwrap();
 
-    for command in &commands {
-        write!(stdout, "{}  {}\r\n", command.key, command.description).unwrap();
+    for keyboard_shortcut in &keyboard_shortcuts {
+        write!(
+            stdout,
+            "{}  {}\r\n",
+            keyboard_shortcut.key, keyboard_shortcut.description
+        )
+        .unwrap();
     }
 
     stdout.flush().unwrap();
@@ -68,9 +70,9 @@ fn main() {
         // Match the key against the available commands
         match key.unwrap() {
             // If the key matches a command, execute it and break the loop
-            Key::Char(k) if commands.iter().any(|c| c.key == k) => {
-                let command = commands.iter().find(|c| c.key == k).unwrap();
-                command.execute_shell_command(&mut stdout);
+            Key::Char(k) if keyboard_shortcuts.iter().any(|c| c.key == k) => {
+                let keyboard_shortcut = keyboard_shortcuts.iter().find(|c| c.key == k).unwrap();
+                keyboard_shortcut.execute_command(&mut stdout);
                 break;
             }
             // Output other characters
