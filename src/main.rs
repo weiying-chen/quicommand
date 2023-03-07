@@ -34,11 +34,18 @@ fn main() {
 
     let keyboard_shortcuts = vec![KeyboardShortcut {
         key: 'g',
-        description: "This is a custom command",
+        description: "Run `git status`",
         command: "git status",
     }];
 
-    write!(stdout, "Please select a command:\r\n").unwrap();
+    write!(
+        stdout,
+        "{}{}Please select a command:\r\n{}",
+        termion::clear::All,
+        termion::cursor::Goto(1, 1),
+        termion::cursor::Hide
+    )
+    .unwrap();
 
     for keyboard_shortcut in &keyboard_shortcuts {
         write!(
@@ -57,7 +64,9 @@ fn main() {
         match key.unwrap() {
             Key::Char(k) if keyboard_shortcuts.iter().any(|c| c.key == k) => {
                 let keyboard_shortcut = keyboard_shortcuts.iter().find(|c| c.key == k).unwrap();
+
                 keyboard_shortcut.execute_command(&mut stdout);
+                write!(stdout, "{}", termion::cursor::Show).unwrap();
                 break;
             }
             Key::Char(c) => {
