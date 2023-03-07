@@ -38,6 +38,7 @@ fn main() {
         command: "git status",
     }];
 
+    // TODO: Ask ChatGPT if there's a termion action that adds carriage return
     write!(
         stdout,
         "{}{}Please select a command:\r\n{}",
@@ -58,11 +59,9 @@ fn main() {
 
     stdout.flush().unwrap();
 
-    let input = stdin().keys();
-
-    for key in input {
+    for key in stdin().keys() {
         match key.unwrap() {
-            Key::Char(k) if keyboard_shortcuts.iter().any(|c| c.key == k) => {
+            Key::Char(k) if keyboard_shortcuts.iter().any(|s| s.key == k) => {
                 let keyboard_shortcut = keyboard_shortcuts.iter().find(|c| c.key == k).unwrap();
 
                 keyboard_shortcut.execute_command(&mut stdout);
