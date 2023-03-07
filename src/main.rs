@@ -38,11 +38,18 @@ fn main() {
 
     // Define the available commands
 
-    let commands = vec![CustomCommand {
-        key: 'c',
-        description: "This is a custom command",
-        shell_command: "echo 'Custom command executed\r\n'",
-    }];
+    let commands = vec![
+        CustomCommand {
+            key: 'c',
+            description: "This is a custom command",
+            shell_command: "echo 'Custom command executed\r\n'",
+        },
+        CustomCommand {
+            key: 'g',
+            description: "This is a custom command",
+            shell_command: "git status",
+        },
+    ];
 
     // Print the messages to the terminal
     write!(stdout, "Please select a command:\r\n").unwrap();
