@@ -43,7 +43,7 @@ fn main() {
         "{}{}Please select a command:\r\n{}",
         termion::clear::All,
         termion::cursor::Goto(1, 1),
-        termion::cursor::Hide
+        termion::cursor::Hide,
     )
     .unwrap();
 
