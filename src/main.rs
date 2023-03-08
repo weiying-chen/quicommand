@@ -12,12 +12,16 @@ struct KeyboardShortcut {
 
 impl KeyboardShortcut {
     fn execute_command(&self, stdout: &mut impl Write) {
-        let output = Command::new("sh").arg("-c").arg(self.command).status();
+        let output = Command::new("sh").arg("-c").arg(self.command).output();
 
         match output {
-            Ok(status) => {
-                if status.success() {
-                    write!(stdout, "Command executed successfully\r\n").unwrap();
+            Ok(output) => {
+                if output.status.success() {
+                    let output_str = String::from_utf8_lossy(&output.stdout);
+                    for line in output_str.lines() {
+                        write!(stdout, "{}\n\r", line).unwrap();
+                    }
+                    // write!(stdout, "Command executed successfully\r\n").unwrap();
                 } else {
                     write!(stdout, "Command execution failed\r\n").unwrap();
                 }
@@ -38,7 +42,6 @@ fn main() {
         command: "git status",
     }];
 
-    // TODO: Ask ChatGPT if there's a termion action that adds carriage return
     write!(
         stdout,
         "{}{}Please select a command:\r\n{}",
