@@ -8,10 +8,23 @@ struct KeyboardShortcut {
     key: char,
     description: &'static str,
     command: &'static str,
+    // message_placeholder: &'static str,
 }
 
 impl KeyboardShortcut {
     fn execute_command(&self, stdout: &mut impl Write) {
+        write!(stdout, "Enter message: ").unwrap();
+        stdout.flush().unwrap();
+
+        // drop(stdout.into_raw_mode());
+
+        // let mut message = String::new();
+        // stdin().read_line(&mut message).unwrap();
+
+        // let message = message.trim(); // remove newline character
+
+        // let command = self.command.replace(self.message_placeholder, message);
+
         let output = Command::new("sh").arg("-c").arg(self.command).output();
 
         match output {
@@ -38,16 +51,18 @@ fn main() {
 
     let keyboard_shortcuts = vec![KeyboardShortcut {
         key: 'g',
-        description: "Run `git status`",
-        command: "git status",
+        description: "Feat: new feature",
+        command: "git add . && git commit -m 'Feat: {}'",
+        // message_placeholder: "{}",
     }];
 
     write!(
         stdout,
-        "{}{}Please select a command:\r\n{}",
+        // "{}{}Please select a command:\r\n{}",
+        "{}{}Please select a command:\r\n",
         termion::clear::All,
         termion::cursor::Goto(1, 1),
-        termion::cursor::Hide,
+        // termion::cursor::Hide,
     )
     .unwrap();
 
