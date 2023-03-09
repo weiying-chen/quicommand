@@ -53,6 +53,15 @@ impl KeyboardShortcut {
 fn main() {
     let mut stdout = stdout().into_raw_mode().unwrap();
 
+    write!(
+        stdout,
+        "{}{}Please select a command:\r\n{}",
+        termion::clear::All,
+        termion::cursor::Goto(1, 1),
+        termion::cursor::Hide,
+    )
+    .unwrap();
+
     let keyboard_shortcuts = vec![
         KeyboardShortcut {
             key: 'f',
@@ -60,6 +69,7 @@ fn main() {
             command: "git add . && git commit -m 'Feat: {}'",
             // command: "git -c color.status=always status",
             // command: "ls --color=always",
+            // This placeholder later can be customized.
             message_placeholder: "{}",
         },
         KeyboardShortcut {
@@ -71,15 +81,6 @@ fn main() {
             message_placeholder: "{}",
         },
     ];
-
-    write!(
-        stdout,
-        "{}{}Please select a command:\r\n{}",
-        termion::clear::All,
-        termion::cursor::Goto(1, 1),
-        termion::cursor::Hide,
-    )
-    .unwrap();
 
     for keyboard_shortcut in &keyboard_shortcuts {
         write!(
