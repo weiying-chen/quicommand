@@ -34,7 +34,6 @@ impl KeyboardShortcut {
                     for line in output_str.lines() {
                         write!(stdout, "{}\n\r", line).unwrap();
                     }
-                    // write!(stdout, "Command executed successfully\r\n").unwrap();
                 } else {
                     write!(stdout, "Command execution failed\r\n").unwrap();
                     write!(
@@ -55,22 +54,31 @@ impl KeyboardShortcut {
 fn main() {
     let mut stdout = stdout().into_raw_mode().unwrap();
 
-    let keyboard_shortcuts = vec![KeyboardShortcut {
-        key: 'g',
-        description: "Feat: new feature",
-        command: "git add . && git commit -m 'Feat: {}'",
-        // command: "git -c color.status=always status",
-        // command: "ls --color=always",
-        message_placeholder: "{}",
-    }];
+    let keyboard_shortcuts = vec![
+        KeyboardShortcut {
+            key: 'f',
+            description: "Feat: adds a new feature to the application",
+            command: "git add . && git commit -m 'Feat: {}'",
+            // command: "git -c color.status=always status",
+            // command: "ls --color=always",
+            message_placeholder: "{}",
+        },
+        KeyboardShortcut {
+            key: 'x',
+            description: "Fix: fixes a defect in the application",
+            command: "git add . && git commit -m 'Fix: {}'",
+            // command: "git -c color.status=always status",
+            // command: "ls --color=always",
+            message_placeholder: "{}",
+        },
+    ];
 
     write!(
         stdout,
-        // "{}{}Please select a command:\r\n{}",
-        "{}{}Please select a command:\r\n",
+        "{}{}Please select a command:\r\n{}",
         termion::clear::All,
         termion::cursor::Goto(1, 1),
-        // termion::cursor::Hide,
+        termion::cursor::Hide,
     )
     .unwrap();
 
@@ -90,11 +98,11 @@ fn main() {
             Key::Char(k) if keyboard_shortcuts.iter().any(|s| s.key == k) => {
                 let keyboard_shortcut = keyboard_shortcuts.iter().find(|c| c.key == k).unwrap();
 
-                // Raw mode has to be suspented to collect the input.
+                // Raw mode has to be suspented to collect input.
                 stdout.suspend_raw_mode().unwrap();
+                write!(stdout, "{}", termion::cursor::Show).unwrap();
                 keyboard_shortcut.execute_command(&mut stdout);
                 stdout.activate_raw_mode().unwrap();
-                write!(stdout, "{}", termion::cursor::Show).unwrap();
                 break;
             }
             Key::Char(c) => {
