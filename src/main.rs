@@ -8,7 +8,7 @@ struct KeyboardShortcut {
     key: char,
     description: &'static str,
     command: &'static str,
-    // message_placeholder: &'static str,
+    message_placeholder: &'static str,
 }
 
 impl KeyboardShortcut {
@@ -16,27 +16,33 @@ impl KeyboardShortcut {
         write!(stdout, "Enter message: ").unwrap();
         stdout.flush().unwrap();
 
-        // drop(stdout.into_raw_mode());
+        let mut message = String::new();
+        stdin().read_line(&mut message).unwrap();
 
-        // let mut message = String::new();
-        // stdin().read_line(&mut message).unwrap();
+        // Remove new line character.
+        let message = message.trim();
 
-        // let message = message.trim(); // remove newline character
+        let command = self.command.replace(self.message_placeholder, message);
 
-        // let command = self.command.replace(self.message_placeholder, message);
-
-        let output = Command::new("sh").arg("-c").arg(self.command).output();
+        let output = Command::new("sh").arg("-c").arg(command).output();
 
         match output {
             Ok(output) => {
                 if output.status.success() {
                     let output_str = String::from_utf8_lossy(&output.stdout);
+
                     for line in output_str.lines() {
                         write!(stdout, "{}\n\r", line).unwrap();
                     }
                     // write!(stdout, "Command executed successfully\r\n").unwrap();
                 } else {
                     write!(stdout, "Command execution failed\r\n").unwrap();
+                    write!(
+                        stdout,
+                        "ERR: {}\r\n",
+                        String::from_utf8_lossy(&output.stderr)
+                    )
+                    .unwrap();
                 }
             }
             Err(e) => {
@@ -53,7 +59,9 @@ fn main() {
         key: 'g',
         description: "Feat: new feature",
         command: "git add . && git commit -m 'Feat: {}'",
-        // message_placeholder: "{}",
+        // command: "git -c color.status=always status",
+        // command: "ls --color=always",
+        message_placeholder: "{}",
     }];
 
     write!(
@@ -82,7 +90,10 @@ fn main() {
             Key::Char(k) if keyboard_shortcuts.iter().any(|s| s.key == k) => {
                 let keyboard_shortcut = keyboard_shortcuts.iter().find(|c| c.key == k).unwrap();
 
+                // Raw mode has to be suspented to collect the input.
+                stdout.suspend_raw_mode().unwrap();
                 keyboard_shortcut.execute_command(&mut stdout);
+                stdout.activate_raw_mode().unwrap();
                 write!(stdout, "{}", termion::cursor::Show).unwrap();
                 break;
             }
