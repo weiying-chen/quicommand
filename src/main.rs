@@ -20,8 +20,8 @@ impl KeyboardShortcut {
 
         // stdin().read_line(&mut message).unwrap();
 
-        for c in stdin().keys() {
-            match c.unwrap() {
+        for key in stdin().keys() {
+            match key.unwrap() {
                 Key::Char('\n') => break,
                 Key::Char(c) => {
                     message.push(c);
@@ -37,7 +37,7 @@ impl KeyboardShortcut {
                     message.pop();
                     write!(
                         stdout,
-                        "{} {} {}",
+                        "{}{} {}",
                         termion::cursor::Left(1),
                         termion::clear::UntilNewline,
                         termion::cursor::Left(1),
