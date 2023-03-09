@@ -32,6 +32,8 @@ impl KeyboardShortcut {
                     write!(stdout, "\n\rCommand execution cancelled.\n\r").unwrap();
                     return;
                 }
+
+                // TODO: "Enter message:" can be deleted too.
                 Key::Backspace => {
                     // Handle backspace to delete characters from the message.
                     message.pop();
