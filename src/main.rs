@@ -17,13 +17,12 @@ impl KeyboardShortcut {
         stdout.flush().unwrap();
 
         let mut message = String::new();
+
         stdin().read_line(&mut message).unwrap();
 
         // Remove new line character.
         let message = message.trim();
-
         let command = self.command.replace(self.message_placeholder, message);
-
         let output = Command::new("sh").arg("-c").arg(command).output();
 
         match output {
