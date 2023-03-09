@@ -18,7 +18,36 @@ impl KeyboardShortcut {
 
         let mut message = String::new();
 
-        stdin().read_line(&mut message).unwrap();
+        // stdin().read_line(&mut message).unwrap();
+
+        for c in stdin().keys() {
+            match c.unwrap() {
+                Key::Char('\n') => break,
+                Key::Char(c) => {
+                    message.push(c);
+                    write!(stdout, "{}", c).unwrap();
+                }
+                Key::Esc => {
+                    // User pressed Esc, exit early.
+                    write!(stdout, "\n\rCommand execution cancelled.\n\r").unwrap();
+                    return;
+                }
+                Key::Backspace => {
+                    // Handle backspace to delete characters from the message.
+                    message.pop();
+                    write!(
+                        stdout,
+                        "{} {} {}",
+                        termion::cursor::Left(1),
+                        termion::clear::UntilNewline,
+                        termion::cursor::Left(1),
+                    )
+                    .unwrap();
+                }
+                _ => {}
+            }
+            stdout.flush().unwrap();
+        }
 
         // Remove new line character.
         let message = message.trim();
@@ -35,12 +64,6 @@ impl KeyboardShortcut {
                     }
                 } else {
                     write!(stdout, "Command execution failed\r\n").unwrap();
-                    write!(
-                        stdout,
-                        "ERR: {}\r\n",
-                        String::from_utf8_lossy(&output.stderr)
-                    )
-                    .unwrap();
                 }
             }
             Err(e) => {
@@ -75,9 +98,9 @@ fn main() {
         KeyboardShortcut {
             key: 'x',
             description: "Fix: fixes a defect in the application",
-            command: "git add . && git commit -m 'Fix: {}'",
+            // command: "git add . && git commit -m 'Fix: {}'",
             // command: "git -c color.status=always status",
-            // command: "ls --color=always",
+            command: "ls --color=always",
             message_placeholder: "{}",
         },
     ];
@@ -95,19 +118,19 @@ fn main() {
 
     for key in stdin().keys() {
         match key.unwrap() {
-            Key::Char(k) if keyboard_shortcuts.iter().any(|s| s.key == k) => {
-                let keyboard_shortcut = keyboard_shortcuts.iter().find(|c| c.key == k).unwrap();
-
-                // Raw mode has to be suspented to collect input.
-                stdout.suspend_raw_mode().unwrap();
+            Key::Char('q') => {
                 write!(stdout, "{}", termion::cursor::Show).unwrap();
-                keyboard_shortcut.execute_command(&mut stdout);
-                stdout.activate_raw_mode().unwrap();
                 break;
             }
-            Key::Char(c) => {
-                write!(stdout, "You pressed: {}\r\n", c).unwrap();
-                stdout.flush().unwrap();
+            Key::Char(c) if keyboard_shortcuts.iter().any(|k| k.key == c) => {
+                let keyboard_shortcut = keyboard_shortcuts.iter().find(|k| k.key == c).unwrap();
+
+                // Raw mode has to be suspented to collect input.
+                // stdout.suspend_raw_mode().unwrap();
+                write!(stdout, "{}", termion::cursor::Show).unwrap();
+                keyboard_shortcut.execute_command(&mut stdout);
+                // stdout.activate_raw_mode().unwrap();
+                break;
             }
             _ => {}
         }
