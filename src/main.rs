@@ -39,10 +39,9 @@ impl KeyboardShortcut {
                     message.pop();
                     write!(
                         stdout,
-                        "{}{} {}",
+                        "{}{}",
                         termion::cursor::Left(1),
                         termion::clear::UntilNewline,
-                        termion::cursor::Left(1),
                     )
                     .unwrap();
                 }
