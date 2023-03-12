@@ -16,41 +16,10 @@ impl KeyboardShortcut {
         write!(stdout, "Enter message: ").unwrap();
         stdout.flush().unwrap();
 
-        let mut message = String::new();
+        let message = read_message_from_user(stdout);
+        let command = self.command.replace(self.message_placeholder, &message);
 
-        for key in stdin().keys() {
-            match key.unwrap() {
-                Key::Char('\n') => break,
-                Key::Char(c) => {
-                    message.push(c);
-                    write!(stdout, "{}", c).unwrap();
-                }
-                Key::Esc => {
-                    write!(stdout, "\n\rCommand execution cancelled.\n\r").unwrap();
-                    return;
-                }
-
-                Key::Backspace => {
-                    if message.is_empty() {
-                        continue;
-                    }
-
-                    message.pop();
-                    write!(
-                        stdout,
-                        "{}{}",
-                        termion::cursor::Left(1),
-                        termion::clear::UntilNewline,
-                    )
-                    .unwrap();
-                }
-                _ => {}
-            }
-            stdout.flush().unwrap();
-        }
-
-        let message = message.trim();
-        let command = self.command.replace(self.message_placeholder, message);
+        println!("{}", message);
 
         // This combination makes commands print colors.
         let output = Command::new("script")
@@ -58,8 +27,6 @@ impl KeyboardShortcut {
             .arg(command)
             .arg("/dev/null")
             .output();
-
-        println!("{:?}", output);
 
         match output {
             Ok(output) => {
@@ -78,6 +45,43 @@ impl KeyboardShortcut {
             }
         }
     }
+}
+
+fn read_message_from_user(stdout: &mut impl Write) -> String {
+    let mut message = String::new();
+
+    for key in stdin().keys() {
+        match key.unwrap() {
+            Key::Char('\n') => break,
+            Key::Char(c) => {
+                message.push(c);
+                write!(stdout, "{}", c).unwrap();
+            }
+            Key::Esc => {
+                write!(stdout, "\n\rCommand execution cancelled.\n\r").unwrap();
+                return String::new();
+            }
+
+            Key::Backspace => {
+                if message.is_empty() {
+                    continue;
+                }
+
+                message.pop();
+                write!(
+                    stdout,
+                    "{}{}",
+                    termion::cursor::Left(1),
+                    termion::clear::UntilNewline,
+                )
+                .unwrap();
+            }
+            _ => {}
+        }
+        stdout.flush().unwrap();
+    }
+
+    message.trim().to_string()
 }
 
 fn main() {
@@ -101,14 +105,21 @@ fn main() {
         },
         KeyboardShortcut {
             key: 'x',
-            description: "Fix: fixes a defect in the product",
+            description: "Fix: fixes a defect in a feature",
             command: "git add . && git commit -m 'Fix: {}'",
             message_placeholder: "{}",
         },
         KeyboardShortcut {
-            key: 'c',
-            description: "Chore: changes that don't affect the product",
+            key: 'r',
+            description: "Refac: changes a feature's code but not its behavior",
             command: "git add . && git commit -m 'Chore: {}'",
+            message_placeholder: "{}",
+        },
+        KeyboardShortcut {
+            key: 'c',
+            description: "Chore: changes that are not related any feature",
+            // command: "git add . && git commit -m 'Chore: {}'",
+            command: "git status",
             message_placeholder: "{}",
         },
     ];
