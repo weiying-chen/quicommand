@@ -18,8 +18,6 @@ impl KeyboardShortcut {
 
         let mut message = String::new();
 
-        // stdin().read_line(&mut message).unwrap();
-
         for key in stdin().keys() {
             match key.unwrap() {
                 Key::Char('\n') => break,
@@ -28,14 +26,15 @@ impl KeyboardShortcut {
                     write!(stdout, "{}", c).unwrap();
                 }
                 Key::Esc => {
-                    // User pressed Esc, exit early.
                     write!(stdout, "\n\rCommand execution cancelled.\n\r").unwrap();
                     return;
                 }
 
-                // TODO: "Enter message:" can be deleted too.
                 Key::Backspace => {
-                    // Handle backspace to delete characters from the message.
+                    if message.is_empty() {
+                        continue;
+                    }
+
                     message.pop();
                     write!(
                         stdout,
@@ -99,9 +98,9 @@ fn main() {
         KeyboardShortcut {
             key: 'x',
             description: "Fix: fixes a defect in the application",
-            // command: "git add . && git commit -m 'Fix: {}'",
+            command: "git add . && git commit -m 'Fix: {}'",
             // command: "git -c color.status=always status",
-            command: "ls --color=always",
+            // command: "ls --color=always",
             message_placeholder: "{}",
         },
     ];
