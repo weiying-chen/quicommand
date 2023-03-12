@@ -22,8 +22,6 @@ impl KeyboardShortcut {
             Some(m) => {
                 let command = self.command.replace(self.message_placeholder, &m);
 
-                println!("{}", m);
-
                 // This combination makes commands print colors.
                 let output = Command::new("script")
                     .arg("-qec")
