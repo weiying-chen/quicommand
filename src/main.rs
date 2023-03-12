@@ -16,11 +16,11 @@ impl KeyboardShortcut {
         write!(stdout, "Enter message: ").unwrap();
         stdout.flush().unwrap();
 
-        let message = read_message_from_user(stdout);
+        let input = get_input(stdout);
 
-        match message {
-            Some(m) => {
-                let command = self.command.replace(self.message_placeholder, &m);
+        match input {
+            Some(i) => {
+                let command = self.command.replace(self.message_placeholder, &i);
 
                 // This combination makes commands print colors.
                 let output = Command::new("script")
@@ -54,26 +54,26 @@ impl KeyboardShortcut {
     }
 }
 
-fn read_message_from_user(stdout: &mut impl Write) -> Option<String> {
-    let mut message = String::new();
+fn get_input(stdout: &mut impl Write) -> Option<String> {
+    let mut input = String::new();
 
     for key in stdin().keys() {
         match key.unwrap() {
             Key::Char('\n') => break,
             Key::Char(c) => {
-                message.push(c);
+                input.push(c);
                 write!(stdout, "{}", c).unwrap();
             }
             Key::Esc => {
                 return None;
             }
-
             Key::Backspace => {
-                if message.is_empty() {
+                // To prevent deleting "Enter message:"
+                if input.is_empty() {
                     continue;
                 }
 
-                message.pop();
+                input.pop();
                 write!(
                     stdout,
                     "{}{}",
@@ -87,9 +87,9 @@ fn read_message_from_user(stdout: &mut impl Write) -> Option<String> {
         stdout.flush().unwrap();
     }
 
-    let message = message.trim().to_owned();
+    let input = input.trim().to_owned();
 
-    Some(message)
+    Some(input)
 }
 
 fn main() {
@@ -145,6 +145,7 @@ fn main() {
 
     for key in stdin().keys() {
         match key.unwrap() {
+            // TODO: Esc should perform the same action.
             Key::Char('q') => {
                 write!(stdout, "{}", termion::cursor::Show).unwrap();
                 break;
