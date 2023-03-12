@@ -49,10 +49,18 @@ impl KeyboardShortcut {
             stdout.flush().unwrap();
         }
 
-        // Remove new line character.
         let message = message.trim();
         let command = self.command.replace(self.message_placeholder, message);
-        let output = Command::new("sh").arg("-c").arg(command).output();
+        // let output = Command::new("sh").arg("-c").arg(command).output();
+
+        // let output = Command::new("bash").arg("-ic").arg(command).output();
+
+        // This combination makes commands print colors.
+        let output = Command::new("script")
+            .arg("-qec")
+            .arg(command)
+            .arg("/dev/null")
+            .output();
 
         match output {
             Ok(output) => {
@@ -98,9 +106,9 @@ fn main() {
         KeyboardShortcut {
             key: 'x',
             description: "Fix: fixes a defect in the application",
-            command: "git add . && git commit -m 'Fix: {}'",
-            // command: "git -c color.status=always status",
-            // command: "ls --color=always",
+            // command: "git add . && git commit -m 'Fix: {}'",
+            command: "git status",
+            // command: "ls --color=auto",
             message_placeholder: "{}",
         },
     ];
