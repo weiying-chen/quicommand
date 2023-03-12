@@ -51,9 +51,6 @@ impl KeyboardShortcut {
 
         let message = message.trim();
         let command = self.command.replace(self.message_placeholder, message);
-        // let output = Command::new("sh").arg("-c").arg(command).output();
-
-        // let output = Command::new("bash").arg("-ic").arg(command).output();
 
         // This combination makes commands print colors.
         let output = Command::new("script")
@@ -61,6 +58,8 @@ impl KeyboardShortcut {
             .arg(command)
             .arg("/dev/null")
             .output();
+
+        println!("{:?}", output);
 
         match output {
             Ok(output) => {
@@ -96,19 +95,20 @@ fn main() {
     let keyboard_shortcuts = vec![
         KeyboardShortcut {
             key: 'f',
-            description: "Feat: adds a new feature to the application",
+            description: "Feat: adds a new feature to the product",
             command: "git add . && git commit -m 'Feat: {}'",
-            // command: "git -c color.status=always status",
-            // command: "ls --color=always",
-            // This placeholder later can be customized.
             message_placeholder: "{}",
         },
         KeyboardShortcut {
             key: 'x',
-            description: "Fix: fixes a defect in the application",
-            // command: "git add . && git commit -m 'Fix: {}'",
-            command: "git status",
-            // command: "ls --color=auto",
+            description: "Fix: fixes a defect in the product",
+            command: "git add . && git commit -m 'Fix: {}'",
+            message_placeholder: "{}",
+        },
+        KeyboardShortcut {
+            key: 'c',
+            description: "Chore: changes that don't affect the product",
+            command: "git add . && git commit -m 'Chore: {}'",
             message_placeholder: "{}",
         },
     ];
