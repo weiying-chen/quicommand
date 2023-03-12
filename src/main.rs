@@ -17,37 +17,46 @@ impl KeyboardShortcut {
         stdout.flush().unwrap();
 
         let message = read_message_from_user(stdout);
-        let command = self.command.replace(self.message_placeholder, &message);
 
-        println!("{}", message);
+        match message {
+            Some(m) => {
+                let command = self.command.replace(self.message_placeholder, &m);
 
-        // This combination makes commands print colors.
-        let output = Command::new("script")
-            .arg("-qec")
-            .arg(command)
-            .arg("/dev/null")
-            .output();
+                println!("{}", m);
 
-        match output {
-            Ok(output) => {
-                if output.status.success() {
-                    let output_str = String::from_utf8_lossy(&output.stdout);
+                // This combination makes commands print colors.
+                let output = Command::new("script")
+                    .arg("-qec")
+                    .arg(command)
+                    .arg("/dev/null")
+                    .output();
 
-                    for line in output_str.lines() {
-                        write!(stdout, "{}\n\r", line).unwrap();
+                match output {
+                    Ok(output) => {
+                        if output.status.success() {
+                            let output_str = String::from_utf8_lossy(&output.stdout);
+
+                            for line in output_str.lines() {
+                                write!(stdout, "{}\n\r", line).unwrap();
+                            }
+                        } else {
+                            write!(stdout, "Command execution failed\r\n").unwrap();
+                        }
                     }
-                } else {
-                    write!(stdout, "Command execution failed\r\n").unwrap();
+                    Err(e) => {
+                        write!(stdout, "Error executing command: {:?}\r\n", e).unwrap();
+                    }
                 }
             }
-            Err(e) => {
-                write!(stdout, "Error executing command: {:?}\r\n", e).unwrap();
+            None => {
+                write!(stdout, "\n\rCommand execution cancelled.\n\r").unwrap();
+                return;
             }
         }
     }
 }
 
-fn read_message_from_user(stdout: &mut impl Write) -> String {
+fn read_message_from_user(stdout: &mut impl Write) -> Option<String> {
     let mut message = String::new();
 
     for key in stdin().keys() {
@@ -58,8 +67,7 @@ fn read_message_from_user(stdout: &mut impl Write) -> String {
                 write!(stdout, "{}", c).unwrap();
             }
             Key::Esc => {
-                write!(stdout, "\n\rCommand execution cancelled.\n\r").unwrap();
-                return String::new();
+                return None;
             }
 
             Key::Backspace => {
@@ -81,7 +89,9 @@ fn read_message_from_user(stdout: &mut impl Write) -> String {
         stdout.flush().unwrap();
     }
 
-    message.trim().to_string()
+    let message = message.trim().to_owned();
+
+    Some(message)
 }
 
 fn main() {
