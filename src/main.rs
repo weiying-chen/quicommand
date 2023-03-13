@@ -117,6 +117,12 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
                 // return Err(InputError::NotUTF8(vec![0x1b]));
                 return Ok(Input::Exit);
             }
+            Key::Left => {
+                write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
+            }
+            Key::Right => {
+                write!(stdout, "{}", termion::cursor::Right(1)).unwrap();
+            }
             Key::Backspace => {
                 // To prevent deleting "Enter commit message:"
                 if input.is_empty() {
