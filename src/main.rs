@@ -8,19 +8,19 @@ struct KeyboardShortcut {
     key: char,
     description: &'static str,
     command: &'static str,
-    message_placeholder: &'static str,
+    input_placeholder: &'static str,
 }
 
 impl KeyboardShortcut {
     fn execute_command(&self, stdout: &mut impl Write) {
-        write!(stdout, "Enter message: ").unwrap();
+        write!(stdout, "Enter commit message: ").unwrap();
         stdout.flush().unwrap();
 
         let input = get_input(stdout);
 
         match input {
             Some(i) => {
-                let command = self.command.replace(self.message_placeholder, &i);
+                let command = self.command.replace(self.input_placeholder, &i);
 
                 // This combination makes commands print colors.
                 let output = Command::new("script")
@@ -59,6 +59,7 @@ fn get_input(stdout: &mut impl Write) -> Option<String> {
 
     for key in stdin().keys() {
         match key.unwrap() {
+            // This is enter.
             Key::Char('\n') => break,
             Key::Char(c) => {
                 input.push(c);
@@ -68,12 +69,13 @@ fn get_input(stdout: &mut impl Write) -> Option<String> {
                 return None;
             }
             Key::Backspace => {
-                // To prevent deleting "Enter message:"
+                // To prevent deleting "Enter commit message:"
                 if input.is_empty() {
                     continue;
                 }
 
                 input.pop();
+
                 write!(
                     stdout,
                     "{}{}",
@@ -84,6 +86,7 @@ fn get_input(stdout: &mut impl Write) -> Option<String> {
             }
             _ => {}
         }
+
         stdout.flush().unwrap();
     }
 
@@ -109,26 +112,26 @@ fn main() {
             key: 'f',
             description: "Feat: adds a new feature to the product",
             command: "git add . && git commit -m 'Feat: {}'",
-            message_placeholder: "{}",
+            input_placeholder: "{}",
         },
         KeyboardShortcut {
             key: 'x',
             description: "Fix: fixes a defect in a feature",
             command: "git add . && git commit -m 'Fix: {}'",
-            message_placeholder: "{}",
+            input_placeholder: "{}",
         },
         KeyboardShortcut {
             key: 'r',
             description: "Refac: changes a feature's code but not its behavior",
             command: "git add . && git commit -m 'Chore: {}'",
-            message_placeholder: "{}",
+            input_placeholder: "{}",
         },
         KeyboardShortcut {
             key: 'c',
             description: "Chore: changes that are not related any feature",
             // command: "git add . && git commit -m 'Chore: {}'",
             command: "git status",
-            message_placeholder: "{}",
+            input_placeholder: "{}",
         },
     ];
 
