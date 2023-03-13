@@ -104,15 +104,14 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
             }
             Key::Char(c) => {
                 let bytes = vec![c as u8];
-                match std::str::from_utf8(&bytes) {
-                    Ok(_) => {
+                let bytes_clone = bytes.clone();
+                std::str::from_utf8(&bytes)
+                    .map_err(|_| InputError::NotUTF8(bytes_clone))
+                    .and_then(|_| {
                         input.push(c);
                         write!(stdout, "{}", c).unwrap();
-                    }
-                    Err(_) => {
-                        return Err(InputError::NotUTF8(bytes));
-                    }
-                }
+                        Ok(())
+                    })?;
             }
             Key::Esc => {
                 // return Err(InputError::NotUTF8(vec![0x1b]));
