@@ -46,7 +46,7 @@ impl KeyboardShortcut {
         let input = match get_input(stdout) {
             Ok(Input::Text(i)) => i,
             Ok(Input::Exit) => {
-                write!(stdout, "\n\rProgram exited without any actions.\n\r").unwrap();
+                write!(stdout, "\n\r").unwrap();
                 return;
             }
             Err(e) => {
@@ -104,9 +104,9 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
             }
             Key::Char(c) => {
                 let bytes = vec![c as u8];
-                let bytes_clone = bytes.clone();
                 std::str::from_utf8(&bytes)
-                    .map_err(|_| InputError::NotUTF8(bytes_clone))
+                    // `bytes` has to be cloned to prevent a move error
+                    .map_err(|_| InputError::NotUTF8(bytes.clone()))
                     .and_then(|_| {
                         input.push(c);
                         write!(stdout, "{}", c).unwrap();
@@ -172,7 +172,7 @@ fn main() {
         KeyboardShortcut {
             key: 'r',
             description: "Refac: changes a feature's code but not its behavior",
-            command: "git add . && git commit -m 'Chore: {}'",
+            command: "git add . && git commit -m 'Refac: {}'",
             input_placeholder: "{}",
         },
         KeyboardShortcut {
