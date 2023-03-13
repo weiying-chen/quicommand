@@ -12,6 +12,11 @@ struct KeyboardShortcut {
     input_placeholder: &'static str,
 }
 
+enum Input {
+    Text(String),
+    Exit,
+}
+
 enum InputError {
     NotUTF8(Vec<u8>),
     EmptyString,
@@ -39,7 +44,11 @@ impl KeyboardShortcut {
         stdout.flush().unwrap();
 
         let input = match get_input(stdout) {
-            Ok(i) => i,
+            Ok(Input::Text(i)) => i,
+            Ok(Input::Exit) => {
+                write!(stdout, "\n\rProgram exited without any actions.\n\r").unwrap();
+                return;
+            }
             Err(e) => {
                 write!(stdout, "\n\rInvalid input: {}\n\r", e).unwrap();
                 return;
@@ -80,7 +89,7 @@ impl KeyboardShortcut {
     }
 }
 
-fn get_input(stdout: &mut impl Write) -> Result<String, InputError> {
+fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
     let mut input = String::new();
 
     for key in stdin().keys() {
@@ -106,7 +115,8 @@ fn get_input(stdout: &mut impl Write) -> Result<String, InputError> {
                 }
             }
             Key::Esc => {
-                return Err(InputError::NotUTF8(vec![0x1b]));
+                // return Err(InputError::NotUTF8(vec![0x1b]));
+                return Ok(Input::Exit);
             }
             Key::Backspace => {
                 // To prevent deleting "Enter commit message:"
@@ -132,7 +142,7 @@ fn get_input(stdout: &mut impl Write) -> Result<String, InputError> {
 
     let input = input.trim().to_owned();
 
-    Ok(input)
+    Ok(Input::Text(input))
 }
 
 fn main() {
