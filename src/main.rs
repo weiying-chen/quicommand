@@ -87,7 +87,7 @@ fn get_input(stdout: &mut impl Write) -> Result<String, InputError> {
         match key.unwrap() {
             // This is Enter.
             Key::Char('\n') => {
-                if input.is_empty() {
+                if input.trim().is_empty() {
                     return Err(InputError::EmptyString);
                 } else {
                     break;
