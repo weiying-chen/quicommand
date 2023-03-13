@@ -14,7 +14,7 @@ struct KeyboardShortcut {
 
 enum InputError {
     NotUTF8(Vec<u8>),
-    // Other variants go here
+    EmptyString,
 }
 
 impl fmt::Display for InputError {
@@ -28,7 +28,7 @@ impl fmt::Display for InputError {
                     .map(|b| format!("0x{:X}", b))
                     .collect::<Vec<_>>()
             ),
-            // other variants
+            InputError::EmptyString => write!(f, "Input was empty."),
         }
     }
 }
@@ -85,8 +85,14 @@ fn get_input(stdout: &mut impl Write) -> Result<String, InputError> {
 
     for key in stdin().keys() {
         match key.unwrap() {
-            // This is enter.
-            Key::Char('\n') => break,
+            // This is Enter.
+            Key::Char('\n') => {
+                if input.is_empty() {
+                    return Err(InputError::EmptyString);
+                } else {
+                    break;
+                }
+            }
             Key::Char(c) => {
                 let bytes = vec![c as u8];
                 match std::str::from_utf8(&bytes) {
