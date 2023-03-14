@@ -1,6 +1,7 @@
 use std::fmt;
 use std::io::{stdin, stdout, Write};
 use std::process::Command;
+use termion::cursor::DetectCursorPos;
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -113,6 +114,17 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
                         Ok(())
                     })?;
             }
+            // Key::Char(c) => {
+            //     let bytes = vec![c as u8];
+            //     match std::str::from_utf8(&bytes) {
+            //         Ok(_) => {
+            //             input.push(c);
+            //             write!(stdout, "{}", c).unwrap();
+            //             Ok(())
+            //         }
+            //         Err(_) => Err(InputError::NotUTF8(bytes)),
+            //     }?;
+            // }
             Key::Esc => {
                 // return Err(InputError::NotUTF8(vec![0x1b]));
                 return Ok(Input::Exit);
@@ -124,18 +136,68 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
                 write!(stdout, "{}", termion::cursor::Right(1)).unwrap();
             }
             Key::Backspace => {
-                // To prevent deleting "Enter commit message:"
                 if input.is_empty() {
                     continue;
                 }
 
-                input.pop();
+                let cursor_pos = stdout.cursor_pos().unwrap();
+                let x = cursor_pos.0;
+                let y = cursor_pos.1;
 
-                write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
+                // let input_chars: Vec<char> = input.chars().collect();
+                // let input_len = input_chars.len();
 
-                write!(stdout, " ").unwrap();
+                // let (width, _) = termion::terminal_size().unwrap();
 
-                write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
+                // let offset = y * width + x; // calculate the offset of the cursor position
+
+                // let index = usize::from(offset).saturating_sub(input_len);
+
+                // let corresponding_char = input_chars.get(index).unwrap_or(&'\0');
+
+                // println!("{:?}", offset);
+
+                // let char_idx = (y - 1) * (width as u16) + x - 2;
+                // println!("\r\nchar_idx: {:?}", char_idx);
+                // if usize::from(char_idx) < input_len {
+                // input_chars.remove(char_idx.into());
+                // }
+
+                // let new_input = input_chars.into_iter().collect::<String>();
+
+                // println!("\r\nnew_input: {:?}", new_input);
+
+                // let cursor_pos = stdout.cursor_pos().unwrap();
+
+                // println!("Cursor pos: {:?}", cursor_pos);
+
+                // let x = cursor_pos.0;
+                // let y = cursor_pos.1;
+
+                // println!("Input length: {}", input.len());
+                // input.remove(x as usize - 1);
+                // write!(stdout, "{}{}", termion::cursor::Goto(1, y), input).unwrap();
+
+                // remove character on the left side of the cursor
+
+                // let mut chars = input.chars();
+                // chars.next_back();
+                // let audited_line = chars.as_str();
+                // let new_input = audited_line.to_string();
+
+                // write!(
+                //     stdout,
+                //     "{}{}{}",
+                //     termion::cursor::Left(1),
+                //     termion::clear::CurrentLine,
+                //     audited_line,
+                // )
+                // .unwrap();
+
+                // write!(stdout, "{}\r", termion::clear::CurrentLine).unwrap();
+                // write!(stdout, "{}", audited_line).unwrap();
+
+                // input = new_input;
             }
             _ => {}
         }
