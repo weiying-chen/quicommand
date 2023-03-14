@@ -131,13 +131,11 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
 
                 input.pop();
 
-                write!(
-                    stdout,
-                    "{}{}",
-                    termion::cursor::Left(1),
-                    termion::clear::UntilNewline,
-                )
-                .unwrap();
+                write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
+
+                write!(stdout, " ").unwrap();
+
+                write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
             }
             _ => {}
         }
