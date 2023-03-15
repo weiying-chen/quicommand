@@ -166,14 +166,27 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
 
                 x = cursor_pos.0;
             }
-            Key::Backspace => {
-                if input.is_empty() {
-                    continue;
-                }
 
-                // let cursor_pos = stdout.cursor_pos().unwrap();
-                // let x = cursor_pos.0;
-                // let y = cursor_pos.1;
+            Key::Backspace => {
+                if x > 1 {
+                    x -= 1;
+                    input.remove((x - 1).into());
+
+                    let cursor_pos = stdout.cursor_pos().unwrap();
+
+                    y = cursor_pos.1;
+
+                    write!(
+                        stdout,
+                        "{}{}{}",
+                        termion::cursor::Goto(1, y),
+                        termion::clear::CurrentLine,
+                        input,
+                    )
+                    .unwrap();
+
+                    write!(stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
+                }
             }
             _ => {}
         }
