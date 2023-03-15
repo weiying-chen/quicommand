@@ -137,19 +137,7 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
                         Ok(())
                     })?;
             }
-            // Key::Char(c) => {
-            //     let bytes = vec![c as u8];
-            //     match std::str::from_utf8(&bytes) {
-            //         Ok(_) => {
-            //             input.push(c);
-            //             write!(stdout, "{}", c).unwrap();
-            //             Ok(())
-            //         }
-            //         Err(_) => Err(InputError::NotUTF8(bytes)),
-            //     }?;
-            // }
             Key::Esc => {
-                // return Err(InputError::NotUTF8(vec![0x1b]));
                 return Ok(Input::Exit);
             }
             Key::Left => {
