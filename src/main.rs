@@ -92,6 +92,8 @@ impl KeyboardShortcut {
 
 fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
     let mut input = String::new();
+    let mut x = 1;
+    let mut y = 1;
 
     for key in stdin().keys() {
         match key.unwrap() {
@@ -109,8 +111,29 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
                     // `bytes` has to be cloned to prevent a move error
                     .map_err(|_| InputError::NotUTF8(bytes.clone()))
                     .and_then(|_| {
-                        input.push(c);
-                        write!(stdout, "{}", c).unwrap();
+                        input.insert((x - 1).into(), c);
+
+                        let cursor_pos = stdout.cursor_pos().unwrap();
+
+                        y = cursor_pos.1;
+
+                        write!(
+                            stdout,
+                            "{}{}{}",
+                            termion::cursor::Goto(1, y),
+                            termion::clear::CurrentLine,
+                            input,
+                        )
+                        .unwrap();
+
+                        //TODO: Don't allow to go beyond the input.len()
+
+                        write!(stdout, "{}", termion::cursor::Goto(x + 1, y)).unwrap();
+
+                        let cursor_pos = stdout.cursor_pos().unwrap();
+
+                        x = cursor_pos.0;
+
                         Ok(())
                     })?;
             }
@@ -131,73 +154,26 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
             }
             Key::Left => {
                 write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
+
+                let cursor_pos = stdout.cursor_pos().unwrap();
+
+                x = cursor_pos.0;
             }
             Key::Right => {
                 write!(stdout, "{}", termion::cursor::Right(1)).unwrap();
+
+                let cursor_pos = stdout.cursor_pos().unwrap();
+
+                x = cursor_pos.0;
             }
             Key::Backspace => {
                 if input.is_empty() {
                     continue;
                 }
 
-                let cursor_pos = stdout.cursor_pos().unwrap();
-                let x = cursor_pos.0;
-                let y = cursor_pos.1;
-
-                // let input_chars: Vec<char> = input.chars().collect();
-                // let input_len = input_chars.len();
-
-                // let (width, _) = termion::terminal_size().unwrap();
-
-                // let offset = y * width + x; // calculate the offset of the cursor position
-
-                // let index = usize::from(offset).saturating_sub(input_len);
-
-                // let corresponding_char = input_chars.get(index).unwrap_or(&'\0');
-
-                // println!("{:?}", offset);
-
-                // let char_idx = (y - 1) * (width as u16) + x - 2;
-                // println!("\r\nchar_idx: {:?}", char_idx);
-                // if usize::from(char_idx) < input_len {
-                // input_chars.remove(char_idx.into());
-                // }
-
-                // let new_input = input_chars.into_iter().collect::<String>();
-
-                // println!("\r\nnew_input: {:?}", new_input);
-
                 // let cursor_pos = stdout.cursor_pos().unwrap();
-
-                // println!("Cursor pos: {:?}", cursor_pos);
-
                 // let x = cursor_pos.0;
                 // let y = cursor_pos.1;
-
-                // println!("Input length: {}", input.len());
-                // input.remove(x as usize - 1);
-                // write!(stdout, "{}{}", termion::cursor::Goto(1, y), input).unwrap();
-
-                // remove character on the left side of the cursor
-
-                // let mut chars = input.chars();
-                // chars.next_back();
-                // let audited_line = chars.as_str();
-                // let new_input = audited_line.to_string();
-
-                // write!(
-                //     stdout,
-                //     "{}{}{}",
-                //     termion::cursor::Left(1),
-                //     termion::clear::CurrentLine,
-                //     audited_line,
-                // )
-                // .unwrap();
-
-                // write!(stdout, "{}\r", termion::clear::CurrentLine).unwrap();
-                // write!(stdout, "{}", audited_line).unwrap();
-
-                // input = new_input;
             }
             _ => {}
         }
