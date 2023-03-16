@@ -127,8 +127,6 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
                         )
                         .unwrap();
 
-                        //TODO: Don't allow to go beyond the input.len()
-
                         write!(stdout, "{}", termion::cursor::Goto(x + 1, y)).unwrap();
 
                         let cursor_pos = stdout.cursor_pos().unwrap();
