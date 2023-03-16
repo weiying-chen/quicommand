@@ -148,7 +148,7 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
 
                 x = cursor_pos.0;
             }
-            Key::Right => {
+            Key::Right if x <= input.len() as u16 => {
                 write!(stdout, "{}", termion::cursor::Right(1)).unwrap();
 
                 let cursor_pos = stdout.cursor_pos().unwrap();
@@ -156,26 +156,24 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
                 x = cursor_pos.0;
             }
 
-            Key::Backspace => {
-                if x > 1 {
-                    x -= 1;
-                    input.remove((x - 1).into());
+            Key::Backspace if x > 1 => {
+                x -= 1;
+                input.remove((x - 1).into());
 
-                    let cursor_pos = stdout.cursor_pos().unwrap();
+                let cursor_pos = stdout.cursor_pos().unwrap();
 
-                    y = cursor_pos.1;
+                y = cursor_pos.1;
 
-                    write!(
-                        stdout,
-                        "{}{}{}",
-                        termion::cursor::Goto(1, y),
-                        termion::clear::CurrentLine,
-                        input,
-                    )
-                    .unwrap();
+                write!(
+                    stdout,
+                    "{}{}{}",
+                    termion::cursor::Goto(1, y),
+                    termion::clear::CurrentLine,
+                    input,
+                )
+                .unwrap();
 
-                    write!(stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
-                }
+                write!(stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
             }
             _ => {}
         }
