@@ -47,11 +47,11 @@ impl KeyboardShortcut {
         let input = match get_input(stdout) {
             Ok(Input::Text(i)) => i,
             Ok(Input::Exit) => {
-                write!(stdout, "\n\r").unwrap();
+                write!(stdout, "\r\n").unwrap();
                 return;
             }
             Err(e) => {
-                write!(stdout, "\n\rInvalid input: {}\n\r", e).unwrap();
+                write!(stdout, "\r\nInvalid input: {}\r\n", e).unwrap();
                 return;
             }
         };
@@ -71,13 +71,14 @@ impl KeyboardShortcut {
                     let output_str = String::from_utf8_lossy(&output.stdout);
 
                     for line in output_str.lines() {
-                        write!(stdout, "{}\n\r", line).unwrap();
+                        write!(stdout, "{}\r\n", line).unwrap();
                     }
                 } else {
                     let stderr_str = String::from_utf8_lossy(&output.stderr);
+
                     write!(
                         stdout,
-                        "Command execution failed: {}\n\r",
+                        "Command execution failed: {}\r\n",
                         stderr_str.trim()
                     )
                     .unwrap();
@@ -182,6 +183,9 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
         stdout.flush().unwrap();
     }
 
+    // This places the output on a new line.
+    write!(stdout, "\r\n").unwrap();
+
     let input = input.trim().to_owned();
 
     Ok(Input::Text(input))
@@ -192,7 +196,7 @@ fn main() {
 
     write!(
         stdout,
-        "{}{}Please select a command:\r\n{}",
+        "{}{}Please select a command:{}\r\n",
         termion::clear::All,
         termion::cursor::Goto(1, 1),
         termion::cursor::Hide,
