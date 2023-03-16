@@ -13,6 +13,25 @@ struct KeyboardShortcut {
     input_placeholder: &'static str,
 }
 
+struct InputHandler {
+    input: String,
+}
+
+impl InputHandler {
+    fn new(input: String) -> Self {
+        Self { input }
+    }
+
+    fn handle_enter(self) -> Result<Input, InputError> {
+        if self.input.trim().is_empty() {
+            Err(InputError::EmptyString)
+        } else {
+            Ok(Input::Text(self.input))
+        }
+    }
+}
+
+// TODO: Maybe this should be called Input Result or something
 enum Input {
     Text(String),
     Exit,
@@ -92,87 +111,81 @@ impl KeyboardShortcut {
 }
 
 fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
-    let mut input = String::new();
-    let mut x = 1;
-    let mut y = 1;
+    let input = String::new();
+    let input_handler = InputHandler::new(input);
+    // let mut x = 1;
+    // let mut y = 1;
 
     for key in stdin().keys() {
         match key.unwrap() {
-            // This is Enter.
-            Key::Char('\n') => {
-                if input.trim().is_empty() {
-                    return Err(InputError::EmptyString);
-                } else {
-                    break;
-                }
-            }
-            Key::Char(c) => {
-                let bytes = vec![c as u8];
-                std::str::from_utf8(&bytes)
-                    // `bytes` has to be cloned to prevent a move error
-                    .map_err(|_| InputError::NotUTF8(bytes.clone()))
-                    .and_then(|_| {
-                        input.insert((x - 1).into(), c);
+            Key::Char('\n') => return input_handler.handle_enter(),
+            // Key::Char(c) => {
+            //     let bytes = vec![c as u8];
+            //     std::str::from_utf8(&bytes)
+            //         // `bytes` has to be cloned to prevent a move error
+            //         .map_err(|_| InputError::NotUTF8(bytes.clone()))
+            //         .and_then(|_| {
+            //             input.insert((x - 1).into(), c);
 
-                        let cursor_pos = stdout.cursor_pos().unwrap();
+            //             let cursor_pos = stdout.cursor_pos().unwrap();
 
-                        y = cursor_pos.1;
+            //             y = cursor_pos.1;
 
-                        write!(
-                            stdout,
-                            "{}{}{}",
-                            termion::cursor::Goto(1, y),
-                            termion::clear::CurrentLine,
-                            input,
-                        )
-                        .unwrap();
+            //             write!(
+            //                 stdout,
+            //                 "{}{}{}",
+            //                 termion::cursor::Goto(1, y),
+            //                 termion::clear::CurrentLine,
+            //                 input,
+            //             )
+            //             .unwrap();
 
-                        write!(stdout, "{}", termion::cursor::Goto(x + 1, y)).unwrap();
+            //             write!(stdout, "{}", termion::cursor::Goto(x + 1, y)).unwrap();
 
-                        let cursor_pos = stdout.cursor_pos().unwrap();
+            //             let cursor_pos = stdout.cursor_pos().unwrap();
 
-                        x = cursor_pos.0;
+            //             x = cursor_pos.0;
 
-                        Ok(())
-                    })?;
-            }
-            Key::Esc => {
-                return Ok(Input::Exit);
-            }
-            Key::Left => {
-                write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
+            //             Ok(())
+            //         })?;
+            // }
+            // Key::Esc => {
+            //     return Ok(Input::Exit);
+            // }
+            // Key::Left => {
+            //     write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
 
-                let cursor_pos = stdout.cursor_pos().unwrap();
+            //     let cursor_pos = stdout.cursor_pos().unwrap();
 
-                x = cursor_pos.0;
-            }
-            Key::Right if x <= input.len() as u16 => {
-                write!(stdout, "{}", termion::cursor::Right(1)).unwrap();
+            //     x = cursor_pos.0;
+            // }
+            // Key::Right if x <= input.len() as u16 => {
+            //     write!(stdout, "{}", termion::cursor::Right(1)).unwrap();
 
-                let cursor_pos = stdout.cursor_pos().unwrap();
+            //     let cursor_pos = stdout.cursor_pos().unwrap();
 
-                x = cursor_pos.0;
-            }
+            //     x = cursor_pos.0;
+            // }
 
-            Key::Backspace if x > 1 => {
-                x -= 1;
-                input.remove((x - 1).into());
+            // Key::Backspace if x > 1 => {
+            //     x -= 1;
+            //     input.remove((x - 1).into());
 
-                let cursor_pos = stdout.cursor_pos().unwrap();
+            //     let cursor_pos = stdout.cursor_pos().unwrap();
 
-                y = cursor_pos.1;
+            //     y = cursor_pos.1;
 
-                write!(
-                    stdout,
-                    "{}{}{}",
-                    termion::cursor::Goto(1, y),
-                    termion::clear::CurrentLine,
-                    input,
-                )
-                .unwrap();
+            //     write!(
+            //         stdout,
+            //         "{}{}{}",
+            //         termion::cursor::Goto(1, y),
+            //         termion::clear::CurrentLine,
+            //         input,
+            //     )
+            //     .unwrap();
 
-                write!(stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
-            }
+            //     write!(stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
+            // }
             _ => {}
         }
 
@@ -182,7 +195,7 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
     // This places the output on a new line.
     write!(stdout, "\r\n").unwrap();
 
-    let input = input.trim().to_owned();
+    let input = input_handler.input.trim().to_owned();
 
     Ok(Input::Text(input))
 }
