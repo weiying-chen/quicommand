@@ -74,6 +74,36 @@ impl InputHandler {
             write!(stdout, "{}", termion::cursor::Goto(self.x, self.y)).unwrap();
         }
     }
+
+    fn handle_char(&mut self, stdout: &mut impl Write, c: char) -> Result<(), InputError> {
+        let bytes = vec![c as u8];
+        std::str::from_utf8(&bytes)
+            .map_err(|_| InputError::NotUTF8(bytes.clone()))
+            .and_then(|_| {
+                self.input.insert((self.x - 1).into(), c);
+
+                let cursor_pos = stdout.cursor_pos().unwrap();
+
+                self.y = cursor_pos.1;
+
+                write!(
+                    stdout,
+                    "{}{}{}",
+                    termion::cursor::Goto(1, self.y),
+                    termion::clear::CurrentLine,
+                    self.input,
+                )
+                .unwrap();
+
+                write!(stdout, "{}", termion::cursor::Goto(self.x + 1, self.y)).unwrap();
+
+                let cursor_pos = stdout.cursor_pos().unwrap();
+
+                self.x = cursor_pos.0;
+
+                Ok(())
+            })
+    }
 }
 
 // TODO: Maybe this should be called Input Result or something
@@ -163,39 +193,8 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
     for key in stdin().keys() {
         match key.unwrap() {
             Key::Char('\n') => return input_handler.handle_enter(),
-            // Key::Char(c) => {
-            //     let bytes = vec![c as u8];
-            //     std::str::from_utf8(&bytes)
-            //         // `bytes` has to be cloned to prevent a move error
-            //         .map_err(|_| InputError::NotUTF8(bytes.clone()))
-            //         .and_then(|_| {
-            //             input.insert((x - 1).into(), c);
-
-            //             let cursor_pos = stdout.cursor_pos().unwrap();
-
-            //             y = cursor_pos.1;
-
-            //             write!(
-            //                 stdout,
-            //                 "{}{}{}",
-            //                 termion::cursor::Goto(1, y),
-            //                 termion::clear::CurrentLine,
-            //                 input,
-            //             )
-            //             .unwrap();
-
-            //             write!(stdout, "{}", termion::cursor::Goto(x + 1, y)).unwrap();
-
-            //             let cursor_pos = stdout.cursor_pos().unwrap();
-
-            //             x = cursor_pos.0;
-
-            //             Ok(())
-            //         })?;
-            // }
-            Key::Esc => {
-                return Ok(Input::Exit);
-            }
+            Key::Esc => return Ok(Input::Exit),
+            Key::Char(c) => input_handler.handle_char(stdout, c)?,
             Key::Left => input_handler.handle_left(stdout),
             Key::Right => input_handler.handle_right(stdout),
             Key::Backspace => input_handler.handle_backspace(stdout),
