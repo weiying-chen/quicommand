@@ -17,11 +17,12 @@ struct KeyboardShortcut {
 struct InputHandler {
     input: String,
     x: u16,
+    y: u16,
 }
 
 impl InputHandler {
     fn new(input: String) -> Self {
-        Self { input, x: 1 }
+        Self { input, x: 1, y: 1 }
     }
 
     fn handle_enter(self) -> Result<Input, InputError> {
@@ -41,12 +42,36 @@ impl InputHandler {
     }
 
     fn handle_right(&mut self, stdout: &mut impl Write) {
+        //TODO: See if can remove these if statements all of the function
+        // Or check if if statements in functions are okay
         if self.x <= self.input.len() as u16 {
             write!(stdout, "{}", termion::cursor::Right(1)).unwrap();
 
             let cursor_pos = stdout.cursor_pos().unwrap();
 
             self.x = cursor_pos.0;
+        }
+    }
+
+    fn handle_backspace(&mut self, stdout: &mut impl Write) {
+        if self.x > 1 {
+            self.x -= 1;
+            self.input.remove((self.x - 1).into());
+
+            let cursor_pos = stdout.cursor_pos().unwrap();
+
+            self.y = cursor_pos.1;
+
+            write!(
+                stdout,
+                "{}{}{}",
+                termion::cursor::Goto(1, self.y),
+                termion::clear::CurrentLine,
+                self.input,
+            )
+            .unwrap();
+
+            write!(stdout, "{}", termion::cursor::Goto(self.x, self.y)).unwrap();
         }
     }
 }
@@ -168,31 +193,12 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
             //             Ok(())
             //         })?;
             // }
-            // Key::Esc => {
-            //     return Ok(Input::Exit);
-            // }
+            Key::Esc => {
+                return Ok(Input::Exit);
+            }
             Key::Left => input_handler.handle_left(stdout),
             Key::Right => input_handler.handle_right(stdout),
-
-            // Key::Backspace if x > 1 => {
-            //     x -= 1;
-            //     input.remove((x - 1).into());
-
-            //     let cursor_pos = stdout.cursor_pos().unwrap();
-
-            //     y = cursor_pos.1;
-
-            //     write!(
-            //         stdout,
-            //         "{}{}{}",
-            //         termion::cursor::Goto(1, y),
-            //         termion::clear::CurrentLine,
-            //         input,
-            //     )
-            //     .unwrap();
-
-            //     write!(stdout, "{}", termion::cursor::Goto(x, y)).unwrap();
-            // }
+            Key::Backspace => input_handler.handle_backspace(stdout),
             _ => {}
         }
 
