@@ -13,13 +13,15 @@ struct KeyboardShortcut {
     input_placeholder: &'static str,
 }
 
+// TODO: Maybe it should be called KeyHandler
 struct InputHandler {
     input: String,
+    x: u16,
 }
 
 impl InputHandler {
     fn new(input: String) -> Self {
-        Self { input }
+        Self { input, x: 1 }
     }
 
     fn handle_enter(self) -> Result<Input, InputError> {
@@ -27,6 +29,24 @@ impl InputHandler {
             Err(InputError::EmptyString)
         } else {
             Ok(Input::Text(self.input))
+        }
+    }
+
+    fn handle_left(&mut self, stdout: &mut impl Write) {
+        write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
+
+        let cursor_pos = stdout.cursor_pos().unwrap();
+
+        self.x = cursor_pos.0;
+    }
+
+    fn handle_right(&mut self, stdout: &mut impl Write) {
+        if self.x <= self.input.len() as u16 {
+            write!(stdout, "{}", termion::cursor::Right(1)).unwrap();
+
+            let cursor_pos = stdout.cursor_pos().unwrap();
+
+            self.x = cursor_pos.0;
         }
     }
 }
@@ -112,9 +132,8 @@ impl KeyboardShortcut {
 
 fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
     let input = String::new();
-    let input_handler = InputHandler::new(input);
-    // let mut x = 1;
     // let mut y = 1;
+    let mut input_handler = InputHandler::new(input);
 
     for key in stdin().keys() {
         match key.unwrap() {
@@ -152,20 +171,8 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
             // Key::Esc => {
             //     return Ok(Input::Exit);
             // }
-            // Key::Left => {
-            //     write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
-
-            //     let cursor_pos = stdout.cursor_pos().unwrap();
-
-            //     x = cursor_pos.0;
-            // }
-            // Key::Right if x <= input.len() as u16 => {
-            //     write!(stdout, "{}", termion::cursor::Right(1)).unwrap();
-
-            //     let cursor_pos = stdout.cursor_pos().unwrap();
-
-            //     x = cursor_pos.0;
-            // }
+            Key::Left => input_handler.handle_left(stdout),
+            Key::Right => input_handler.handle_right(stdout),
 
             // Key::Backspace if x > 1 => {
             //     x -= 1;
