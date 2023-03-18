@@ -18,7 +18,6 @@ struct Position {
     y: u16,
 }
 
-// TODO: Maybe this should be called Input Result or something
 enum Input {
     Text(String),
     Exit,
@@ -59,7 +58,7 @@ impl KeyHandler {
         }
     }
 
-    fn handle_enter(self) -> Result<Input, InputError> {
+    fn enter(self) -> Result<Input, InputError> {
         if self.input.trim().is_empty() {
             Err(InputError::EmptyString)
         } else {
@@ -209,7 +208,7 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
 
     for key in stdin().keys() {
         match key.unwrap() {
-            Key::Char('\n') => return key_handler.handle_enter(),
+            Key::Char('\n') => return key_handler.enter(),
             Key::Esc => return Ok(Input::Exit),
             Key::Char(c) => key_handler.char(stdout, c)?,
             Key::Left => key_handler.left(stdout),
