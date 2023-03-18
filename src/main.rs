@@ -13,16 +13,24 @@ struct KeyboardShortcut {
     input_placeholder: &'static str,
 }
 
-// TODO: Maybe it should be called KeyHandler
-struct InputHandler {
-    input: String,
+#[derive(Default, Clone)]
+struct Position {
     x: u16,
     y: u16,
 }
 
+// TODO: Maybe it should be called KeyHandler
+struct InputHandler {
+    input: String,
+    cursor_pos: Position,
+}
+
 impl InputHandler {
     fn new(input: String) -> Self {
-        Self { input, x: 1, y: 1 }
+        Self {
+            input,
+            cursor_pos: Position { x: 1, y: 2 },
+        }
     }
 
     fn handle_enter(self) -> Result<Input, InputError> {
@@ -38,40 +46,45 @@ impl InputHandler {
 
         let cursor_pos = stdout.cursor_pos().unwrap();
 
-        self.x = cursor_pos.0;
+        self.cursor_pos.x = cursor_pos.0;
     }
 
     fn handle_right(&mut self, stdout: &mut impl Write) {
         //TODO: See if can remove these if statements all of the function
         // Or check if if statements in functions are okay
-        if self.x <= self.input.len() as u16 {
+        if self.cursor_pos.x <= self.input.len() as u16 {
             write!(stdout, "{}", termion::cursor::Right(1)).unwrap();
 
             let cursor_pos = stdout.cursor_pos().unwrap();
 
-            self.x = cursor_pos.0;
+            self.cursor_pos.x = cursor_pos.0;
         }
     }
 
     fn handle_backspace(&mut self, stdout: &mut impl Write) {
-        if self.x > 1 {
-            self.x -= 1;
-            self.input.remove((self.x - 1).into());
+        if self.cursor_pos.x > 1 {
+            self.cursor_pos.x -= 1;
+            self.input.remove((self.cursor_pos.x - 1).into());
 
             let cursor_pos = stdout.cursor_pos().unwrap();
 
-            self.y = cursor_pos.1;
+            self.cursor_pos.y = cursor_pos.1;
 
             write!(
                 stdout,
                 "{}{}{}",
-                termion::cursor::Goto(1, self.y),
+                termion::cursor::Goto(1, self.cursor_pos.y),
                 termion::clear::CurrentLine,
                 self.input,
             )
             .unwrap();
 
-            write!(stdout, "{}", termion::cursor::Goto(self.x, self.y)).unwrap();
+            write!(
+                stdout,
+                "{}",
+                termion::cursor::Goto(self.cursor_pos.x, self.cursor_pos.y)
+            )
+            .unwrap();
         }
     }
 
@@ -80,26 +93,31 @@ impl InputHandler {
         std::str::from_utf8(&bytes)
             .map_err(|_| InputError::NotUTF8(bytes.clone()))
             .and_then(|_| {
-                self.input.insert((self.x - 1).into(), c);
+                self.input.insert((self.cursor_pos.x - 1).into(), c);
 
                 let cursor_pos = stdout.cursor_pos().unwrap();
 
-                self.y = cursor_pos.1;
+                self.cursor_pos.y = cursor_pos.1;
 
                 write!(
                     stdout,
                     "{}{}{}",
-                    termion::cursor::Goto(1, self.y),
+                    termion::cursor::Goto(1, self.cursor_pos.y),
                     termion::clear::CurrentLine,
                     self.input,
                 )
                 .unwrap();
 
-                write!(stdout, "{}", termion::cursor::Goto(self.x + 1, self.y)).unwrap();
+                write!(
+                    stdout,
+                    "{}",
+                    termion::cursor::Goto(self.cursor_pos.x + 1, self.cursor_pos.y)
+                )
+                .unwrap();
 
                 let cursor_pos = stdout.cursor_pos().unwrap();
 
-                self.x = cursor_pos.0;
+                self.cursor_pos.x = cursor_pos.0;
 
                 Ok(())
             })
