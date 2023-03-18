@@ -17,6 +17,7 @@ fn main() {
     .unwrap();
 
     let keyboard_shortcuts = vec![
+        // TODO: Maybe KeyboardShortcut should have a new() function?
         KeyboardShortcut {
             key: 'f',
             description: "Feat: adds a new feature to the product",
