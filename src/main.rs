@@ -19,12 +19,12 @@ struct Position {
 }
 
 // TODO: Maybe it should be called KeyHandler
-struct InputHandler {
+struct KeyHandler {
     input: String,
     cursor_pos: Position,
 }
 
-impl InputHandler {
+impl KeyHandler {
     fn new(input: String) -> Self {
         Self {
             input,
@@ -205,16 +205,16 @@ impl KeyboardShortcut {
 fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
     let input = String::new();
     // let mut y = 1;
-    let mut input_handler = InputHandler::new(input);
+    let mut key_handler = KeyHandler::new(input);
 
     for key in stdin().keys() {
         match key.unwrap() {
-            Key::Char('\n') => return input_handler.handle_enter(),
+            Key::Char('\n') => return key_handler.handle_enter(),
             Key::Esc => return Ok(Input::Exit),
-            Key::Char(c) => input_handler.handle_char(stdout, c)?,
-            Key::Left => input_handler.handle_left(stdout),
-            Key::Right => input_handler.handle_right(stdout),
-            Key::Backspace => input_handler.handle_backspace(stdout),
+            Key::Char(c) => key_handler.handle_char(stdout, c)?,
+            Key::Left => key_handler.handle_left(stdout),
+            Key::Right => key_handler.handle_right(stdout),
+            Key::Backspace => key_handler.handle_backspace(stdout),
             _ => {}
         }
 
@@ -224,7 +224,7 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
     // This places the output on a new line.
     write!(stdout, "\r\n").unwrap();
 
-    let input = input_handler.input.trim().to_owned();
+    let input = key_handler.input.trim().to_owned();
 
     Ok(Input::Text(input))
 }
