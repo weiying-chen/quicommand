@@ -13,7 +13,6 @@ struct KeyboardShortcut {
     input_placeholder: &'static str,
 }
 
-#[derive(Default, Clone)]
 struct Position {
     x: u16,
     y: u16,
