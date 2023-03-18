@@ -18,6 +18,33 @@ struct Position {
     y: u16,
 }
 
+// TODO: Maybe this should be called Input Result or something
+enum Input {
+    Text(String),
+    Exit,
+}
+
+enum InputError {
+    NotUTF8(Vec<u8>),
+    EmptyString,
+}
+
+impl fmt::Display for InputError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            InputError::NotUTF8(bytes) => write!(
+                f,
+                "Input contained non-UTF8 bytes: {:?}",
+                bytes
+                    .iter()
+                    .map(|b| format!("0x{:X}", b))
+                    .collect::<Vec<_>>()
+            ),
+            InputError::EmptyString => write!(f, "Input was empty."),
+        }
+    }
+}
+
 // TODO: Maybe it should be called KeyHandler
 struct KeyHandler {
     input: String,
@@ -40,7 +67,7 @@ impl KeyHandler {
         }
     }
 
-    fn handle_left(&mut self, stdout: &mut impl Write) {
+    fn left(&mut self, stdout: &mut impl Write) {
         write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
 
         let cursor_pos = stdout.cursor_pos().unwrap();
@@ -48,7 +75,7 @@ impl KeyHandler {
         self.cursor_pos.x = cursor_pos.0;
     }
 
-    fn handle_right(&mut self, stdout: &mut impl Write) {
+    fn right(&mut self, stdout: &mut impl Write) {
         //TODO: See if can remove these if statements all of the function
         // Or check if if statements in functions are okay
         if self.cursor_pos.x <= self.input.len() as u16 {
@@ -60,7 +87,7 @@ impl KeyHandler {
         }
     }
 
-    fn handle_backspace(&mut self, stdout: &mut impl Write) {
+    fn backspace(&mut self, stdout: &mut impl Write) {
         if self.cursor_pos.x > 1 {
             self.cursor_pos.x -= 1;
             self.input.remove((self.cursor_pos.x - 1).into());
@@ -87,7 +114,7 @@ impl KeyHandler {
         }
     }
 
-    fn handle_char(&mut self, stdout: &mut impl Write, c: char) -> Result<(), InputError> {
+    fn char(&mut self, stdout: &mut impl Write, c: char) -> Result<(), InputError> {
         let bytes = vec![c as u8];
         std::str::from_utf8(&bytes)
             .map_err(|_| InputError::NotUTF8(bytes.clone()))
@@ -120,33 +147,6 @@ impl KeyHandler {
 
                 Ok(())
             })
-    }
-}
-
-// TODO: Maybe this should be called Input Result or something
-enum Input {
-    Text(String),
-    Exit,
-}
-
-enum InputError {
-    NotUTF8(Vec<u8>),
-    EmptyString,
-}
-
-impl fmt::Display for InputError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            InputError::NotUTF8(bytes) => write!(
-                f,
-                "Input contained non-UTF8 bytes: {:?}",
-                bytes
-                    .iter()
-                    .map(|b| format!("0x{:X}", b))
-                    .collect::<Vec<_>>()
-            ),
-            InputError::EmptyString => write!(f, "Input was empty."),
-        }
     }
 }
 
@@ -211,10 +211,10 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
         match key.unwrap() {
             Key::Char('\n') => return key_handler.handle_enter(),
             Key::Esc => return Ok(Input::Exit),
-            Key::Char(c) => key_handler.handle_char(stdout, c)?,
-            Key::Left => key_handler.handle_left(stdout),
-            Key::Right => key_handler.handle_right(stdout),
-            Key::Backspace => key_handler.handle_backspace(stdout),
+            Key::Char(c) => key_handler.char(stdout, c)?,
+            Key::Left => key_handler.left(stdout),
+            Key::Right => key_handler.right(stdout),
+            Key::Backspace => key_handler.backspace(stdout),
             _ => {}
         }
 
