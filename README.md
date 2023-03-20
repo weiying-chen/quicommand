@@ -3,7 +3,7 @@
 Launch commands from a command palette by pressing a key.
 
 
-![](https://github.com/weiying-chen/window-switcher/blob/main/demo.gif)
+![](https://github.com/weiying-chen/command-launcher/blob/main/demo.gif)
 
 ## Note
 
