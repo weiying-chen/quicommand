@@ -36,6 +36,12 @@ fn main() {
             command: "git add . && git commit -m 'Refac: {}'",
             input_placeholder: "{}",
         },
+        KeyboardShortcut {
+            key: 'd',
+            description: "Docs: changes related to documentation",
+            command: "git add . && git commit -m 'Docs: {}'",
+            input_placeholder: "{}",
+        },
     ];
 
     for keyboard_shortcut in &keyboard_shortcuts {
