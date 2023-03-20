@@ -55,19 +55,8 @@ impl KeyboardShortcut {
                     let stdout_str = String::from_utf8_lossy(&output.stdout);
                     let stderr_str = String::from_utf8_lossy(&output.stderr);
 
-                    write!(
-                        stdout,
-                        "Command execution failed: {}\r\n",
-                        stderr_str.trim()
-                    )
-                    .unwrap();
-
-                    write!(
-                        stdout,
-                        "Command execution failed: {}\r\n",
-                        stdout_str.trim()
-                    )
-                    .unwrap();
+                    write!(stdout, "stdout: {}\r\n", stderr_str.trim()).unwrap();
+                    write!(stdout, "stderr: {}\r\n", stdout_str.trim()).unwrap();
                 }
             }
             Err(e) => {
