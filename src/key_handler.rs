@@ -12,6 +12,8 @@ pub struct KeyHandler {
     cursor_pos: Position,
 }
 
+const CURSOR_REQUIRED: &str = "Terminal must support cursor";
+
 impl KeyHandler {
     pub fn new(input: String) -> Self {
         Self {
@@ -31,7 +33,7 @@ impl KeyHandler {
     pub fn left(&mut self, stdout: &mut impl Write) {
         write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
 
-        let cursor_pos = stdout.cursor_pos().unwrap();
+        let cursor_pos = stdout.cursor_pos().expect(CURSOR_REQUIRED);
 
         self.cursor_pos.x = cursor_pos.0;
     }
@@ -42,7 +44,7 @@ impl KeyHandler {
         if self.cursor_pos.x <= self.input.len() as u16 {
             write!(stdout, "{}", termion::cursor::Right(1)).unwrap();
 
-            let cursor_pos = stdout.cursor_pos().unwrap();
+            let cursor_pos = stdout.cursor_pos().expect(CURSOR_REQUIRED);
 
             self.cursor_pos.x = cursor_pos.0;
         }
@@ -53,7 +55,7 @@ impl KeyHandler {
             self.cursor_pos.x -= 1;
             self.input.remove((self.cursor_pos.x - 1).into());
 
-            let cursor_pos = stdout.cursor_pos().unwrap();
+            let cursor_pos = stdout.cursor_pos().expect(CURSOR_REQUIRED);
 
             self.cursor_pos.y = cursor_pos.1;
 
@@ -82,7 +84,7 @@ impl KeyHandler {
             .and_then(|_| {
                 self.input.insert((self.cursor_pos.x - 1).into(), c);
 
-                let cursor_pos = stdout.cursor_pos().unwrap();
+                let cursor_pos = stdout.cursor_pos().expect(CURSOR_REQUIRED);
 
                 self.cursor_pos.y = cursor_pos.1;
 
@@ -102,7 +104,7 @@ impl KeyHandler {
                 )
                 .unwrap();
 
-                let cursor_pos = stdout.cursor_pos().unwrap();
+                let cursor_pos = stdout.cursor_pos().expect(CURSOR_REQUIRED);
 
                 self.cursor_pos.x = cursor_pos.0;
 
