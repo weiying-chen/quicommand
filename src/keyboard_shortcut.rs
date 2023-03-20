@@ -48,6 +48,9 @@ impl KeyboardShortcut {
                 if output.status.success() {
                     let stdout_str = String::from_utf8_lossy(&output.stdout);
 
+                    // This places the output on a new line.
+                    write!(stdout, "\r\n").unwrap();
+
                     for line in stdout_str.lines() {
                         write!(stdout, "{}\r\n", line).unwrap();
                     }
@@ -55,8 +58,11 @@ impl KeyboardShortcut {
                     let stdout_str = String::from_utf8_lossy(&output.stdout);
                     let stderr_str = String::from_utf8_lossy(&output.stderr);
 
-                    write!(stdout, "stdout: {}\r\n", stderr_str.trim()).unwrap();
-                    write!(stdout, "stderr: {}\r\n", stdout_str.trim()).unwrap();
+                    // This places the output on a new line.
+                    write!(stdout, "\r\n").unwrap();
+
+                    write!(stdout, "stderr: {}\r\n", stderr_str.trim()).unwrap();
+                    write!(stdout, "stdout: {}\r\n", stdout_str.trim()).unwrap();
                 }
             }
             Err(e) => {
@@ -84,9 +90,6 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
 
         stdout.flush().unwrap();
     }
-
-    // This places the output on a new line.
-    write!(stdout, "\r\n").unwrap();
 
     // TODO: maybe a function should return the input instead?
     let input = key_handler.input.trim().to_owned();
