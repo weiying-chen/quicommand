@@ -61,8 +61,8 @@ impl KeyboardShortcut {
                     // This places the output on a new line.
                     write!(stdout, "\r\n").unwrap();
 
-                    write!(stdout, "stderr: {}\r\n", stderr_str.trim()).unwrap();
-                    write!(stdout, "stdout: {}\r\n", stdout_str.trim()).unwrap();
+                    write!(stdout, "Standard error: {}\r\n", stderr_str.trim()).unwrap();
+                    write!(stdout, "Standard output: {}\r\n", stdout_str.trim()).unwrap();
                 }
             }
             Err(e) => {
