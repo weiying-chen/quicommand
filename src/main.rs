@@ -1,4 +1,4 @@
-use cc::keyboard_shortcut::KeyboardShortcut;
+use command_launcher::keyboard_shortcut::KeyboardShortcut;
 use std::io::{stdin, stdout, Write};
 use termion::event::Key;
 use termion::input::TermRead;
