@@ -12,8 +12,6 @@ pub struct KeyHandler {
     cursor_pos: Position,
 }
 
-const CURSOR_REQUIRED: &str = "Terminal must support cursor";
-
 impl KeyHandler {
     pub fn new(input: String) -> Self {
         Self {
@@ -88,7 +86,7 @@ impl KeyHandler {
             .and_then(|_| {
                 self.input.insert((self.cursor_pos.x - 1).into(), c);
 
-                let cursor_pos = stdout.cursor_pos().expect(CURSOR_REQUIRED);
+                let cursor_pos = stdout.cursor_pos()?;
 
                 self.cursor_pos.y = cursor_pos.1;
 
@@ -108,7 +106,7 @@ impl KeyHandler {
                 )
                 .unwrap();
 
-                let cursor_pos = stdout.cursor_pos().expect(CURSOR_REQUIRED);
+                let cursor_pos = stdout.cursor_pos()?;
 
                 self.cursor_pos.x = cursor_pos.0;
 
