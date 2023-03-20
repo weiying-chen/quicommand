@@ -96,15 +96,13 @@ impl KeyHandler {
                     termion::cursor::Goto(1, self.cursor_pos.y),
                     termion::clear::CurrentLine,
                     self.input,
-                )
-                .unwrap();
+                )?;
 
                 write!(
                     stdout,
                     "{}",
                     termion::cursor::Goto(self.cursor_pos.x + 1, self.cursor_pos.y)
-                )
-                .unwrap();
+                )?;
 
                 let cursor_pos = stdout.cursor_pos()?;
 
