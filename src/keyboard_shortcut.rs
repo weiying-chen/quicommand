@@ -79,9 +79,9 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
             Key::Char('\n') => return key_handler.enter(),
             Key::Esc => return Ok(Input::Exit),
             Key::Char(c) => key_handler.char(stdout, c)?,
-            Key::Left => key_handler.left(stdout),
-            Key::Right => key_handler.right(stdout),
-            Key::Backspace => key_handler.backspace(stdout),
+            Key::Left => key_handler.left(stdout)?,
+            Key::Right => key_handler.right(stdout)?,
+            Key::Backspace => key_handler.backspace(stdout)?,
             _ => {}
         }
 

@@ -1,4 +1,6 @@
+use std::convert::From;
 use std::fmt;
+use std::io;
 
 pub enum Input {
     Text(String),
@@ -8,6 +10,13 @@ pub enum Input {
 pub enum InputError {
     NotUTF8(Vec<u8>),
     EmptyString,
+    IoError(io::Error),
+}
+
+impl From<io::Error> for InputError {
+    fn from(error: io::Error) -> Self {
+        InputError::IoError(error)
+    }
 }
 
 impl fmt::Display for InputError {
@@ -22,6 +31,7 @@ impl fmt::Display for InputError {
                     .collect::<Vec<_>>()
             ),
             InputError::EmptyString => write!(f, "Input was empty."),
+            InputError::IoError(e) => write!(f, "I/O Error: {}", e),
         }
     }
 }

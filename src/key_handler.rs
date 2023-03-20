@@ -30,32 +30,36 @@ impl KeyHandler {
         }
     }
 
-    pub fn left(&mut self, stdout: &mut impl Write) {
-        write!(stdout, "{}", termion::cursor::Left(1)).unwrap();
+    pub fn left(&mut self, stdout: &mut impl Write) -> Result<(), std::io::Error> {
+        write!(stdout, "{}", termion::cursor::Left(1))?;
 
-        let cursor_pos = stdout.cursor_pos().expect(CURSOR_REQUIRED);
+        let cursor_pos = stdout.cursor_pos()?;
 
         self.cursor_pos.x = cursor_pos.0;
+
+        Ok(())
     }
 
-    pub fn right(&mut self, stdout: &mut impl Write) {
+    pub fn right(&mut self, stdout: &mut impl Write) -> Result<(), std::io::Error> {
         //TODO: See if can remove these if statements all of the function
         // Or check if if statements in functions are okay
         if self.cursor_pos.x <= self.input.len() as u16 {
-            write!(stdout, "{}", termion::cursor::Right(1)).unwrap();
+            write!(stdout, "{}", termion::cursor::Right(1))?;
 
-            let cursor_pos = stdout.cursor_pos().expect(CURSOR_REQUIRED);
+            let cursor_pos = stdout.cursor_pos()?;
 
             self.cursor_pos.x = cursor_pos.0;
         }
+
+        Ok(())
     }
 
-    pub fn backspace(&mut self, stdout: &mut impl Write) {
+    pub fn backspace(&mut self, stdout: &mut impl Write) -> Result<(), std::io::Error> {
         if self.cursor_pos.x > 1 {
             self.cursor_pos.x -= 1;
             self.input.remove((self.cursor_pos.x - 1).into());
 
-            let cursor_pos = stdout.cursor_pos().expect(CURSOR_REQUIRED);
+            let cursor_pos = stdout.cursor_pos()?;
 
             self.cursor_pos.y = cursor_pos.1;
 
@@ -65,16 +69,16 @@ impl KeyHandler {
                 termion::cursor::Goto(1, self.cursor_pos.y),
                 termion::clear::CurrentLine,
                 self.input,
-            )
-            .unwrap();
+            )?;
 
             write!(
                 stdout,
                 "{}",
                 termion::cursor::Goto(self.cursor_pos.x, self.cursor_pos.y)
-            )
-            .unwrap();
+            )?;
         }
+
+        Ok(())
     }
 
     pub fn char(&mut self, stdout: &mut impl Write, c: char) -> Result<(), InputError> {
