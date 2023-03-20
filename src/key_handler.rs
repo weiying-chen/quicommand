@@ -28,7 +28,7 @@ impl KeyHandler {
         }
     }
 
-    pub fn left(&mut self, stdout: &mut impl Write) -> Result<(), std::io::Error> {
+    pub fn left(&mut self, stdout: &mut impl Write) -> Result<(), InputError> {
         write!(stdout, "{}", termion::cursor::Left(1))?;
 
         let cursor_pos = stdout.cursor_pos()?;
@@ -38,7 +38,7 @@ impl KeyHandler {
         Ok(())
     }
 
-    pub fn right(&mut self, stdout: &mut impl Write) -> Result<(), std::io::Error> {
+    pub fn right(&mut self, stdout: &mut impl Write) -> Result<(), InputError> {
         //TODO: See if can remove these if statements all of the function
         // Or check if if statements in functions are okay
         if self.cursor_pos.x <= self.input.len() as u16 {
@@ -52,7 +52,7 @@ impl KeyHandler {
         Ok(())
     }
 
-    pub fn backspace(&mut self, stdout: &mut impl Write) -> Result<(), std::io::Error> {
+    pub fn backspace(&mut self, stdout: &mut impl Write) -> Result<(), InputError> {
         if self.cursor_pos.x > 1 {
             self.cursor_pos.x -= 1;
             self.input.remove((self.cursor_pos.x - 1).into());
