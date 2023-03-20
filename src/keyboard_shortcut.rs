@@ -46,18 +46,26 @@ impl KeyboardShortcut {
         match output {
             Ok(output) => {
                 if output.status.success() {
-                    let output_str = String::from_utf8_lossy(&output.stdout);
+                    let stdout_str = String::from_utf8_lossy(&output.stdout);
 
-                    for line in output_str.lines() {
+                    for line in stdout_str.lines() {
                         write!(stdout, "{}\r\n", line).unwrap();
                     }
                 } else {
+                    let stdout_str = String::from_utf8_lossy(&output.stdout);
                     let stderr_str = String::from_utf8_lossy(&output.stderr);
 
                     write!(
                         stdout,
                         "Command execution failed: {}\r\n",
                         stderr_str.trim()
+                    )
+                    .unwrap();
+
+                    write!(
+                        stdout,
+                        "Command execution failed: {}\r\n",
+                        stdout_str.trim()
                     )
                     .unwrap();
                 }
