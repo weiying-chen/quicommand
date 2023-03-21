@@ -42,6 +42,12 @@ fn main() {
             command: "git add . && git commit -m 'Docs: {}'",
             input_placeholder: "{}",
         },
+        KeyboardShortcut {
+            key: 's',
+            description: "Run git status",
+            command: "git status",
+            input_placeholder: "{}",
+        },
     ];
 
     for keyboard_shortcut in &keyboard_shortcuts {

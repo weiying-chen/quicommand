@@ -22,6 +22,7 @@ impl KeyboardShortcut {
         write!(stdout, "Enter commit message: ").unwrap();
         stdout.flush().unwrap();
 
+        // TODO: pass `stdin().key()` to execute_command as an argument?
         let input = match get_input(stdin().keys(), stdout) {
             Ok(Input::Text(i)) => i,
             Ok(Input::Exit) => {
@@ -72,8 +73,8 @@ impl KeyboardShortcut {
     }
 }
 
-fn get_input<'a>(
-    input_keys: impl Iterator<Item = Result<Key, io::Error>> + 'a,
+fn get_input(
+    input_keys: impl Iterator<Item = Result<Key, io::Error>>,
     stdout: &mut impl Write,
 ) -> Result<Input, InputError> {
     let input = String::new();
@@ -96,4 +97,29 @@ fn get_input<'a>(
     let input = key_handler.input.trim().to_owned();
 
     Ok(Input::Text(input))
+}
+
+//TODO: test Left, Right, Esc, and Backspace.
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::stdout;
+    use termion::raw::IntoRawMode;
+
+    #[test]
+    fn test_get_input() {
+        let keys = vec![
+            Ok(Key::Char('h')),
+            Ok(Key::Char('e')),
+            Ok(Key::Char('l')),
+            Ok(Key::Char('l')),
+            Ok(Key::Char('o')),
+            Ok(Key::Char('\n')),
+        ];
+
+        let mut stdout = stdout().into_raw_mode().unwrap();
+        let result = get_input(keys.into_iter(), &mut stdout);
+
+        assert_eq!(result.unwrap(), Input::Text(String::from("hello")));
+    }
 }
