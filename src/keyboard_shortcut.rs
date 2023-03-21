@@ -1,5 +1,5 @@
 use std::{
-    io::{stdin, Write},
+    io::{self, stdin, Write},
     process::Command,
 };
 
@@ -22,7 +22,7 @@ impl KeyboardShortcut {
         write!(stdout, "Enter commit message: ").unwrap();
         stdout.flush().unwrap();
 
-        let input = match get_input(stdout) {
+        let input = match get_input(stdin().keys(), stdout) {
             Ok(Input::Text(i)) => i,
             Ok(Input::Exit) => {
                 write!(stdout, "\r\n").unwrap();
@@ -72,12 +72,14 @@ impl KeyboardShortcut {
     }
 }
 
-fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
+fn get_input<'a>(
+    input_keys: impl Iterator<Item = Result<Key, io::Error>> + 'a,
+    stdout: &mut impl Write,
+) -> Result<Input, InputError> {
     let input = String::new();
-    // let mut y = 1;
     let mut key_handler = KeyHandler::new(input);
 
-    for key in stdin().keys() {
+    for key in input_keys {
         match key.unwrap() {
             Key::Char('\n') => return key_handler.enter(),
             Key::Esc => return Ok(Input::Exit),
@@ -91,7 +93,6 @@ fn get_input(stdout: &mut impl Write) -> Result<Input, InputError> {
         stdout.flush().unwrap();
     }
 
-    // TODO: maybe a function should return the input instead?
     let input = key_handler.input.trim().to_owned();
 
     Ok(Input::Text(input))
