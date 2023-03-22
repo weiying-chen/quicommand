@@ -1,9 +1,9 @@
 use std::{
-    io::{self, stdin, Write},
+    io::{self, Write},
     process::Command,
 };
 
-use termion::{event::Key, input::TermRead};
+use termion::event::Key;
 
 use crate::{
     input::{Input, InputError},
@@ -17,13 +17,18 @@ pub struct KeyboardShortcut {
     pub input_placeholder: &'static str,
 }
 
+//  `get_input` should be extracted out of `execute_command()`.
 impl KeyboardShortcut {
-    pub fn execute_command(&self, stdout: &mut impl Write) {
+    pub fn execute_command(
+        &self,
+        input_keys: impl Iterator<Item = Result<Key, io::Error>>,
+        stdout: &mut impl Write,
+    ) {
         write!(stdout, "Enter commit message: ").unwrap();
         stdout.flush().unwrap();
 
-        // TODO: pass `stdin().key()` to execute_command as an argument?
-        let input = match get_input(stdin().keys(), stdout) {
+        // TODO: Maybe input_keys should be a struct field?
+        let input = match get_input(input_keys, stdout) {
             Ok(Input::Text(i)) => i,
             Ok(Input::Exit) => {
                 write!(stdout, "\r\n").unwrap();
