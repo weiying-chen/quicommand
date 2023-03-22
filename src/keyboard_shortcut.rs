@@ -19,11 +19,11 @@ pub struct KeyboardShortcut {
 
 //  `get_input` should be extracted out of `execute_command()`.
 impl KeyboardShortcut {
-    pub fn execute_command(
+    pub fn generate_command(
         &self,
         input_keys: impl Iterator<Item = Result<Key, io::Error>>,
         stdout: &mut impl Write,
-    ) {
+    ) -> String {
         write!(stdout, "Enter commit message: ").unwrap();
         stdout.flush().unwrap();
 
@@ -32,16 +32,19 @@ impl KeyboardShortcut {
             Ok(Input::Text(i)) => i,
             Ok(Input::Exit) => {
                 write!(stdout, "\r\n").unwrap();
-                return;
+                // TODO: Maybe there's a better way of handling this?
+                std::process::exit(0);
             }
             Err(e) => {
                 write!(stdout, "\r\nInvalid input: {}\r\n", e).unwrap();
-                return;
+                std::process::exit(1);
             }
         };
 
-        let command = self.command.replace(self.input_placeholder, &input);
+        self.command.replace(self.input_placeholder, &input)
+    }
 
+    pub fn execute_command(&self, command: String, stdout: &mut impl Write) {
         // This combination makes commands print colors.
         let output = Command::new("script")
             .arg("-qec")

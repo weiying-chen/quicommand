@@ -71,11 +71,11 @@ fn main() {
             Key::Char(c) if keyboard_shortcuts.iter().any(|k| k.key == c) => {
                 let keyboard_shortcut = keyboard_shortcuts.iter().find(|k| k.key == c).unwrap();
 
-                // Raw mode has to be suspented to collect input.
-                // stdout.suspend_raw_mode().unwrap();
                 write!(stdout, "{}", termion::cursor::Show).unwrap();
-                keyboard_shortcut.execute_command(stdin().keys(), &mut stdout);
-                // stdout.activate_raw_mode().unwrap();
+
+                let command = keyboard_shortcut.generate_command(stdin().keys(), &mut stdout);
+
+                keyboard_shortcut.execute_command(command, &mut stdout);
                 break;
             }
             _ => {}
