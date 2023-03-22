@@ -19,29 +19,56 @@ pub struct KeyboardShortcut {
 
 //  `get_input` should be extracted out of `execute_command()`.
 impl KeyboardShortcut {
-    pub fn execute_command(
+    pub fn get_input(
         &self,
         input_keys: impl Iterator<Item = Result<Key, io::Error>>,
         stdout: &mut impl Write,
-    ) {
-        write!(stdout, "Enter commit message: ").unwrap();
-        stdout.flush().unwrap();
+    ) -> Result<Input, InputError> {
+        let input = String::new();
+        let mut key_handler = KeyHandler::new(input);
 
+        for key in input_keys {
+            match key.unwrap() {
+                Key::Char('\n') => return key_handler.enter(),
+                Key::Esc => return Ok(Input::Exit),
+                Key::Char(c) => key_handler.char(stdout, c)?,
+                Key::Left => key_handler.left(stdout)?,
+                Key::Right => key_handler.right(stdout)?,
+                Key::Backspace => key_handler.backspace(stdout)?,
+                _ => {}
+            }
+
+            stdout.flush().unwrap();
+        }
+
+        let input = key_handler.input.trim().to_owned();
+
+        Ok(Input::Text(input))
+    }
+
+    pub fn generate_command(
+        &self,
+        input_text: Result<Input, InputError>,
+        stdout: &mut impl Write,
+    ) -> String {
         // TODO: Maybe input_keys should be a struct field?
-        let input = match get_input(input_keys, stdout) {
+        let input = match input_text {
             Ok(Input::Text(i)) => i,
             Ok(Input::Exit) => {
                 write!(stdout, "\r\n").unwrap();
-                return;
+                // TODO: Maybe there's a better way of handling this?
+                std::process::exit(0);
             }
             Err(e) => {
                 write!(stdout, "\r\nInvalid input: {}\r\n", e).unwrap();
-                return;
+                std::process::exit(1);
             }
         };
 
-        let command = self.command.replace(self.input_placeholder, &input);
+        self.command.replace(self.input_placeholder, &input)
+    }
 
+    pub fn execute_command(&self, command: String, stdout: &mut impl Write) {
         // This combination makes commands print colors.
         let output = Command::new("script")
             .arg("-qec")
@@ -76,32 +103,6 @@ impl KeyboardShortcut {
             }
         }
     }
-}
-
-fn get_input(
-    input_keys: impl Iterator<Item = Result<Key, io::Error>>,
-    stdout: &mut impl Write,
-) -> Result<Input, InputError> {
-    let input = String::new();
-    let mut key_handler = KeyHandler::new(input);
-
-    for key in input_keys {
-        match key.unwrap() {
-            Key::Char('\n') => return key_handler.enter(),
-            Key::Esc => return Ok(Input::Exit),
-            Key::Char(c) => key_handler.char(stdout, c)?,
-            Key::Left => key_handler.left(stdout)?,
-            Key::Right => key_handler.right(stdout)?,
-            Key::Backspace => key_handler.backspace(stdout)?,
-            _ => {}
-        }
-
-        stdout.flush().unwrap();
-    }
-
-    let input = key_handler.input.trim().to_owned();
-
-    Ok(Input::Text(input))
 }
 
 //TODO: test Left, Right, Esc, and Backspace.
