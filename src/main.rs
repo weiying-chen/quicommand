@@ -74,7 +74,7 @@ fn main() {
                 // Raw mode has to be suspented to collect input.
                 // stdout.suspend_raw_mode().unwrap();
                 write!(stdout, "{}", termion::cursor::Show).unwrap();
-                keyboard_shortcut.execute_command(&mut stdout);
+                keyboard_shortcut.execute_command(stdin().keys(), &mut stdout);
                 // stdout.activate_raw_mode().unwrap();
                 break;
             }
