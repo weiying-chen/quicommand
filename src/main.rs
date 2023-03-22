@@ -71,10 +71,13 @@ fn main() {
             Key::Char(c) if keyboard_shortcuts.iter().any(|k| k.key == c) => {
                 let keyboard_shortcut = keyboard_shortcuts.iter().find(|k| k.key == c).unwrap();
 
-                write!(stdout, "{}", termion::cursor::Show).unwrap();
+                write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
+                stdout.flush().unwrap();
 
-                let command = keyboard_shortcut.generate_command(stdin().keys(), &mut stdout);
+                let input_text = keyboard_shortcut.get_input(stdin().keys(), &mut stdout);
+                let command = keyboard_shortcut.generate_command(input_text, &mut stdout);
 
+                // TODO: the command should return a result
                 keyboard_shortcut.execute_command(command, &mut stdout);
                 break;
             }
