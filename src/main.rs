@@ -74,7 +74,8 @@ fn main() {
                 write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
                 stdout.flush().unwrap();
 
-                let input_text = keyboard_shortcut.get_input(stdin().keys(), &mut stdout);
+                let input_text =
+                    command_launcher::keyboard_shortcut::get_input(stdin().keys(), &mut stdout);
                 let command = keyboard_shortcut.generate_command(input_text, &mut stdout);
 
                 // TODO: the command should return a result
