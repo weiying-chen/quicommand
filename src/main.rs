@@ -69,6 +69,7 @@ fn main() {
                 write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
                 stdout.flush().unwrap();
 
+                // TODO: see if these steps can be made more simple and intuitive.
                 let input = command_launcher::input::get_input(stdin().keys(), &mut stdout);
                 let input = command_launcher::input::handle_input(input, &mut stdout);
                 // TODO: the command should return a result

@@ -52,6 +52,7 @@ pub fn get_input(
     let mut term_writer = TermWriter::new(input);
 
     // TODO this side effect maybe shouldn't be here.
+    // Or how the input is being written should be more obvious.
     for key in input_keys {
         match key.unwrap() {
             Key::Char('\n') => return term_writer.enter(),
