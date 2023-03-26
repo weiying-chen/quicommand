@@ -7,12 +7,13 @@ struct Position {
     y: u16,
 }
 
-pub struct KeyHandler {
+pub struct TermWriter {
+    // TODO: Maybe input shouldn't belong to this struct.
     pub input: String,
     cursor_pos: Position,
 }
 
-impl KeyHandler {
+impl TermWriter {
     pub fn new(input: String) -> Self {
         Self {
             input,

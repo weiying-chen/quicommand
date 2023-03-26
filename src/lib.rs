@@ -1,4 +1,4 @@
 pub mod command;
 pub mod input;
-pub mod key_handler;
 pub mod keymap;
+pub mod term_writer;

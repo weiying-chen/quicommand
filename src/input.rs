@@ -5,7 +5,7 @@ use std::io::Write;
 
 use termion::event::Key;
 
-use crate::key_handler::KeyHandler;
+use crate::term_writer::TermWriter;
 
 #[derive(Debug, PartialEq)]
 pub enum Input {
@@ -49,23 +49,24 @@ pub fn get_input(
     stdout: &mut impl Write,
 ) -> Result<Input, InputError> {
     let input = String::new();
-    let mut key_handler = KeyHandler::new(input);
+    let mut term_writer = TermWriter::new(input);
 
+    // TODO this side effect maybe shouldn't be here.
     for key in input_keys {
         match key.unwrap() {
-            Key::Char('\n') => return key_handler.enter(),
+            Key::Char('\n') => return term_writer.enter(),
             Key::Esc => return Ok(Input::Exit),
-            Key::Char(c) => key_handler.char(stdout, c)?,
-            Key::Left => key_handler.left(stdout)?,
-            Key::Right => key_handler.right(stdout)?,
-            Key::Backspace => key_handler.backspace(stdout)?,
+            Key::Char(c) => term_writer.char(stdout, c)?,
+            Key::Left => term_writer.left(stdout)?,
+            Key::Right => term_writer.right(stdout)?,
+            Key::Backspace => term_writer.backspace(stdout)?,
             _ => {}
         }
 
         stdout.flush().unwrap();
     }
 
-    let input = key_handler.input.trim().to_owned();
+    let input = term_writer.input.trim().to_owned();
 
     Ok(Input::Text(input))
 }
