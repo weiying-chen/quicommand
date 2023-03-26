@@ -68,8 +68,8 @@ fn main() {
                 write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
                 stdout.flush().unwrap();
 
-                let input_text = command_launcher::keymap::get_input(stdin().keys(), &mut stdout);
-                let handled_input = command_launcher::keymap::handle_input(input_text, &mut stdout);
+                let input_text = command_launcher::input::get_input(stdin().keys(), &mut stdout);
+                let handled_input = command_launcher::input::handle_input(input_text, &mut stdout);
 
                 // TODO: the command should return a result
                 keymap.execute_command(handled_input, &mut stdout);
