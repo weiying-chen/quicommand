@@ -69,10 +69,10 @@ fn main() {
                 stdout.flush().unwrap();
 
                 let input_text = command_launcher::keymap::get_input(stdin().keys(), &mut stdout);
-                let command = keymap.generate_command(input_text, &mut stdout);
+                let handled_input = command_launcher::keymap::handle_input(input_text, &mut stdout);
 
                 // TODO: the command should return a result
-                keymap.execute_command(command, &mut stdout);
+                keymap.execute_command(handled_input, &mut stdout);
                 break;
             }
             _ => {}
