@@ -1,4 +1,4 @@
-use command_launcher::keyboard_shortcut::KeyboardShortcut;
+use command_launcher::keymap::Keymap;
 use std::io::{stdin, stdout, Write};
 use termion::event::Key;
 use termion::input::TermRead;
@@ -16,33 +16,32 @@ fn main() {
     )
     .unwrap();
 
-    let keyboard_shortcuts = vec![
-        // TODO: Maybe KeyboardShortcut should have a new() function?
-        KeyboardShortcut {
+    let keymaps = vec![
+        Keymap {
             key: 'f',
             description: "Feat: adds a new feature to the product",
             command: "git add . && git commit -m 'Feat: {}'",
             input_placeholder: "{}",
         },
-        KeyboardShortcut {
+        Keymap {
             key: 'x',
             description: "Fix: fixes a defect in a feature",
             command: "git add . && git commit -m 'Fix: {}'",
             input_placeholder: "{}",
         },
-        KeyboardShortcut {
+        Keymap {
             key: 'r',
             description: "Refac: changes a feature's code but not its behavior",
             command: "git add . && git commit -m 'Refac: {}'",
             input_placeholder: "{}",
         },
-        KeyboardShortcut {
+        Keymap {
             key: 'd',
             description: "Docs: changes related to documentation",
             command: "git add . && git commit -m 'Docs: {}'",
             input_placeholder: "{}",
         },
-        KeyboardShortcut {
+        Keymap {
             key: 's',
             description: "Run git status",
             command: "git status",
@@ -50,13 +49,8 @@ fn main() {
         },
     ];
 
-    for keyboard_shortcut in &keyboard_shortcuts {
-        write!(
-            stdout,
-            "{}  {}\r\n",
-            keyboard_shortcut.key, keyboard_shortcut.description
-        )
-        .unwrap();
+    for keymap in &keymaps {
+        write!(stdout, "{}  {}\r\n", keymap.key, keymap.description).unwrap();
     }
 
     stdout.flush().unwrap();
@@ -68,18 +62,17 @@ fn main() {
                 write!(stdout, "{}", termion::cursor::Show).unwrap();
                 break;
             }
-            Key::Char(c) if keyboard_shortcuts.iter().any(|k| k.key == c) => {
-                let keyboard_shortcut = keyboard_shortcuts.iter().find(|k| k.key == c).unwrap();
+            Key::Char(c) if keymaps.iter().any(|k| k.key == c) => {
+                let keymap = keymaps.iter().find(|k| k.key == c).unwrap();
 
                 write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
                 stdout.flush().unwrap();
 
-                let input_text =
-                    command_launcher::keyboard_shortcut::get_input(stdin().keys(), &mut stdout);
-                let command = keyboard_shortcut.generate_command(input_text, &mut stdout);
+                let input_text = command_launcher::keymap::get_input(stdin().keys(), &mut stdout);
+                let command = keymap.generate_command(input_text, &mut stdout);
 
                 // TODO: the command should return a result
-                keyboard_shortcut.execute_command(command, &mut stdout);
+                keymap.execute_command(command, &mut stdout);
                 break;
             }
             _ => {}
