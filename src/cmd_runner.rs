@@ -5,15 +5,14 @@ pub struct CmdRunner {
 }
 
 impl CmdRunner {
-    pub fn new(command_string: &str, input_placeholder: &str) -> CmdRunner {
+    pub fn new(command_string: &str, input: &str) -> CmdRunner {
         let mut command = Command::new("script");
 
         command
             .arg("-qec")
-            .arg(command_string.replace("{}", input_placeholder))
+            .arg(command_string.replace("{}", input))
             .arg("/dev/null");
 
-        println!("command: {:?}", command);
         CmdRunner { command }
     }
 

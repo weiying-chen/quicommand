@@ -69,11 +69,11 @@ fn main() {
                 write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
                 stdout.flush().unwrap();
 
-                let input_text = command_launcher::input::get_input(stdin().keys(), &mut stdout);
-                let handled_input = command_launcher::input::handle_input(input_text, &mut stdout);
-
+                let input = command_launcher::input::get_input(stdin().keys(), &mut stdout);
+                let input = command_launcher::input::handle_input(input, &mut stdout);
                 // TODO: the command should return a result
-                let mut command = CmdRunner::new(keymap.command, &handled_input);
+                let mut command = CmdRunner::new(keymap.command, &input);
+
                 command.execute(&mut stdout);
                 break;
             }
