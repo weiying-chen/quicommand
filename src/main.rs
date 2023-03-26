@@ -1,4 +1,4 @@
-use command_launcher::command::Command;
+use command_launcher::cmd_runner::CmdRunner;
 use command_launcher::keymap::Keymap;
 use std::io::{stdin, stdout, Write};
 use termion::event::Key;
@@ -73,7 +73,7 @@ fn main() {
                 let handled_input = command_launcher::input::handle_input(input_text, &mut stdout);
 
                 // TODO: the command should return a result
-                let mut command = Command::new(keymap.command, &handled_input);
+                let mut command = CmdRunner::new(keymap.command, &handled_input);
                 command.execute(&mut stdout);
                 break;
             }

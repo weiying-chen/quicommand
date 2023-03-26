@@ -1,22 +1,20 @@
-// use std::{io::Write, process::Command as StdCommand};
+use std::{io::Write, process::Command};
 
-use std::io::Write;
-
-pub struct Command {
+pub struct CmdRunner {
     pub command: std::process::Command,
     pub input_placeholder: String,
 }
 
-impl Command {
-    pub fn new(command_string: &str, input_placeholder: &str) -> Command {
-        let mut command = std::process::Command::new("script");
+impl CmdRunner {
+    pub fn new(command_string: &str, input_placeholder: &str) -> CmdRunner {
+        let mut command = Command::new("script");
 
         command
             .arg("-qec")
             .arg(command_string.replace(input_placeholder, "{}"))
             .arg("/dev/null");
 
-        Command {
+        CmdRunner {
             command,
             input_placeholder: input_placeholder.to_string(),
         }
