@@ -2,7 +2,6 @@ use std::{io::Write, process::Command};
 
 pub struct CmdRunner {
     pub command: std::process::Command,
-    pub input_placeholder: String,
 }
 
 impl CmdRunner {
@@ -11,13 +10,11 @@ impl CmdRunner {
 
         command
             .arg("-qec")
-            .arg(command_string.replace(input_placeholder, "{}"))
+            .arg(command_string.replace("{}", input_placeholder))
             .arg("/dev/null");
 
-        CmdRunner {
-            command,
-            input_placeholder: input_placeholder.to_string(),
-        }
+        println!("command: {:?}", command);
+        CmdRunner { command }
     }
 
     pub fn execute(&mut self, stdout: &mut impl Write) {
