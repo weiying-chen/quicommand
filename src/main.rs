@@ -1,4 +1,5 @@
 use command_launcher::cmd_runner::CmdRunner;
+use command_launcher::input::Input;
 use command_launcher::keymap::Keymap;
 use std::io::{stdin, stdout, Write};
 use termion::event::Key;
@@ -71,12 +72,26 @@ fn main() {
 
                 // TODO: see if these steps can be made more simple and intuitive.
                 let input = command_launcher::input::get_input(stdin().keys(), &mut stdout);
-                let input = command_launcher::input::handle_input(input, &mut stdout);
+                // let input = command_launcher::input::handle_input(input, &mut stdout);
                 // TODO: the command should return a result
-                let mut command = CmdRunner::new(keymap.command, &input);
 
-                command.execute(&mut stdout);
-                break;
+                match input {
+                    Ok(Input::Text(i)) => {
+                        let mut command = CmdRunner::new(keymap.command, &i);
+
+                        command.execute(&mut stdout);
+                        break;
+                    }
+                    Ok(Input::Exit) => {
+                        write!(stdout, "\r\n").unwrap();
+                        // TODO: Maybe there's a better way of handling this?
+                        break;
+                    }
+                    Err(e) => {
+                        write!(stdout, "\r\nInvalid input: {}\r\n", e).unwrap();
+                        break;
+                    }
+                };
             }
             _ => {}
         }

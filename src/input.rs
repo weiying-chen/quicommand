@@ -72,24 +72,6 @@ pub fn get_input(
     Ok(Input::Text(input))
 }
 
-pub fn handle_input(input_text: Result<Input, InputError>, stdout: &mut impl Write) -> String {
-    // TODO: Maybe input_keys should be a struct field?
-    let input = match input_text {
-        Ok(Input::Text(i)) => i,
-        Ok(Input::Exit) => {
-            write!(stdout, "\r\n").unwrap();
-            // TODO: Maybe there's a better way of handling this?
-            std::process::exit(0);
-        }
-        Err(e) => {
-            write!(stdout, "\r\nInvalid input: {}\r\n", e).unwrap();
-            std::process::exit(1);
-        }
-    };
-
-    input
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
