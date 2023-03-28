@@ -75,6 +75,8 @@ pub fn get_input(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::stdout;
+    use termion::raw::IntoRawMode;
 
     #[test]
     fn test_input_error_display() {
@@ -91,5 +93,23 @@ mod tests {
         let io_err = io::Error::new(io::ErrorKind::Other, "test error");
         let err = InputError::IoError(io_err);
         assert_eq!(format!("{}", err), "I/O Error: test error");
+    }
+
+    //To-do: test Left, Right, Esc, and Backspace.
+    #[test]
+    fn test_get_input() {
+        let keys = vec![
+            Ok(Key::Char('h')),
+            Ok(Key::Char('e')),
+            Ok(Key::Char('l')),
+            Ok(Key::Char('l')),
+            Ok(Key::Char('o')),
+            Ok(Key::Char('\n')),
+        ];
+
+        let mut stdout = stdout().into_raw_mode().unwrap();
+        let result = get_input(keys.into_iter(), &mut stdout);
+
+        assert_eq!(result.unwrap(), Input::Text(String::from("hello")));
     }
 }
