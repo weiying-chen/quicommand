@@ -75,6 +75,7 @@ pub fn get_input(
 #[cfg(test)]
 mod tests {
     use super::*;
+    // use std::io::{stdout, Cursor};
     use std::io::stdout;
     use termion::raw::IntoRawMode;
 
@@ -107,6 +108,7 @@ mod tests {
             Ok(Key::Char('\n')),
         ];
 
+        // let mut stdout = Cursor::new(Vec::new());
         let mut stdout = stdout().into_raw_mode().unwrap();
         let result = get_input(keys.into_iter(), &mut stdout);
 
