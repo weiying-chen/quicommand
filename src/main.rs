@@ -10,6 +10,7 @@ fn handle_quit(mut stdout: impl Write) {
     write!(stdout, "{}", termion::cursor::Show).unwrap();
 }
 
+// To-do: make this function more reusable.
 fn handle_command(key: char, keymaps: &[Keymap], mut stdout: impl Write) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
         write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
@@ -20,7 +21,7 @@ fn handle_command(key: char, keymaps: &[Keymap], mut stdout: impl Write) {
         match input {
             Ok(Input::Text(i)) => {
                 let mut command = CmdRunner::new(keymap.command, &i);
-                // TODO: the command should return a result
+                // To-do: the command should return a result?
                 command.execute(&mut stdout);
             }
             Ok(Input::Exit) => {
