@@ -4,7 +4,7 @@ pub struct Keymap {
     pub key: char,
     pub description: &'static str,
     pub command: &'static str,
-    pub input_placeholder: &'static str,
+    // pub input_placeholder: &'static str,
 }
 
 //  `get_input` should be extracted out of `execute_command()`.
