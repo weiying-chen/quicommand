@@ -6,6 +6,33 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
+fn handle_quit(mut stdout: impl Write) {
+    write!(stdout, "{}", termion::cursor::Show).unwrap();
+}
+
+fn handle_command(key: char, keymaps: &[Keymap], mut stdout: impl Write) {
+    if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
+        write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
+        stdout.flush().unwrap();
+
+        let input = command_launcher::input::get_input(stdin().keys(), &mut stdout);
+
+        match input {
+            Ok(Input::Text(i)) => {
+                let mut command = CmdRunner::new(keymap.command, &i);
+                // TODO: the command should return a result
+                command.execute(&mut stdout);
+            }
+            Ok(Input::Exit) => {
+                write!(stdout, "\r\n").unwrap();
+            }
+            Err(e) => {
+                write!(stdout, "\r\nInvalid input: {}\r\n", e).unwrap();
+            }
+        };
+    }
+}
+
 fn main() {
     let mut stdout = stdout().into_raw_mode().unwrap();
 
@@ -56,34 +83,6 @@ fn main() {
     }
 
     stdout.flush().unwrap();
-
-    fn handle_quit(mut stdout: impl Write) {
-        write!(stdout, "{}", termion::cursor::Show).unwrap();
-        // or any other cleanup you want to do before quitting
-    }
-
-    fn handle_command(key: char, keymaps: &[Keymap], mut stdout: impl Write) {
-        if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
-            write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
-            stdout.flush().unwrap();
-
-            let input = command_launcher::input::get_input(stdin().keys(), &mut stdout);
-
-            match input {
-                Ok(Input::Text(i)) => {
-                    let mut command = CmdRunner::new(keymap.command, &i);
-                    // TODO: the command should return a result
-                    command.execute(&mut stdout);
-                }
-                Ok(Input::Exit) => {
-                    write!(stdout, "\r\n").unwrap();
-                }
-                Err(e) => {
-                    write!(stdout, "\r\nInvalid input: {}\r\n", e).unwrap();
-                }
-            };
-        }
-    }
 
     for key in stdin().keys() {
         match key.unwrap() {
