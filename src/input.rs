@@ -5,6 +5,7 @@ use std::io::Write;
 
 use termion::event::Key;
 
+use crate::term_writer::CursorPos;
 use crate::term_writer::TermWriter;
 
 #[derive(Debug, PartialEq)]
@@ -44,12 +45,12 @@ impl fmt::Display for InputError {
 }
 
 // TODO: maybe this function shouldn't be in this file.
-pub fn get_input(
+pub fn get_input<T: CursorPos>(
     input_keys: impl Iterator<Item = Result<Key, io::Error>>,
-    stdout: &mut impl Write,
+    stdout: &mut T,
 ) -> Result<Input, InputError> {
     let input = String::new();
-    let mut term_writer = TermWriter::new(input);
+    let mut term_writer = TermWriter::new(input, stdout);
 
     // TODO this side effect maybe shouldn't be here.
     // Or how the input is being written should be more obvious.
@@ -57,14 +58,14 @@ pub fn get_input(
         match key.unwrap() {
             Key::Char('\n') => return term_writer.enter(),
             Key::Esc => return Ok(Input::Exit),
-            Key::Char(c) => term_writer.char(stdout, c)?,
-            Key::Left => term_writer.left(stdout)?,
-            Key::Right => term_writer.right(stdout)?,
-            Key::Backspace => term_writer.backspace(stdout)?,
+            // Key::Char(c) => term_writer.char(stdout, c)?,
+            Key::Left => term_writer.left()?,
+            // Key::Right => term_writer.right(stdout)?,
+            // Key::Backspace => term_writer.backspace(stdout)?,
             _ => {}
         }
 
-        stdout.flush().unwrap();
+        // stdout.flush().unwrap();
     }
 
     let input = term_writer.input.trim().to_owned();
@@ -75,9 +76,21 @@ pub fn get_input(
 #[cfg(test)]
 mod tests {
     use super::*;
-    // use std::io::{stdout, Cursor};
-    use std::io::stdout;
-    use termion::raw::IntoRawMode;
+
+    // Stdout
+
+    #[derive(Debug)]
+    struct Stdout;
+
+    impl CursorPos for Stdout {
+        fn write_fmt(&mut self, s: &str) -> Result<(), std::io::Error> {
+            Ok(())
+        }
+
+        fn cursor_position(&self) -> Result<(u16, u16), std::io::Error> {
+            Ok((2, 2))
+        }
+    }
 
     #[test]
     fn test_input_error_display() {
@@ -108,8 +121,8 @@ mod tests {
             Ok(Key::Char('\n')),
         ];
 
-        // let mut stdout = Cursor::new(Vec::new());
-        let mut stdout = stdout().into_raw_mode().unwrap();
+        let mut stdout = Stdout;
+
         let result = get_input(keys.into_iter(), &mut stdout);
 
         assert_eq!(result.unwrap(), Input::Text(String::from("hello")));

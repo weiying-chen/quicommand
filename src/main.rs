@@ -1,34 +1,59 @@
 use command_launcher::cmd_runner::CmdRunner;
 use command_launcher::input::Input;
 use command_launcher::keymap::Keymap;
+use command_launcher::term_writer::CursorPos;
 use std::io::{stdin, stdout, Write};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
+
+struct Stdout;
+
+impl CursorPos for Stdout {
+    fn write_fmt(&mut self, s: &str) -> Result<(), std::io::Error> {
+        Ok(())
+    }
+
+    fn cursor_position(&self) -> Result<(u16, u16), std::io::Error> {
+        Ok((2, 2))
+    }
+}
+
+impl std::io::Write for Stdout {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        // Implement the write method for the Stdout type here
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        // Implement the flush method for the Stdout type here
+        Ok(())
+    }
+}
 
 fn handle_quit(mut stdout: impl Write) {
     write!(stdout, "{}", termion::cursor::Show).unwrap();
 }
 
 // To-do: make this function more reusable.
-fn handle_command(key: char, keymaps: &[Keymap], mut stdout: impl Write) {
+fn handle_command<T: CursorPos + std::io::Write>(key: char, keymaps: &[Keymap], stdout: &mut T) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
-        write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
+        // write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
         stdout.flush().unwrap();
 
-        let input = command_launcher::input::get_input(stdin().keys(), &mut stdout);
+        let input = command_launcher::input::get_input(stdin().keys(), stdout);
 
         match input {
             Ok(Input::Text(i)) => {
                 let mut command = CmdRunner::new(keymap.command, &i);
                 // To-do: the command should return a result?
-                command.execute(&mut stdout);
+                command.execute(stdout);
             }
             Ok(Input::Exit) => {
-                write!(stdout, "\r\n").unwrap();
+                // write!(stdout, "\r\n").unwrap();
             }
             Err(e) => {
-                write!(stdout, "\r\nInvalid input: {}\r\n", e).unwrap();
+                // write!(stdout, "\r\nInvalid input: {}\r\n", e).unwrap();
             }
         };
     }
@@ -85,6 +110,8 @@ fn main() {
 
     stdout.flush().unwrap();
 
+    let mut custom_stdout = Stdout;
+
     for key in stdin().keys() {
         match key.unwrap() {
             Key::Char('q') => {
@@ -92,7 +119,7 @@ fn main() {
                 break;
             }
             Key::Char(c) => {
-                handle_command(c, &keymaps, &mut stdout);
+                handle_command(c, &keymaps, &mut custom_stdout);
                 break;
             }
             _ => {}
