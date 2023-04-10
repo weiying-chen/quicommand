@@ -10,7 +10,8 @@ struct Position {
 // CursorPos
 
 pub trait CursorPos {
-    fn write_fmt(&mut self, s: &str) -> Result<(), std::io::Error>;
+    // fn write_fmt(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()>;
+    fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()>;
     fn cursor_position(&self) -> Result<(u16, u16), std::io::Error>;
 }
 
@@ -20,7 +21,7 @@ pub trait CursorPos {
 struct Stdout;
 
 impl CursorPos for Stdout {
-    fn write_fmt(&mut self, s: &str) -> Result<(), std::io::Error> {
+    fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
         // write!(std::io::stdout(), "{}", s)
         Ok(())
     }

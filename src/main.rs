@@ -10,8 +10,8 @@ use termion::raw::IntoRawMode;
 struct Stdout;
 
 impl CursorPos for Stdout {
-    fn write_fmt(&mut self, s: &str) -> Result<(), std::io::Error> {
-        Ok(())
+    fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
+        std::io::Write::write_fmt(self, fmt)
     }
 
     fn cursor_position(&self) -> Result<(u16, u16), std::io::Error> {
@@ -36,9 +36,16 @@ fn handle_quit(mut stdout: impl Write) {
 }
 
 // To-do: make this function more reusable.
-fn handle_command<T: CursorPos + std::io::Write>(key: char, keymaps: &[Keymap], stdout: &mut T) {
+fn handle_command<T: CursorPos + Write>(key: char, keymaps: &[Keymap], stdout: &mut T) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
         // write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
+        stdout
+            .write_term(format_args!(
+                "{}Enter commit message:",
+                termion::cursor::Show
+            ))
+            .unwrap();
+
         stdout.flush().unwrap();
 
         let input = command_launcher::input::get_input(stdin().keys(), stdout);
@@ -51,9 +58,13 @@ fn handle_command<T: CursorPos + std::io::Write>(key: char, keymaps: &[Keymap], 
             }
             Ok(Input::Exit) => {
                 // write!(stdout, "\r\n").unwrap();
+                stdout.write_term(format_args!("\r\n")).unwrap();
             }
             Err(e) => {
-                // write!(stdout, "\r\nInvalid input: {}\r\n", e).unwrap();
+                stdout
+                    .write_term(format_args!("\r\nInvalid input: {}\r\n", e))
+                    .unwrap();
+                stdout.write_term(format_args!("\r\n")).unwrap();
             }
         };
     }

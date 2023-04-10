@@ -83,7 +83,7 @@ mod tests {
     struct Stdout;
 
     impl CursorPos for Stdout {
-        fn write_fmt(&mut self, s: &str) -> Result<(), std::io::Error> {
+        fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
             Ok(())
         }
 
