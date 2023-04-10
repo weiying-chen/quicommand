@@ -45,7 +45,7 @@ impl fmt::Display for InputError {
 }
 
 // TODO: maybe this function shouldn't be in this file.
-pub fn get_input<T: CursorPos>(
+pub fn get_input<T: CursorPos + Write>(
     input_keys: impl Iterator<Item = Result<Key, io::Error>>,
     stdout: &mut T,
 ) -> Result<Input, InputError> {
@@ -58,14 +58,14 @@ pub fn get_input<T: CursorPos>(
         match key.unwrap() {
             Key::Char('\n') => return term_writer.enter(),
             Key::Esc => return Ok(Input::Exit),
-            // Key::Char(c) => term_writer.char(stdout, c)?,
+            Key::Char(c) => term_writer.char(c)?,
             Key::Left => term_writer.left()?,
             // Key::Right => term_writer.right(stdout)?,
             // Key::Backspace => term_writer.backspace(stdout)?,
             _ => {}
         }
 
-        // stdout.flush().unwrap();
+        term_writer.stdout.flush().unwrap();
     }
 
     let input = term_writer.input.trim().to_owned();
@@ -89,6 +89,16 @@ mod tests {
 
         fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
             Ok((2, 2))
+        }
+    }
+
+    impl Write for Stdout {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            std::io::Write::write(&mut std::io::stdout(), buf)
+        }
+
+        fn flush(&mut self) -> std::io::Result<()> {
+            std::io::Write::flush(&mut std::io::stdout())
         }
     }
 
