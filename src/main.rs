@@ -5,29 +5,36 @@ use command_launcher::term_writer::CursorPos;
 use std::io::{stdin, stdout, Write};
 use termion::event::Key;
 use termion::input::TermRead;
-use termion::raw::IntoRawMode;
+use termion::raw::{IntoRawMode, RawTerminal};
 
-struct Stdout;
+struct CustomRawTerminal {
+    stdout: RawTerminal<std::io::Stdout>,
+}
 
-impl CursorPos for Stdout {
+impl CustomRawTerminal {
+    pub fn new() -> std::io::Result<Self> {
+        let stdout = std::io::stdout().into_raw_mode()?;
+        Ok(Self { stdout })
+    }
+}
+
+impl Write for CustomRawTerminal {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        self.stdout.write(buf)
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.stdout.flush()
+    }
+}
+
+impl CursorPos for CustomRawTerminal {
     fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
         std::io::Write::write_fmt(self, fmt)
     }
 
     fn cursor_position(&self) -> Result<(u16, u16), std::io::Error> {
         Ok((2, 2))
-    }
-}
-
-impl std::io::Write for Stdout {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        // Implement the write method for the Stdout type here
-        Ok(buf.len())
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        // Implement the flush method for the Stdout type here
-        Ok(())
     }
 }
 
@@ -71,7 +78,8 @@ fn handle_command<T: CursorPos + Write>(key: char, keymaps: &[Keymap], stdout: &
 }
 
 fn main() {
-    let mut stdout = stdout().into_raw_mode().unwrap();
+    // let mut stdout = stdout().into_raw_mode().unwrap();
+    let mut stdout = CustomRawTerminal::new().unwrap();
 
     write!(
         stdout,
@@ -121,7 +129,7 @@ fn main() {
 
     stdout.flush().unwrap();
 
-    let mut custom_stdout = Stdout;
+    // let mut custom_stdout = Stdout {};
 
     for key in stdin().keys() {
         match key.unwrap() {
@@ -130,7 +138,7 @@ fn main() {
                 break;
             }
             Key::Char(c) => {
-                handle_command(c, &keymaps, &mut custom_stdout);
+                handle_command(c, &keymaps, &mut stdout);
                 break;
             }
             _ => {}
