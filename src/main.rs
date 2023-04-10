@@ -33,7 +33,7 @@ impl CursorPos for CustomRawTerminal {
         std::io::Write::write_fmt(self, fmt)
     }
 
-    fn cursor_position(&self) -> Result<(u16, u16), std::io::Error> {
+    fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
         Ok((2, 2))
     }
 }

@@ -12,23 +12,31 @@ struct Position {
 pub trait CursorPos {
     // fn write_fmt(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()>;
     fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()>;
-    fn cursor_position(&self) -> Result<(u16, u16), std::io::Error>;
+    fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error>;
 }
 
 // Stdout
 
 #[derive(Debug)]
-struct Stdout;
+struct Stdout {}
+
+impl Write for Stdout {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        std::io::Write::write(&mut std::io::stdout(), buf)
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        std::io::Write::flush(&mut std::io::stdout())
+    }
+}
 
 impl CursorPos for Stdout {
     fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
-        // write!(std::io::stdout(), "{}", s)
-        Ok(())
+        std::io::Write::write_fmt(self, fmt)
     }
 
-    fn cursor_position(&self) -> Result<(u16, u16), std::io::Error> {
-        // termion::cursor::DetectCursorPos::cursor_pos()
-        Ok((2, 2))
+    fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
+        termion::cursor::DetectCursorPos::cursor_pos(self)
     }
 }
 
