@@ -81,7 +81,6 @@ mod tests {
 
     #[derive(Default, Debug)]
     struct Stdout {
-        buffer: Vec<u8>,
         pos: (u16, u16),
     }
 
@@ -96,10 +95,12 @@ mod tests {
 
     impl CursorPos for Stdout {
         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
-            const CLEAR_CURRENT_LINE: &str = "\u{1b}[2K";
-            if fmt.to_string().contains(CLEAR_CURRENT_LINE) {
+            const INPUT_START: &str = "\u{1b}[2K";
+
+            if fmt.to_string().contains(INPUT_START) {
                 self.pos.0 += 1;
             }
+
             Ok(())
         }
 
