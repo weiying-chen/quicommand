@@ -78,18 +78,20 @@ fn handle_command<T: CursorPos + Write>(key: char, keymaps: &[Keymap], stdout: &
     }
 }
 
-fn show_keymap_menu(keymaps: &[Keymap], stdout: &mut impl Write) {
-    write!(
-        stdout,
-        "{}{}Please select a command:{}\r\n",
-        termion::clear::All,
-        termion::cursor::Goto(1, 1),
-        termion::cursor::Hide,
-    )
-    .unwrap();
+fn show_keymap_menu<T: CursorPos + Write>(keymaps: &[Keymap], stdout: &mut T) {
+    stdout
+        .write_term(format_args!(
+            "{}{}Please select a command:{}\r\n",
+            termion::clear::All,
+            termion::cursor::Goto(1, 1),
+            termion::cursor::Hide,
+        ))
+        .unwrap();
 
     for keymap in keymaps {
-        write!(stdout, "{}  {}\r\n", keymap.key, keymap.description).unwrap();
+        stdout
+            .write_term(format_args!("{}  {}\r\n", keymap.key, keymap.description))
+            .unwrap();
     }
 
     stdout.flush().unwrap();
