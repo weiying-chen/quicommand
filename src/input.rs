@@ -79,16 +79,32 @@ mod tests {
 
     // Stdout
 
-    #[derive(Debug)]
-    struct Stdout;
+    #[derive(Default, Debug)]
+    struct Stdout {
+        buffer: Vec<u8>,
+        pos: (u16, u16),
+    }
+
+    impl Stdout {
+        fn new() -> Self {
+            Stdout {
+                pos: (1, 1),
+                ..Default::default()
+            }
+        }
+    }
 
     impl CursorPos for Stdout {
         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
+            const CLEAR_CURRENT_LINE: &str = "\u{1b}[2K";
+            if fmt.to_string().contains(CLEAR_CURRENT_LINE) {
+                self.pos.0 += 1;
+            }
             Ok(())
         }
 
         fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
-            Ok((2, 2))
+            Ok(self.pos)
         }
     }
 
@@ -123,18 +139,16 @@ mod tests {
     #[test]
     fn test_get_input() {
         let keys = vec![
-            Ok(Key::Char('h')),
-            Ok(Key::Char('e')),
-            Ok(Key::Char('l')),
-            Ok(Key::Char('l')),
-            Ok(Key::Char('o')),
+            Ok(Key::Char('a')),
+            Ok(Key::Char('b')),
+            Ok(Key::Char('c')),
             Ok(Key::Char('\n')),
         ];
 
-        let mut stdout = Stdout;
+        let mut stdout = Stdout::new();
 
         let result = get_input(keys.into_iter(), &mut stdout);
 
-        assert_eq!(result.unwrap(), Input::Text(String::from("hello")));
+        assert_eq!(result.unwrap(), Input::Text(String::from("abc")));
     }
 }

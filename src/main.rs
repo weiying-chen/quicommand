@@ -127,72 +127,87 @@ fn main() {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use std::io::Cursor;
 
-    // Stdout
+//     use super::*;
 
-    #[derive(Debug)]
-    struct Stdout;
+//     // Stdout
 
-    impl CursorPos for Stdout {
-        fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
-            Ok(())
-        }
+//     #[derive(Debug)]
+//     struct Stdout {
+//         stdout: Cursor<Vec<u8>>,
+//     }
 
-        fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
-            Ok((2, 2))
-        }
-    }
+//     impl Stdout {
+//         pub fn new() -> Self {
+//             let stdout = Cursor::new(Vec::new());
+//             Self { stdout }
+//         }
+//     }
 
-    impl Write for Stdout {
-        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-            std::io::Write::write(&mut std::io::stdout(), buf)
-        }
+//     impl CursorPos for Stdout {
+//         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
+//             Ok(())
+//         }
 
-        fn flush(&mut self) -> std::io::Result<()> {
-            std::io::Write::flush(&mut std::io::stdout())
-        }
-    }
+//         fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
+//             Ok((2, 2))
+//         }
+//     }
 
-    // #[test]
-    // fn test_show_keymap_menu() {
-    //     let keymaps = vec![Keymap {
-    //         key: 't',
-    //         description: "Test keymap",
-    //         command: "echo {}",
-    //     }];
+//     impl Write for Stdout {
+//         fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+//             std::io::Write::write(&mut std::io::stdout(), buf)
+//         }
 
-    //     let mut stdout = Stdout;
+//         fn flush(&mut self) -> std::io::Result<()> {
+//             std::io::Write::flush(&mut std::io::stdout())
+//         }
+//     }
 
-    //     show_keymap_menu(&keymaps, &mut stdout);
+//     #[test]
+//     fn test_show_keymap_menu() {
+//         let keymaps = vec![Keymap {
+//             key: 't',
+//             description: "Test keymap",
+//             command: "echo {}",
+//         }];
 
-    //     let stdout_str = String::from_utf8(stdout.to_string());
+//         let mut stdout = Stdout::new();
 
-    //     print!("output: {}", stdout_str);
-    //     assert!(stdout_str.contains("Please select a command"));
-    //     assert!(stdout_str.contains("t  Test keymap"));
-    // }
+//         show_keymap_menu(&keymaps, &mut stdout);
 
-    // #[test]
-    // fn test_show_input_instruction() {
-    //     let keymaps = vec![Keymap {
-    //         key: 't',
-    //         description: "Test keymap",
-    //         command: "echo {}",
-    //     }];
+//         let stdout_str = String::from_utf8(stdout.stdout.into_inner()).unwrap();
 
-    //     // To-do: `mock_stdin` isn't being used for the purpose of this test
-    //     let mock_stdin = vec![Ok(Key::Char('t'))].into_iter();
-    //     let mut stdout = Stdout;
+//         println!("Output: {}", stdout_str);
 
-    //     handle_command('t', &keymaps, &mut stdout);
+//         // let stdout_str = String::from_utf8(stdout.to_string());
 
-    //     let stdout_str = String::from_utf8(stdout.into_inner()).unwrap();
+//         // print!("output: {}", stdout_str);
+//         assert!(stdout_str.contains("Please select a command"));
+//         // assert!(stdout_str.contains("t  Test keymap"));
+//     }
 
-    //     // println!("output: {}", stdout_str);
-    //     // println!("==");
-    //     assert!(stdout_str.contains("Enter commit message:"));
-    // }
-}
+//     #[test]
+//     fn test_show_input_instruction() {
+//         let keymaps = vec![Keymap {
+//             key: 't',
+//             description: "Test keymap",
+//             command: "echo {}",
+//         }];
+
+//         // To-do: `mock_stdin` isn't being used for the purpose of this test
+//         let mock_stdin = vec![Ok(Key::Char('t'))].into_iter();
+//         let mut stdout = Stdout;
+
+//         handle_command('t', &keymaps, &mut stdout);
+
+//         let stdout_str = String::from_utf8(stdout.into_inner()).unwrap();
+
+//         // println!("output: {}", stdout_str);
+//         // println!("==");
+//         assert!(stdout_str.contains("Enter commit message:"));
+//     }
+// }
