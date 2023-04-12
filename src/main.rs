@@ -34,7 +34,6 @@ impl CursorPos for CustomRawTerminal {
     }
 
     fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
-        // This affected the terminal, not the one in input
         termion::cursor::DetectCursorPos::cursor_pos(self)
     }
 }

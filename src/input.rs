@@ -60,8 +60,8 @@ pub fn get_input<T: CursorPos + Write>(
             Key::Esc => return Ok(Input::Exit),
             Key::Char(c) => term_writer.char(c)?,
             Key::Left => term_writer.left()?,
-            // Key::Right => term_writer.right(stdout)?,
-            // Key::Backspace => term_writer.backspace(stdout)?,
+            Key::Right => term_writer.right()?,
+            Key::Backspace => term_writer.backspace()?,
             _ => {}
         }
 

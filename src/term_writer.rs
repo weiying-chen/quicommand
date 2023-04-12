@@ -54,7 +54,7 @@ impl<'a, C: CursorPos> TermWriter<'a, C> {
         Self {
             input,
             stdout,
-            cursor_pos: Position { x: 1, y: 1 },
+            cursor_pos: Position { x: 1, y: 3 },
         }
     }
 
@@ -77,46 +77,45 @@ impl<'a, C: CursorPos> TermWriter<'a, C> {
         Ok(())
     }
 
-    // pub fn right(&mut self, stdout: &mut impl Write) -> Result<(), InputError> {
-    //     //TODO: See if can remove these if statements all of the function
-    //     // Or check if if statements in functions are okay
-    //     if self.cursor_pos.x <= self.input.len() as u16 {
-    //         write!(stdout, "{}", termion::cursor::Right(1))?;
+    pub fn right(&mut self) -> Result<(), InputError> {
+        //TODO: See if can remove these if statements all of the function
+        // Or check if if statements in functions are okay
+        if self.cursor_pos.x <= self.input.len() as u16 {
+            self.stdout
+                .write_term(format_args!("{}", termion::cursor::Right(1)))?;
 
-    //         let cursor_pos = stdout.cursor_position()?;
+            let cursor_pos = self.stdout.cursor_position()?;
 
-    //         self.cursor_pos.x = cursor_pos.0;
-    //     }
+            self.cursor_pos.x = cursor_pos.0;
+        }
 
-    //     Ok(())
-    // }
+        Ok(())
+    }
 
-    // pub fn backspace(&mut self, stdout: &mut impl Write) -> Result<(), InputError> {
-    //     if self.cursor_pos.x > 1 {
-    //         self.cursor_pos.x -= 1;
-    //         self.input.remove((self.cursor_pos.x - 1).into());
+    pub fn backspace(&mut self) -> Result<(), InputError> {
+        if self.cursor_pos.x > 1 {
+            self.cursor_pos.x -= 1;
+            self.input.remove((self.cursor_pos.x - 1).into());
 
-    //         let cursor_pos = stdout.cursor_pos()?;
+            let cursor_pos = self.stdout.cursor_position()?;
 
-    //         self.cursor_pos.y = cursor_pos.1;
+            self.cursor_pos.y = cursor_pos.1;
 
-    //         write!(
-    //             stdout,
-    //             "{}{}{}",
-    //             termion::cursor::Goto(1, self.cursor_pos.y),
-    //             termion::clear::CurrentLine,
-    //             self.input,
-    //         )?;
+            self.stdout.write_term(format_args!(
+                "{}{}{}",
+                termion::cursor::Goto(1, self.cursor_pos.y),
+                termion::clear::CurrentLine,
+                self.input,
+            ))?;
 
-    //         write!(
-    //             stdout,
-    //             "{}",
-    //             termion::cursor::Goto(self.cursor_pos.x, self.cursor_pos.y)
-    //         )?;
-    //     }
+            self.stdout.write_term(format_args!(
+                "{}",
+                termion::cursor::Goto(self.cursor_pos.x, self.cursor_pos.y)
+            ))?;
+        }
 
-    //     Ok(())
-    // }
+        Ok(())
+    }
 
     pub fn char(&mut self, c: char) -> Result<(), InputError> {
         let bytes = vec![c as u8];
