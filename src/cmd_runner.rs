@@ -68,11 +68,11 @@ mod tests {
     #[test]
     fn test_execute_status() {
         let mut cmd_runner = CmdRunner::new("exit 1", "");
-        let mut output: Vec<u8> = Vec::new();
+        let mut stdout = Vec::new();
 
-        cmd_runner.execute(&mut output);
+        cmd_runner.execute(&mut stdout);
 
-        let stderr_str = String::from_utf8_lossy(&output);
+        let stderr_str = String::from_utf8_lossy(&stdout);
 
         println!("sterr_str: {}", stderr_str);
 
