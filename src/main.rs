@@ -2,29 +2,29 @@ use command_launcher::cmd_runner::CmdRunner;
 use command_launcher::input::Input;
 use command_launcher::keymap::Keymap;
 use command_launcher::term_writer::CursorPos;
-use std::io::{stdin, stdout, Write};
+use std::io::{stdin, Write};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::{IntoRawMode, RawTerminal};
 
 struct CustomRawTerminal {
-    stdout: RawTerminal<std::io::Stdout>,
+    buffer: RawTerminal<std::io::Stdout>,
 }
 
 impl CustomRawTerminal {
     pub fn new() -> std::io::Result<Self> {
-        let stdout = std::io::stdout().into_raw_mode()?;
-        Ok(Self { stdout })
+        let buffer = std::io::stdout().into_raw_mode()?;
+        Ok(Self { buffer })
     }
 }
 
 impl Write for CustomRawTerminal {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.stdout.write(buf)
+        self.buffer.write(buf)
     }
 
     fn flush(&mut self) -> std::io::Result<()> {
-        self.stdout.flush()
+        self.buffer.flush()
     }
 }
 
@@ -128,87 +128,80 @@ fn main() {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use std::io::Cursor;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     use super::*;
+    // Stdout
 
-//     // Stdout
+    #[derive(Debug)]
+    struct Stdout {
+        buffer: Vec<u8>,
+    }
 
-//     #[derive(Debug)]
-//     struct Stdout {
-//         stdout: Cursor<Vec<u8>>,
-//     }
+    impl Stdout {
+        pub fn new() -> Self {
+            let buffer = Vec::new();
+            Self { buffer }
+        }
+    }
 
-//     impl Stdout {
-//         pub fn new() -> Self {
-//             let stdout = Cursor::new(Vec::new());
-//             Self { stdout }
-//         }
-//     }
+    impl Write for Stdout {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            self.buffer.write(buf)
+        }
 
-//     impl CursorPos for Stdout {
-//         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
-//             Ok(())
-//         }
+        fn flush(&mut self) -> std::io::Result<()> {
+            self.buffer.flush()
+        }
+    }
 
-//         fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
-//             Ok((2, 2))
-//         }
-//     }
+    impl CursorPos for Stdout {
+        fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
+            std::io::Write::write_fmt(self, fmt)
+        }
 
-//     impl Write for Stdout {
-//         fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-//             std::io::Write::write(&mut std::io::stdout(), buf)
-//         }
+        fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
+            Ok((1, 1))
+        }
+    }
 
-//         fn flush(&mut self) -> std::io::Result<()> {
-//             std::io::Write::flush(&mut std::io::stdout())
-//         }
-//     }
+    #[test]
+    fn test_show_keymap_menu() {
+        let keymaps = vec![Keymap {
+            key: 't',
+            description: "Test keymap",
+            command: "echo {}",
+        }];
 
-//     #[test]
-//     fn test_show_keymap_menu() {
-//         let keymaps = vec![Keymap {
-//             key: 't',
-//             description: "Test keymap",
-//             command: "echo {}",
-//         }];
+        let mut stdout = Stdout::new();
 
-//         let mut stdout = Stdout::new();
+        show_keymap_menu(&keymaps, &mut stdout);
 
-//         show_keymap_menu(&keymaps, &mut stdout);
+        let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
-//         let stdout_str = String::from_utf8(stdout.stdout.into_inner()).unwrap();
+        assert!(stdout_str.contains("Please select a command"));
+        assert!(stdout_str.contains("t  Test keymap"));
+    }
 
-//         println!("Output: {}", stdout_str);
+    #[test]
+    fn test_show_input_instruction() {
+        let keymaps = vec![Keymap {
+            key: 't',
+            description: "Test keymap",
+            command: "echo {}",
+        }];
 
-//         // let stdout_str = String::from_utf8(stdout.to_string());
+        // To-do: `mock_stdin` isn't being used for the purpose of this test
+        // let mock_stdin = vec![Ok(Key::Char('t'))].into_iter();
+        let mut stdout = Stdout::new();
 
-//         // print!("output: {}", stdout_str);
-//         assert!(stdout_str.contains("Please select a command"));
-//         // assert!(stdout_str.contains("t  Test keymap"));
-//     }
+        handle_command('t', &keymaps, &mut stdout);
 
-//     #[test]
-//     fn test_show_input_instruction() {
-//         let keymaps = vec![Keymap {
-//             key: 't',
-//             description: "Test keymap",
-//             command: "echo {}",
-//         }];
+        let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
-//         // To-do: `mock_stdin` isn't being used for the purpose of this test
-//         let mock_stdin = vec![Ok(Key::Char('t'))].into_iter();
-//         let mut stdout = Stdout;
-
-//         handle_command('t', &keymaps, &mut stdout);
-
-//         let stdout_str = String::from_utf8(stdout.into_inner()).unwrap();
-
-//         // println!("output: {}", stdout_str);
-//         // println!("==");
-//         assert!(stdout_str.contains("Enter commit message:"));
-//     }
-// }
+        println!("OUTPUT: {}", stdout_str);
+        // println!("==");
+        assert!(stdout_str.contains("Enter commit message:"));
+    }
+}
