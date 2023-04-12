@@ -37,7 +37,7 @@ impl CmdRunner {
 
                     // This places the output on a new line.
                     write!(stdout, "\r\n").unwrap();
-
+                    write!(stdout, "Exit status: {}\r\n", output.status).unwrap();
                     write!(stdout, "Standard error: {}\r\n", stderr_str.trim()).unwrap();
                     write!(stdout, "Standard output: {}\r\n", stdout_str.trim()).unwrap();
                 }
@@ -46,5 +46,48 @@ impl CmdRunner {
                 write!(stdout, "Error executing command: {:?}\r\n", e).unwrap();
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_execute_ok() {
+        let mut cmd_runner = CmdRunner::new("echo {}", "hello");
+        let mut stdout = Vec::new();
+
+        cmd_runner.execute(&mut stdout);
+
+        let stdout_str = String::from_utf8(stdout).unwrap();
+
+        assert_eq!(stdout_str.trim(), "hello");
+    }
+
+    #[test]
+    fn test_execute_status() {
+        let mut cmd_runner = CmdRunner::new("exit 1", "");
+        let mut output: Vec<u8> = Vec::new();
+
+        cmd_runner.execute(&mut output);
+
+        let stderr_str = String::from_utf8_lossy(&output);
+
+        println!("sterr_str: {}", stderr_str);
+
+        assert!(stderr_str.contains("exit status: 1"));
+    }
+
+    #[test]
+    fn test_execute_err() {
+        let mut cmd_runner = CmdRunner::new("non-existent-command", "");
+        let mut stdout = Vec::new();
+
+        cmd_runner.execute(&mut stdout);
+
+        let stderr_str = String::from_utf8_lossy(&stdout);
+
+        assert!(stderr_str.contains("command not found"));
     }
 }
