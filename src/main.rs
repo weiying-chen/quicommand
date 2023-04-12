@@ -1,11 +1,13 @@
 use command_launcher::cmd_runner::CmdRunner;
-use command_launcher::input::Input;
+use command_launcher::input::{Input, InputError};
 use command_launcher::keymap::Keymap;
 use command_launcher::term_writer::CursorPos;
 use std::io::{stdin, Write};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::{IntoRawMode, RawTerminal};
+
+//To-do: move this into its own file.
 
 struct CustomRawTerminal {
     buffer: RawTerminal<std::io::Stdout>,
@@ -38,11 +40,44 @@ impl CursorPos for CustomRawTerminal {
     }
 }
 
-fn handle_quit(mut stdout: impl Write) {
-    write!(stdout, "{}", termion::cursor::Show).unwrap();
+fn handle_quit<T: CursorPos>(stdout: &mut T) {
+    stdout
+        .write_term(format_args!("{}", termion::cursor::Show))
+        .unwrap();
+}
+
+fn prompt_input<T: CursorPos + Write>(stdout: &mut T, message: &str) {
+    stdout
+        .write_term(format_args!("{}{}:", termion::cursor::Show, message))
+        .unwrap();
+    stdout.flush().unwrap();
 }
 
 // To-do: this function is doing too many things at the same time.
+
+fn handle_input_result<T: CursorPos + Write>(
+    result: Result<Input, InputError>,
+    keymap: &Keymap,
+    stdout: &mut T,
+) {
+    match result {
+        Ok(Input::Text(i)) => {
+            // To-do `command should` return a result.
+            let mut command = CmdRunner::new(keymap.command, &i);
+            command.execute(stdout);
+        }
+        Ok(Input::Exit) => {
+            stdout.write_term(format_args!("\r\n")).unwrap();
+        }
+        Err(e) => {
+            stdout
+                .write_term(format_args!("\r\nInvalid input: {}\r\n", e))
+                .unwrap();
+            stdout.write_term(format_args!("\r\n")).unwrap();
+        }
+    };
+}
+
 fn handle_command<T: CursorPos + Write>(
     key: char,
     keymaps: &[Keymap],
@@ -50,35 +85,13 @@ fn handle_command<T: CursorPos + Write>(
     stdout: &mut T,
 ) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
-        // write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
-        stdout
-            .write_term(format_args!(
-                "{}Enter commit message:",
-                termion::cursor::Show
-            ))
-            .unwrap();
+        let message = "Enter commit message";
 
-        stdout.flush().unwrap();
+        prompt_input(stdout, message);
 
         let input = command_launcher::input::get_input(stdin, stdout);
 
-        match input {
-            Ok(Input::Text(i)) => {
-                // To-do `command should` return a result.
-                let mut command = CmdRunner::new(keymap.command, &i);
-                command.execute(stdout);
-            }
-            Ok(Input::Exit) => {
-                // write!(stdout, "\r\n").unwrap();
-                stdout.write_term(format_args!("\r\n")).unwrap();
-            }
-            Err(e) => {
-                stdout
-                    .write_term(format_args!("\r\nInvalid input: {}\r\n", e))
-                    .unwrap();
-                stdout.write_term(format_args!("\r\n")).unwrap();
-            }
-        };
+        handle_input_result(input, &keymap, stdout);
     }
 }
 
