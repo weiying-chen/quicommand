@@ -198,14 +198,37 @@ mod tests {
         }];
 
         // To-do: `mock_stdin` isn't being used for the purpose of this test
+        let pressed_key = 't';
         let stdin = vec![Ok(Key::Char('t'))].into_iter();
         let mut stdout = Stdout::new();
 
-        handle_command('t', &keymaps, stdin, &mut stdout);
+        handle_command(pressed_key, &keymaps, stdin, &mut stdout);
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
         println!("OUTPUT: {}", stdout_str);
         assert!(stdout_str.contains("Enter commit message:"));
+    }
+
+    #[test]
+    fn test_empty_input() {
+        let keymaps = vec![Keymap {
+            key: 't',
+            description: "Test keymap",
+            command: "echo {}",
+        }];
+
+        // To-do: `mock_stdin` isn't being used for the purpose of this test
+        // let stdin = vec![Ok(Key::Char('t'))].into_iter();
+        let pressed_key = 't';
+        let stdin = vec![Ok(Key::Char('\n'))].into_iter();
+        let mut stdout = Stdout::new();
+
+        handle_command(pressed_key, &keymaps, stdin, &mut stdout);
+
+        let stdout_str = String::from_utf8(stdout.buffer).unwrap();
+
+        // println!("OUTPUT: {}", stdout_str);
+        assert!(stdout_str.contains("Input was empty"));
     }
 }
