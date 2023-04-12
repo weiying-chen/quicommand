@@ -107,8 +107,8 @@ fn main() {
 
     let keymaps = vec![Keymap {
         key: 's',
-        description: "Run git status",
-        command: "git status",
+        description: "Run echo",
+        command: "echo {}",
         // input_placeholder: "{}",
     }];
 
@@ -142,12 +142,16 @@ mod tests {
     #[derive(Debug)]
     struct Stdout {
         buffer: Vec<u8>,
+        pos: (u16, u16),
     }
 
     impl Stdout {
         pub fn new() -> Self {
             let buffer = Vec::new();
-            Self { buffer }
+            Self {
+                buffer,
+                pos: (1, 1),
+            }
         }
     }
 
@@ -163,11 +167,20 @@ mod tests {
 
     impl CursorPos for Stdout {
         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
-            std::io::Write::write_fmt(self, fmt)
+            const INPUT_START: &str = "\u{1b}[2K";
+
+            if fmt.to_string().contains(INPUT_START) {
+                self.pos.0 += 1;
+            }
+
+            // To-do: maybe shouldn't be using `unwrap()` here.
+            std::io::Write::write_fmt(self, fmt).unwrap();
+
+            Ok(())
         }
 
         fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
-            Ok((1, 1))
+            Ok(self.pos)
         }
     }
 
@@ -206,7 +219,6 @@ mod tests {
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
-        println!("OUTPUT: {}", stdout_str);
         assert!(stdout_str.contains("Enter commit message:"));
     }
 
@@ -228,7 +240,53 @@ mod tests {
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
-        // println!("OUTPUT: {}", stdout_str);
         assert!(stdout_str.contains("Input was empty"));
+    }
+
+    #[test]
+    fn test_exit() {
+        let keymaps = vec![Keymap {
+            key: 't',
+            description: "Test keymap",
+            command: "echo {}",
+        }];
+
+        let pressed_key = 't';
+        let stdin = vec![Ok(Key::Esc)].into_iter();
+        let mut stdout = Stdout::new();
+
+        handle_command(pressed_key, &keymaps, stdin, &mut stdout);
+
+        let stdout_str = String::from_utf8(stdout.buffer).unwrap();
+
+        assert!(stdout_str.contains("\r\n"));
+    }
+
+    #[test]
+    fn test_run_command() {
+        let keymaps = vec![Keymap {
+            key: 't',
+            description: "Test keymap",
+            command: "echo {}",
+        }];
+
+        let pressed_key = 't';
+
+        let stdin = vec![
+            Ok(Key::Char('a')),
+            Ok(Key::Char('b')),
+            Ok(Key::Char('c')),
+            Ok(Key::Char('\n')),
+        ];
+
+        let mut stdout = Stdout::new();
+
+        handle_command(pressed_key, &keymaps, stdin.into_iter(), &mut stdout);
+
+        let stdout_str = String::from_utf8(stdout.buffer).unwrap();
+
+        println!("OUTPUT2: {:?}", stdout_str);
+
+        assert!(stdout_str.contains("abc\r\n"));
     }
 }
