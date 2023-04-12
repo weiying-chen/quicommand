@@ -148,3 +148,49 @@ impl<'a, C: CursorPos> TermWriter<'a, C> {
             })
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use crate::input::Input;
+
+//     // Create a fake CursorPos implementation that always returns (1, 1) as the cursor position
+//     struct FakeCursorPos {}
+
+//     impl CursorPos for FakeCursorPos {
+//         fn write_term(&mut self, _fmt: std::fmt::Arguments) -> std::io::Result<()> {
+//             Ok(())
+//         }
+
+//         fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
+//             Ok((1, 1))
+//         }
+//     }
+
+//     #[test]
+//     fn test_term_writer() {
+//         // Test cursor position
+//         let mut stdout = FakeCursorPos {};
+
+//         assert_eq!(stdout.cursor_position().unwrap(), (1, 1));
+
+//         // Test text editing
+//         let mut writer = TermWriter::new("hello".to_string(), &mut stdout);
+
+//         writer.right().unwrap();
+//         writer.char('X').unwrap();
+//         writer.left().unwrap();
+//         writer.backspace().unwrap();
+
+//         assert_eq!(writer.input, "helo");
+
+//         // Test input validation
+//         let mut writer = TermWriter::new("".to_string(), &mut stdout);
+
+//         assert_eq!(writer.enter().unwrap_err(), InputError::EmptyString);
+
+//         let mut writer = TermWriter::new("hello".to_string(), &mut stdout);
+
+//         assert_eq!(writer.enter().unwrap(), Input::Text("hello".to_string()));
+//     }
+// }
