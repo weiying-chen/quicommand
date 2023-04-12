@@ -42,7 +42,7 @@ fn handle_quit(mut stdout: impl Write) {
     write!(stdout, "{}", termion::cursor::Show).unwrap();
 }
 
-// To-do: make this function more reusable.
+// To-do: this function is doing too many things at the same time.
 fn handle_command<T: CursorPos + Write>(
     key: char,
     keymaps: &[Keymap],
@@ -64,8 +64,8 @@ fn handle_command<T: CursorPos + Write>(
 
         match input {
             Ok(Input::Text(i)) => {
+                // To-do `command should` return a result.
                 let mut command = CmdRunner::new(keymap.command, &i);
-                // To-do: the command should return a result
                 command.execute(stdout);
             }
             Ok(Input::Exit) => {
