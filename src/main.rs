@@ -184,13 +184,17 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_show_keymap_menu() {
-        let keymaps = vec![Keymap {
+    fn get_keymaps() -> Vec<Keymap> {
+        vec![Keymap {
             key: 't',
             description: "Test keymap",
             command: "echo {}",
-        }];
+        }]
+    }
+
+    #[test]
+    fn test_show_keymap_menu() {
+        let keymaps = get_keymaps();
 
         let mut stdout = Stdout::new();
 
@@ -204,13 +208,8 @@ mod tests {
 
     #[test]
     fn test_show_input_instruction() {
-        let keymaps = vec![Keymap {
-            key: 't',
-            description: "Test keymap",
-            command: "echo {}",
-        }];
+        let keymaps = get_keymaps();
 
-        // To-do: `mock_stdin` isn't being used for the purpose of this test
         let pressed_key = 't';
         let stdin = vec![Ok(Key::Char('t'))].into_iter();
         let mut stdout = Stdout::new();
@@ -224,11 +223,7 @@ mod tests {
 
     #[test]
     fn test_empty_input() {
-        let keymaps = vec![Keymap {
-            key: 't',
-            description: "Test keymap",
-            command: "echo {}",
-        }];
+        let keymaps = get_keymaps();
 
         // To-do: `mock_stdin` isn't being used for the purpose of this test
         // let stdin = vec![Ok(Key::Char('t'))].into_iter();
@@ -245,11 +240,7 @@ mod tests {
 
     #[test]
     fn test_exit() {
-        let keymaps = vec![Keymap {
-            key: 't',
-            description: "Test keymap",
-            command: "echo {}",
-        }];
+        let keymaps = get_keymaps();
 
         let pressed_key = 't';
         let stdin = vec![Ok(Key::Esc)].into_iter();
@@ -264,11 +255,7 @@ mod tests {
 
     #[test]
     fn test_run_command() {
-        let keymaps = vec![Keymap {
-            key: 't',
-            description: "Test keymap",
-            command: "echo {}",
-        }];
+        let keymaps = get_keymaps();
 
         let pressed_key = 't';
 
@@ -284,8 +271,6 @@ mod tests {
         handle_command(pressed_key, &keymaps, stdin.into_iter(), &mut stdout);
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
-
-        println!("OUTPUT2: {:?}", stdout_str);
 
         assert!(stdout_str.contains("abc\r\n"));
     }
