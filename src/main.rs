@@ -43,7 +43,12 @@ fn handle_quit(mut stdout: impl Write) {
 }
 
 // To-do: make this function more reusable.
-fn handle_command<T: CursorPos + Write>(key: char, keymaps: &[Keymap], stdout: &mut T) {
+fn handle_command<T: CursorPos + Write>(
+    key: char,
+    keymaps: &[Keymap],
+    stdin: impl Iterator<Item = Result<Key, std::io::Error>>,
+    stdout: &mut T,
+) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
         // write!(stdout, "{}Enter commit message: ", termion::cursor::Show).unwrap();
         stdout
@@ -55,12 +60,12 @@ fn handle_command<T: CursorPos + Write>(key: char, keymaps: &[Keymap], stdout: &
 
         stdout.flush().unwrap();
 
-        let input = command_launcher::input::get_input(stdin().keys(), stdout);
+        let input = command_launcher::input::get_input(stdin, stdout);
 
         match input {
             Ok(Input::Text(i)) => {
                 let mut command = CmdRunner::new(keymap.command, &i);
-                // To-do: the command should return a result?
+                // To-do: the command should return a result
                 command.execute(stdout);
             }
             Ok(Input::Exit) => {
@@ -120,7 +125,7 @@ fn main() {
                 break;
             }
             Key::Char(c) => {
-                handle_command(c, &keymaps, &mut stdout);
+                handle_command(c, &keymaps, stdin().keys(), &mut stdout);
                 break;
             }
             _ => {}
@@ -193,15 +198,14 @@ mod tests {
         }];
 
         // To-do: `mock_stdin` isn't being used for the purpose of this test
-        // let mock_stdin = vec![Ok(Key::Char('t'))].into_iter();
+        let stdin = vec![Ok(Key::Char('t'))].into_iter();
         let mut stdout = Stdout::new();
 
-        handle_command('t', &keymaps, &mut stdout);
+        handle_command('t', &keymaps, stdin, &mut stdout);
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
         println!("OUTPUT: {}", stdout_str);
-        // println!("==");
         assert!(stdout_str.contains("Enter commit message:"));
     }
 }
