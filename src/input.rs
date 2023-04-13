@@ -5,7 +5,7 @@ use std::io::Write;
 
 use termion::event::Key;
 
-use crate::term_writer::CursorPos;
+use crate::term_writer::TermCursor;
 use crate::term_writer::TermWriter;
 
 #[derive(Debug, PartialEq)]
@@ -45,7 +45,7 @@ impl fmt::Display for InputError {
 }
 
 // TODO: maybe this function shouldn't be in this file.
-pub fn get_input<T: CursorPos + Write>(
+pub fn get_input<T: TermCursor + Write>(
     input_keys: impl Iterator<Item = Result<Key, io::Error>>,
     stdout: &mut T,
 ) -> Result<Input, InputError> {
@@ -93,7 +93,7 @@ mod tests {
         }
     }
 
-    impl CursorPos for Stdout {
+    impl TermCursor for Stdout {
         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
             const INPUT_START: &str = "\u{1b}[2K";
 

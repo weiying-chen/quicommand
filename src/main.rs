@@ -1,7 +1,7 @@
 use command_launcher::cmd_runner::CmdRunner;
 use command_launcher::input::{Input, InputError};
 use command_launcher::keymap::Keymap;
-use command_launcher::term_writer::CursorPos;
+use command_launcher::term_writer::TermCursor;
 use std::io::{stdin, Write};
 use termion::event::Key;
 use termion::input::TermRead;
@@ -30,7 +30,7 @@ impl Write for CustomRawTerminal {
     }
 }
 
-impl CursorPos for CustomRawTerminal {
+impl TermCursor for CustomRawTerminal {
     fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
         std::io::Write::write_fmt(self, fmt)
     }
@@ -41,13 +41,13 @@ impl CursorPos for CustomRawTerminal {
 }
 
 //To-do: maybe functions like these should belong to `TermWriter`?
-fn handle_quit<T: CursorPos>(stdout: &mut T) {
+fn handle_quit<T: TermCursor>(stdout: &mut T) {
     stdout
         .write_term(format_args!("{}", termion::cursor::Show))
         .unwrap();
 }
 
-fn prompt_input<T: CursorPos + Write>(message: &str, stdout: &mut T) {
+fn prompt_input<T: TermCursor + Write>(message: &str, stdout: &mut T) {
     stdout
         .write_term(format_args!("{}{}:", termion::cursor::Show, message))
         .unwrap();
@@ -56,7 +56,7 @@ fn prompt_input<T: CursorPos + Write>(message: &str, stdout: &mut T) {
 
 // To-do: this function is doing too many things at the same time.
 
-fn handle_input_result<T: CursorPos + Write>(
+fn handle_input_result<T: TermCursor + Write>(
     result: Result<Input, InputError>,
     keymap: &Keymap,
     stdout: &mut T,
@@ -79,7 +79,7 @@ fn handle_input_result<T: CursorPos + Write>(
     };
 }
 
-fn handle_input<T: CursorPos + Write>(
+fn handle_input<T: TermCursor + Write>(
     key: char,
     keymaps: &[Keymap],
     stdin: impl Iterator<Item = Result<Key, std::io::Error>>,
@@ -97,7 +97,7 @@ fn handle_input<T: CursorPos + Write>(
     }
 }
 
-fn show_keymap_menu<T: CursorPos + Write>(keymaps: &[Keymap], stdout: &mut T) {
+fn show_keymap_menu<T: TermCursor + Write>(keymaps: &[Keymap], stdout: &mut T) {
     stdout
         .write_term(format_args!(
             "{}{}Please select a command:{}\r\n",
@@ -180,7 +180,7 @@ mod tests {
         }
     }
 
-    impl CursorPos for Stdout {
+    impl TermCursor for Stdout {
         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
             const INPUT_START: &str = "\u{1b}[2K";
 

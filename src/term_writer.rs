@@ -9,7 +9,7 @@ struct Position {
 
 // CursorPos
 
-pub trait CursorPos {
+pub trait TermCursor {
     // fn write_fmt(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()>;
     fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()>;
     fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error>;
@@ -42,14 +42,14 @@ pub trait CursorPos {
 
 // TermWriter
 
-pub struct TermWriter<'a, T: CursorPos> {
+pub struct TermWriter<'a, T: TermCursor> {
     // TODO: Maybe input shouldn't belong to this struct.
     pub input: String,
     pub stdout: &'a mut T,
     cursor_pos: Position,
 }
 
-impl<'a, C: CursorPos> TermWriter<'a, C> {
+impl<'a, C: TermCursor> TermWriter<'a, C> {
     pub fn new(input: String, stdout: &'a mut C) -> Self {
         Self {
             input,
@@ -171,7 +171,7 @@ mod tests {
         }
     }
 
-    impl CursorPos for Stdout {
+    impl TermCursor for Stdout {
         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
             const CURSOR_LEFT: &str = "\u{1b}[1D";
 
