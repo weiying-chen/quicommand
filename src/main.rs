@@ -78,13 +78,14 @@ fn handle_input_result<T: CursorPos + Write>(
     };
 }
 
-fn handle_command<T: CursorPos + Write>(
+fn handle_input<T: CursorPos + Write>(
     key: char,
     keymaps: &[Keymap],
     stdin: impl Iterator<Item = Result<Key, std::io::Error>>,
     stdout: &mut T,
 ) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
+        //To-do: change tests according to this.
         let message = "Enter commit message";
 
         prompt_input(stdout, message);
@@ -138,7 +139,7 @@ fn main() {
                 break;
             }
             Key::Char(c) => {
-                handle_command(c, &keymaps, stdin().keys(), &mut stdout);
+                handle_input(c, &keymaps, stdin().keys(), &mut stdout);
                 break;
             }
             _ => {}
@@ -227,7 +228,7 @@ mod tests {
         let stdin = vec![Ok(Key::Char('t'))].into_iter();
         let mut stdout = Stdout::new();
 
-        handle_command(pressed_key, &keymaps, stdin, &mut stdout);
+        handle_input(pressed_key, &keymaps, stdin, &mut stdout);
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
@@ -244,7 +245,7 @@ mod tests {
         let stdin = vec![Ok(Key::Char('\n'))].into_iter();
         let mut stdout = Stdout::new();
 
-        handle_command(pressed_key, &keymaps, stdin, &mut stdout);
+        handle_input(pressed_key, &keymaps, stdin, &mut stdout);
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
@@ -259,7 +260,7 @@ mod tests {
         let stdin = vec![Ok(Key::Esc)].into_iter();
         let mut stdout = Stdout::new();
 
-        handle_command(pressed_key, &keymaps, stdin, &mut stdout);
+        handle_input(pressed_key, &keymaps, stdin, &mut stdout);
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
@@ -281,7 +282,7 @@ mod tests {
 
         let mut stdout = Stdout::new();
 
-        handle_command(pressed_key, &keymaps, stdin.into_iter(), &mut stdout);
+        handle_input(pressed_key, &keymaps, stdin.into_iter(), &mut stdout);
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
