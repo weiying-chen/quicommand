@@ -9,18 +9,18 @@ use termion::raw::{IntoRawMode, RawTerminal};
 
 //To-do: move this into its own file.
 
-struct CustomRawTerminal {
+struct RawStdout {
     buffer: RawTerminal<std::io::Stdout>,
 }
 
-impl CustomRawTerminal {
+impl RawStdout {
     pub fn new() -> std::io::Result<Self> {
         let buffer = std::io::stdout().into_raw_mode()?;
         Ok(Self { buffer })
     }
 }
 
-impl Write for CustomRawTerminal {
+impl Write for RawStdout {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.buffer.write(buf)
     }
@@ -30,7 +30,7 @@ impl Write for CustomRawTerminal {
     }
 }
 
-impl TermCursor for CustomRawTerminal {
+impl TermCursor for RawStdout {
     fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
         std::io::Write::write_fmt(self, fmt)
     }
@@ -118,7 +118,7 @@ fn show_keymap_menu<T: TermCursor + Write>(keymaps: &[Keymap], stdout: &mut T) {
 
 fn main() {
     // let mut stdout = stdout().into_raw_mode().unwrap();
-    let mut stdout = CustomRawTerminal::new().unwrap();
+    let mut stdout = RawStdout::new().unwrap();
 
     let keymaps = vec![Keymap {
         key: 's',
