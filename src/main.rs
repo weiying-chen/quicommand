@@ -46,7 +46,7 @@ fn handle_quit<T: CursorPos>(stdout: &mut T) {
         .unwrap();
 }
 
-fn prompt_input<T: CursorPos + Write>(stdout: &mut T, message: &str) {
+fn prompt_input<T: CursorPos + Write>(message: &str, stdout: &mut T) {
     stdout
         .write_term(format_args!("{}{}:", termion::cursor::Show, message))
         .unwrap();
@@ -88,7 +88,7 @@ fn handle_input<T: CursorPos + Write>(
         //To-do: change tests according to this.
         let message = "Enter commit message";
 
-        prompt_input(stdout, message);
+        prompt_input(message, stdout);
 
         let input = command_launcher::input::get_input(stdin, stdout);
 
@@ -209,7 +209,6 @@ mod tests {
     #[test]
     fn test_show_keymap_menu() {
         let keymaps = get_keymaps();
-
         let mut stdout = Stdout::new();
 
         show_keymap_menu(&keymaps, &mut stdout);
@@ -222,30 +221,25 @@ mod tests {
 
     #[test]
     fn test_show_input_instruction() {
-        let keymaps = get_keymaps();
-
-        let pressed_key = 't';
-        let stdin = vec![Ok(Key::Char('t'))].into_iter();
+        let prompt_message = "Enter commit message:";
         let mut stdout = Stdout::new();
 
-        handle_input(pressed_key, &keymaps, stdin, &mut stdout);
+        prompt_input(prompt_message, &mut stdout);
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
-        assert!(stdout_str.contains("Enter commit message:"));
+        assert!(stdout_str.contains(prompt_message));
     }
 
     #[test]
     fn test_empty_input() {
-        let keymaps = get_keymaps();
-
         // To-do: `mock_stdin` isn't being used for the purpose of this test
-        // let stdin = vec![Ok(Key::Char('t'))].into_iter();
-        let pressed_key = 't';
         let stdin = vec![Ok(Key::Char('\n'))].into_iter();
         let mut stdout = Stdout::new();
+        let input = command_launcher::input::get_input(stdin, &mut stdout);
+        let keymaps = get_keymaps();
 
-        handle_input(pressed_key, &keymaps, stdin, &mut stdout);
+        handle_input_result(input, &keymaps[0], &mut stdout);
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
@@ -254,13 +248,12 @@ mod tests {
 
     #[test]
     fn test_exit() {
-        let keymaps = get_keymaps();
-
-        let pressed_key = 't';
         let stdin = vec![Ok(Key::Esc)].into_iter();
         let mut stdout = Stdout::new();
+        let input = command_launcher::input::get_input(stdin, &mut stdout);
+        let keymaps = get_keymaps();
 
-        handle_input(pressed_key, &keymaps, stdin, &mut stdout);
+        handle_input_result(input, &keymaps[0], &mut stdout);
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
@@ -269,10 +262,6 @@ mod tests {
 
     #[test]
     fn test_run_command() {
-        let keymaps = get_keymaps();
-
-        let pressed_key = 't';
-
         let stdin = vec![
             Ok(Key::Char('a')),
             Ok(Key::Char('b')),
@@ -281,8 +270,10 @@ mod tests {
         ];
 
         let mut stdout = Stdout::new();
+        let input = command_launcher::input::get_input(stdin.into_iter(), &mut stdout);
+        let keymaps = get_keymaps();
 
-        handle_input(pressed_key, &keymaps, stdin.into_iter(), &mut stdout);
+        handle_input_result(input, &keymaps[0], &mut stdout);
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
