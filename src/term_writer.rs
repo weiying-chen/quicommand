@@ -12,7 +12,7 @@ struct Position {
 pub trait TermCursor {
     // fn write_fmt(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()>;
     fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()>;
-    fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error>;
+    fn get_cursor_pos(&mut self) -> Result<(u16, u16), std::io::Error>;
 }
 
 // Stdout
@@ -70,7 +70,7 @@ impl<'a, C: TermCursor> TermWriter<'a, C> {
         self.stdout
             .write_term(format_args!("{}", termion::cursor::Left(1)))?;
 
-        let cursor_pos = self.stdout.cursor_position()?;
+        let cursor_pos = self.stdout.get_cursor_pos()?;
 
         self.cursor_pos.x = cursor_pos.0;
 
@@ -84,7 +84,7 @@ impl<'a, C: TermCursor> TermWriter<'a, C> {
             self.stdout
                 .write_term(format_args!("{}", termion::cursor::Right(1)))?;
 
-            let cursor_pos = self.stdout.cursor_position()?;
+            let cursor_pos = self.stdout.get_cursor_pos()?;
 
             self.cursor_pos.x = cursor_pos.0;
         }
@@ -97,7 +97,7 @@ impl<'a, C: TermCursor> TermWriter<'a, C> {
             self.cursor_pos.x -= 1;
             self.input.remove((self.cursor_pos.x - 1).into());
 
-            let cursor_pos = self.stdout.cursor_position()?;
+            let cursor_pos = self.stdout.get_cursor_pos()?;
 
             self.cursor_pos.y = cursor_pos.1;
 
@@ -124,7 +124,7 @@ impl<'a, C: TermCursor> TermWriter<'a, C> {
             .and_then(|_| {
                 self.input.insert((self.cursor_pos.x - 1).into(), c);
 
-                let cursor_pos = self.stdout.cursor_position()?;
+                let cursor_pos = self.stdout.get_cursor_pos()?;
 
                 self.cursor_pos.y = cursor_pos.1;
 
@@ -140,7 +140,7 @@ impl<'a, C: TermCursor> TermWriter<'a, C> {
                     termion::cursor::Goto(self.cursor_pos.x + 1, self.cursor_pos.y)
                 ))?;
 
-                let cursor_pos = self.stdout.cursor_position()?;
+                let cursor_pos = self.stdout.get_cursor_pos()?;
 
                 self.cursor_pos.x = cursor_pos.0;
 
@@ -186,7 +186,7 @@ mod tests {
             Ok(())
         }
 
-        fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
+        fn get_cursor_pos(&mut self) -> Result<(u16, u16), std::io::Error> {
             Ok(self.pos)
         }
     }
@@ -209,7 +209,7 @@ mod tests {
 
         term_writer.left().unwrap();
 
-        let cursor_pos = term_writer.stdout.cursor_position().unwrap();
+        let cursor_pos = term_writer.stdout.get_cursor_pos().unwrap();
 
         term_writer.cursor_pos.x = cursor_pos.0;
 

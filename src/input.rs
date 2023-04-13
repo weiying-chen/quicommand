@@ -104,7 +104,7 @@ mod tests {
             Ok(())
         }
 
-        fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
+        fn get_cursor_pos(&mut self) -> Result<(u16, u16), std::io::Error> {
             Ok(self.pos)
         }
     }
