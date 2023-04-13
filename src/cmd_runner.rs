@@ -74,8 +74,6 @@ mod tests {
 
         let stderr_str = String::from_utf8_lossy(&stdout);
 
-        println!("sterr_str: {}", stderr_str);
-
         assert!(stderr_str.contains("exit status: 1"));
     }
 

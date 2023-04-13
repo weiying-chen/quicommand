@@ -149,48 +149,72 @@ impl<'a, C: CursorPos> TermWriter<'a, C> {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use crate::input::Input;
+#[cfg(test)]
+mod tests {
+    use std::io::Write;
 
-//     // Create a fake CursorPos implementation that always returns (1, 1) as the cursor position
-//     struct FakeCursorPos {}
+    use super::*;
 
-//     impl CursorPos for FakeCursorPos {
-//         fn write_term(&mut self, _fmt: std::fmt::Arguments) -> std::io::Result<()> {
-//             Ok(())
-//         }
+    // Stdout
 
-//         fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
-//             Ok((1, 1))
-//         }
-//     }
+    #[derive(Default, Debug)]
+    struct Stdout {
+        pos: (u16, u16),
+    }
 
-//     #[test]
-//     fn test_term_writer() {
-//         // Test cursor position
-//         let mut stdout = FakeCursorPos {};
+    impl Stdout {
+        fn new() -> Self {
+            Stdout {
+                pos: (1, 1),
+                ..Default::default()
+            }
+        }
+    }
 
-//         assert_eq!(stdout.cursor_position().unwrap(), (1, 1));
+    impl CursorPos for Stdout {
+        fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
+            const CURSOR_LEFT: &str = "\u{1b}[1D";
 
-//         // Test text editing
-//         let mut writer = TermWriter::new("hello".to_string(), &mut stdout);
+            println!("===");
+            println!("FMT: {:?}", fmt.to_string());
+            println!("===");
 
-//         writer.right().unwrap();
-//         writer.char('X').unwrap();
-//         writer.left().unwrap();
-//         writer.backspace().unwrap();
+            if fmt.to_string() == CURSOR_LEFT {
+                self.pos.0 -= 1;
+            }
 
-//         assert_eq!(writer.input, "helo");
+            Ok(())
+        }
 
-//         // Test input validation
-//         let mut writer = TermWriter::new("".to_string(), &mut stdout);
+        fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
+            Ok(self.pos)
+        }
+    }
 
-//         assert_eq!(writer.enter().unwrap_err(), InputError::EmptyString);
+    impl Write for Stdout {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            std::io::Write::write(&mut std::io::stdout(), buf)
+        }
 
-//         let mut writer = TermWriter::new("hello".to_string(), &mut stdout);
+        fn flush(&mut self) -> std::io::Result<()> {
+            std::io::Write::flush(&mut std::io::stdout())
+        }
+    }
 
-//         assert_eq!(writer.enter().unwrap(), Input::Text("hello".to_string()));
-//     }
-// }
+    #[test]
+    fn test_left() {
+        let input = String::new();
+        let mut stdout = Stdout::new();
+        let mut term_writer = TermWriter::new(input, &mut stdout);
+
+        term_writer.left().unwrap();
+
+        let cursor_pos = term_writer.stdout.cursor_position().unwrap();
+
+        term_writer.cursor_pos.x = cursor_pos.0;
+
+        let result_cursor_pos = 0;
+
+        assert_eq!(term_writer.cursor_pos.x, result_cursor_pos)
+    }
+}

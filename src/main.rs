@@ -40,6 +40,7 @@ impl CursorPos for CustomRawTerminal {
     }
 }
 
+//To-do: maybe functions like these should belong to `TermWriter`?
 fn handle_quit<T: CursorPos>(stdout: &mut T) {
     stdout
         .write_term(format_args!("{}", termion::cursor::Show))
@@ -221,14 +222,14 @@ mod tests {
 
     #[test]
     fn test_show_input_instruction() {
-        let prompt_message = "Enter commit message:";
+        const PROMPT_MESSAGE: &str = "Enter commit message:";
         let mut stdout = Stdout::new();
 
-        prompt_input(prompt_message, &mut stdout);
+        prompt_input(PROMPT_MESSAGE, &mut stdout);
 
         let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
-        assert!(stdout_str.contains(prompt_message));
+        assert!(stdout_str.contains(PROMPT_MESSAGE));
     }
 
     #[test]
