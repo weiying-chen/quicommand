@@ -81,13 +81,13 @@ mod tests {
 
     #[derive(Default, Debug)]
     struct Stdout {
-        pos: (u16, u16),
+        cursor_pos: (u16, u16),
     }
 
     impl Stdout {
         fn new() -> Self {
             Stdout {
-                pos: (1, 1),
+                cursor_pos: (1, 1),
                 ..Default::default()
             }
         }
@@ -98,14 +98,14 @@ mod tests {
             const INPUT_START: &str = "\u{1b}[2K";
 
             if fmt.to_string().contains(INPUT_START) {
-                self.pos.0 += 1;
+                self.cursor_pos.0 += 1;
             }
 
             Ok(())
         }
 
         fn get_cursor_pos(&mut self) -> Result<(u16, u16), std::io::Error> {
-            Ok(self.pos)
+            Ok(self.cursor_pos)
         }
     }
 

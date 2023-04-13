@@ -157,7 +157,7 @@ mod tests {
     #[derive(Debug)]
     struct Stdout {
         buffer: Vec<u8>,
-        pos: (u16, u16),
+        cursor_pos: (u16, u16),
     }
 
     impl Stdout {
@@ -165,7 +165,7 @@ mod tests {
             let buffer = Vec::new();
             Self {
                 buffer,
-                pos: (1, 1),
+                cursor_pos: (1, 1),
             }
         }
     }
@@ -185,7 +185,7 @@ mod tests {
             const INPUT_START: &str = "\u{1b}[2K";
 
             if fmt.to_string().contains(INPUT_START) {
-                self.pos.0 += 1;
+                self.cursor_pos.0 += 1;
             }
 
             // To-do: maybe shouldn't be using `unwrap()` here.
@@ -195,7 +195,7 @@ mod tests {
         }
 
         fn get_cursor_pos(&mut self) -> Result<(u16, u16), std::io::Error> {
-            Ok(self.pos)
+            Ok(self.cursor_pos)
         }
     }
 
