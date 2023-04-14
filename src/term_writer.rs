@@ -173,14 +173,14 @@ mod tests {
 
     impl TermCursor for Stdout {
         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
-            const CURSOR_LEFT: &str = "\u{1b}[1D";
+            const CURSOR_LEFT: &str = "\u{1b}[1C";
 
             println!("===");
             println!("FMT: {:?}", fmt.to_string());
             println!("===");
 
             if fmt.to_string() == CURSOR_LEFT {
-                self.cursor_pos.0 -= 1;
+                self.cursor_pos.0 += 1;
             }
 
             Ok(())
@@ -202,19 +202,23 @@ mod tests {
     }
 
     #[test]
-    fn test_left() {
-        let input = String::new();
+    fn test_right() {
+        let input = "abc".to_string();
         let mut stdout = Stdout::new();
         let mut term_writer = TermWriter::new(input, &mut stdout);
 
-        term_writer.left().unwrap();
+        for _ in 0..3 {
+            term_writer.right().unwrap();
+        }
 
         let cursor_pos = term_writer.stdout.get_cursor_pos().unwrap();
 
         term_writer.cursor_pos.x = cursor_pos.0;
 
-        let result_cursor_pos = 0;
+        assert_eq!(term_writer.cursor_pos.x, 4);
 
-        assert_eq!(term_writer.cursor_pos.x, result_cursor_pos)
+        term_writer.right().unwrap();
+
+        assert_eq!(term_writer.cursor_pos.x, 4);
     }
 }
