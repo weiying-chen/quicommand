@@ -155,6 +155,7 @@ mod tests {
     impl Stdout {
         pub fn new() -> Self {
             let buffer = Vec::new();
+
             Self {
                 buffer,
                 cursor_pos: (1, 1),
@@ -180,7 +181,7 @@ mod tests {
                 self.cursor_pos.0 += 1;
             }
 
-            std::io::Write::write_fmt(self, fmt).unwrap();
+            self.write_fmt(fmt).unwrap();
 
             Ok(())
         }

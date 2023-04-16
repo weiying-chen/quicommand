@@ -128,15 +128,28 @@ mod tests {
 
     #[derive(Default, Debug)]
     struct Stdout {
+        buffer: Vec<u8>,
         cursor_pos: (u16, u16),
     }
 
     impl Stdout {
-        fn new() -> Self {
-            Stdout {
+        pub fn new() -> Self {
+            let buffer = Vec::new();
+
+            Self {
+                buffer,
                 cursor_pos: (1, 1),
-                ..Default::default()
             }
+        }
+    }
+
+    impl Write for Stdout {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            self.buffer.write(buf)
+        }
+
+        fn flush(&mut self) -> std::io::Result<()> {
+            self.buffer.flush()
         }
     }
 
@@ -160,16 +173,6 @@ mod tests {
 
         fn get_cursor_pos(&mut self) -> Result<(u16, u16), std::io::Error> {
             Ok(self.cursor_pos)
-        }
-    }
-
-    impl Write for Stdout {
-        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-            std::io::Write::write(&mut std::io::stdout(), buf)
-        }
-
-        fn flush(&mut self) -> std::io::Result<()> {
-            std::io::Write::flush(&mut std::io::stdout())
         }
     }
 
