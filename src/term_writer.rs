@@ -179,6 +179,7 @@ mod tests {
             println!("FMT: {:?}", fmt.to_string());
             println!("===");
 
+            // To-do: use match here instead:
             if fmt.to_string() == CURSOR_LEFT {
                 self.cursor_pos.0 += 1;
             }
@@ -214,11 +215,35 @@ mod tests {
         let cursor_pos = term_writer.stdout.get_cursor_pos().unwrap();
 
         term_writer.cursor_pos.x = cursor_pos.0;
-
         assert_eq!(term_writer.cursor_pos.x, 4);
 
         term_writer.right().unwrap();
-
         assert_eq!(term_writer.cursor_pos.x, 4);
+    }
+
+    #[test]
+    fn test_backspace() {
+        let input = "abc".to_string();
+        let mut stdout = Stdout::new();
+        let mut term_writer = TermWriter::new(input, &mut stdout);
+
+        term_writer.right().unwrap();
+        term_writer.backspace().unwrap();
+        assert_eq!(term_writer.input, "bc");
+        term_writer.backspace().unwrap();
+        assert_eq!(term_writer.input, "bc");
+    }
+
+    #[test]
+    fn test_char() {
+        let input = "ab".to_string();
+        let mut stdout = Stdout::new();
+        let mut term_writer = TermWriter::new(input, &mut stdout);
+
+        for _ in 0..3 {
+            term_writer.right().unwrap();
+        }
+        term_writer.char('c').unwrap();
+        assert_eq!(term_writer.input, "abc");
     }
 }
