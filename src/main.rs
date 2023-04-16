@@ -54,8 +54,6 @@ fn prompt_input<T: TermCursor + Write>(message: &str, stdout: &mut T) {
     stdout.flush().unwrap();
 }
 
-// To-do: this function is doing too many things at the same time.
-
 fn handle_input_result<T: TermCursor + Write>(
     result: Result<Input, InputError>,
     keymap: &Keymap,
@@ -86,7 +84,6 @@ fn handle_input<T: TermCursor + Write>(
     stdout: &mut T,
 ) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
-        //To-do: change tests according to this.
         let message = "Enter commit message";
 
         prompt_input(message, stdout);
@@ -117,21 +114,16 @@ fn show_keymap_menu<T: TermCursor + Write>(keymaps: &[Keymap], stdout: &mut T) {
 }
 
 fn main() {
-    // let mut stdout = stdout().into_raw_mode().unwrap();
     let mut stdout = RawStdout::new().unwrap();
 
     let keymaps = vec![Keymap {
         key: 's',
         description: "Run echo",
         command: "echo {}",
-        // input_placeholder: "{}",
     }];
 
     show_keymap_menu(&keymaps, &mut stdout);
-
     stdout.flush().unwrap();
-
-    // let mut custom_stdout = Stdout {};
 
     for key in stdin().keys() {
         match key.unwrap() {
@@ -188,7 +180,6 @@ mod tests {
                 self.cursor_pos.0 += 1;
             }
 
-            // To-do: maybe shouldn't be using `unwrap()` here.
             std::io::Write::write_fmt(self, fmt).unwrap();
 
             Ok(())
@@ -234,7 +225,6 @@ mod tests {
 
     #[test]
     fn test_empty_input() {
-        // To-do: `mock_stdin` isn't being used for the purpose of this test
         let stdin = vec![Ok(Key::Char('\n'))].into_iter();
         let mut stdout = Stdout::new();
         let input = command_launcher::input::get_input(stdin, &mut stdout);

@@ -44,7 +44,6 @@ impl fmt::Display for InputError {
     }
 }
 
-// TODO: maybe this function shouldn't be in this file.
 pub fn get_input<T: TermCursor + Write>(
     input_keys: impl Iterator<Item = Result<Key, io::Error>>,
     stdout: &mut T,
@@ -52,8 +51,6 @@ pub fn get_input<T: TermCursor + Write>(
     let input = String::new();
     let mut term_writer = TermWriter::new(input, stdout);
 
-    // TODO this side effect maybe shouldn't be here.
-    // Or how the input is being written should be more obvious.
     for key in input_keys {
         match key.unwrap() {
             Key::Char('\n') => return term_writer.enter(),

@@ -6,7 +6,6 @@ pub struct CmdRunner {
 
 impl CmdRunner {
     pub fn new(command_string: &str, input: &str) -> CmdRunner {
-        // TODO: see if this can be joined with the line below.
         let mut command = Command::new("script");
 
         command
