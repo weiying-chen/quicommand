@@ -174,6 +174,7 @@ mod tests {
     impl TermCursor for Stdout {
         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
             const CURSOR_LEFT: &str = "\u{1b}[1C";
+            const CLEAR_ALL: &str = "\u{1b}[2K";
 
             println!("===");
             println!("FMT: {:?}", fmt.to_string());
@@ -182,6 +183,10 @@ mod tests {
             // To-do: use match here instead:
             if fmt.to_string() == CURSOR_LEFT {
                 self.cursor_pos.0 += 1;
+            }
+
+            if fmt.to_string().contains(CLEAR_ALL) {
+                self.cursor_pos.0 -= 1;
             }
 
             Ok(())
