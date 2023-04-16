@@ -1,6 +1,4 @@
 use crate::input::{Input, InputError};
-// use std::io::Write;
-// use termion::cursor::DetectCursorPos;
 
 struct Position {
     x: u16,
@@ -10,40 +8,13 @@ struct Position {
 // CursorPos
 
 pub trait TermCursor {
-    // fn write_fmt(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()>;
     fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()>;
     fn get_cursor_pos(&mut self) -> Result<(u16, u16), std::io::Error>;
 }
 
-// Stdout
-
-// #[derive(Debug)]
-// struct Stdout {}
-
-// impl Write for Stdout {
-//     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-//         std::io::Write::write(&mut std::io::stdout(), buf)
-//     }
-
-//     fn flush(&mut self) -> std::io::Result<()> {
-//         std::io::Write::flush(&mut std::io::stdout())
-//     }
-// }
-
-// impl CursorPos for Stdout {
-//     fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
-//         std::io::Write::write_fmt(self, fmt)
-//     }
-
-//     fn cursor_position(&mut self) -> Result<(u16, u16), std::io::Error> {
-//         termion::cursor::DetectCursorPos::cursor_pos(self)
-//     }
-// }
-
 // TermWriter
 
 pub struct TermWriter<'a, T: TermCursor> {
-    // TODO: Maybe input shouldn't belong to this struct.
     pub input: String,
     pub stdout: &'a mut T,
     cursor_pos: Position,
@@ -78,8 +49,6 @@ impl<'a, C: TermCursor> TermWriter<'a, C> {
     }
 
     pub fn right(&mut self) -> Result<(), InputError> {
-        //TODO: See if can remove these if statements all of the function
-        // Or check if if statements in functions are okay
         if self.cursor_pos.x <= self.input.len() as u16 {
             self.stdout
                 .write_term(format_args!("{}", termion::cursor::Right(1)))?;
@@ -176,17 +145,14 @@ mod tests {
             const CURSOR_LEFT: &str = "\u{1b}[1C";
             const CLEAR_ALL: &str = "\u{1b}[2K";
 
-            println!("===");
-            println!("FMT: {:?}", fmt.to_string());
-            println!("===");
-
-            // To-do: use match here instead:
-            if fmt.to_string() == CURSOR_LEFT {
-                self.cursor_pos.0 += 1;
-            }
-
-            if fmt.to_string().contains(CLEAR_ALL) {
-                self.cursor_pos.0 -= 1;
+            match fmt.to_string().as_str() {
+                CURSOR_LEFT => {
+                    self.cursor_pos.0 += 1;
+                }
+                s if s.contains(CLEAR_ALL) => {
+                    self.cursor_pos.0 -= 1;
+                }
+                _ => {}
             }
 
             Ok(())
