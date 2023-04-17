@@ -73,24 +73,11 @@ pub fn get_input<T: TermCursor + Write>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::mock_stdout::MockStdout;
 
     // Stdout
 
-    #[derive(Default, Debug)]
-    struct Stdout {
-        cursor_pos: (u16, u16),
-    }
-
-    impl Stdout {
-        fn new() -> Self {
-            Stdout {
-                cursor_pos: (1, 1),
-                ..Default::default()
-            }
-        }
-    }
-
-    impl TermCursor for Stdout {
+    impl TermCursor for MockStdout {
         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
             const INPUT_START: &str = "\u{1b}[2K";
 
@@ -103,16 +90,6 @@ mod tests {
 
         fn get_cursor_pos(&mut self) -> Result<(u16, u16), std::io::Error> {
             Ok(self.cursor_pos)
-        }
-    }
-
-    impl Write for Stdout {
-        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-            std::io::Write::write(&mut std::io::stdout(), buf)
-        }
-
-        fn flush(&mut self) -> std::io::Result<()> {
-            std::io::Write::flush(&mut std::io::stdout())
         }
     }
 
@@ -143,7 +120,7 @@ mod tests {
             Ok(Key::Char('\n')),
         ];
 
-        let mut stdout = Stdout::new();
+        let mut stdout = MockStdout::new();
 
         let result = get_input(keys.into_iter(), &mut stdout);
 

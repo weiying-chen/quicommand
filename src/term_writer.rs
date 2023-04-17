@@ -124,15 +124,13 @@ mod tests {
 
     use super::*;
 
-    // Stdout
-
     #[derive(Default, Debug)]
-    struct Stdout {
-        buffer: Vec<u8>,
-        cursor_pos: (u16, u16),
+    pub struct MockStdout {
+        pub buffer: Vec<u8>,
+        pub cursor_pos: (u16, u16),
     }
 
-    impl Stdout {
+    impl MockStdout {
         pub fn new() -> Self {
             let buffer = Vec::new();
 
@@ -143,7 +141,7 @@ mod tests {
         }
     }
 
-    impl Write for Stdout {
+    impl Write for MockStdout {
         fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
             self.buffer.write(buf)
         }
@@ -153,19 +151,17 @@ mod tests {
         }
     }
 
-    impl TermCursor for Stdout {
+    impl TermCursor for MockStdout {
         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
             const CURSOR_LEFT: &str = "\u{1b}[1C";
             const CLEAR_ALL: &str = "\u{1b}[2K";
 
-            match fmt.to_string().as_str() {
-                CURSOR_LEFT => {
-                    self.cursor_pos.0 += 1;
-                }
-                s if s.contains(CLEAR_ALL) => {
-                    self.cursor_pos.0 -= 1;
-                }
-                _ => {}
+            if fmt.to_string() == CURSOR_LEFT {
+                self.cursor_pos.0 += 1;
+            }
+
+            if fmt.to_string().contains(CLEAR_ALL) {
+                self.cursor_pos.0 -= 1;
             }
 
             Ok(())
@@ -179,7 +175,7 @@ mod tests {
     #[test]
     fn test_right() {
         let input = "abc".to_string();
-        let mut stdout = Stdout::new();
+        let mut stdout = MockStdout::new();
         let mut term_writer = TermWriter::new(input, &mut stdout);
 
         for _ in 0..3 {
@@ -198,7 +194,7 @@ mod tests {
     #[test]
     fn test_backspace() {
         let input = "abc".to_string();
-        let mut stdout = Stdout::new();
+        let mut stdout = MockStdout::new();
         let mut term_writer = TermWriter::new(input, &mut stdout);
 
         term_writer.right().unwrap();
@@ -211,7 +207,7 @@ mod tests {
     #[test]
     fn test_char() {
         let input = "ab".to_string();
-        let mut stdout = Stdout::new();
+        let mut stdout = MockStdout::new();
         let mut term_writer = TermWriter::new(input, &mut stdout);
 
         for _ in 0..3 {

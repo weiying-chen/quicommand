@@ -147,12 +147,12 @@ mod tests {
     // Stdout
 
     #[derive(Debug)]
-    struct Stdout {
+    struct MockStdout {
         buffer: Vec<u8>,
         cursor_pos: (u16, u16),
     }
 
-    impl Stdout {
+    impl MockStdout {
         pub fn new() -> Self {
             let buffer = Vec::new();
 
@@ -163,7 +163,7 @@ mod tests {
         }
     }
 
-    impl Write for Stdout {
+    impl Write for MockStdout {
         fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
             self.buffer.write(buf)
         }
@@ -173,7 +173,7 @@ mod tests {
         }
     }
 
-    impl TermCursor for Stdout {
+    impl TermCursor for MockStdout {
         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
             const INPUT_START: &str = "\u{1b}[2K";
 
@@ -202,7 +202,7 @@ mod tests {
     #[test]
     fn test_show_keymap_menu() {
         let keymaps = get_keymaps();
-        let mut stdout = Stdout::new();
+        let mut stdout = MockStdout::new();
 
         show_keymap_menu(&keymaps, &mut stdout);
 
@@ -215,7 +215,7 @@ mod tests {
     #[test]
     fn test_show_input_instruction() {
         const PROMPT_MESSAGE: &str = "Enter commit message:";
-        let mut stdout = Stdout::new();
+        let mut stdout = MockStdout::new();
 
         prompt_input(PROMPT_MESSAGE, &mut stdout);
 
@@ -227,7 +227,7 @@ mod tests {
     #[test]
     fn test_empty_input() {
         let stdin = vec![Ok(Key::Char('\n'))].into_iter();
-        let mut stdout = Stdout::new();
+        let mut stdout = MockStdout::new();
         let input = command_launcher::input::get_input(stdin, &mut stdout);
         let keymaps = get_keymaps();
 
@@ -241,7 +241,7 @@ mod tests {
     #[test]
     fn test_exit() {
         let stdin = vec![Ok(Key::Esc)].into_iter();
-        let mut stdout = Stdout::new();
+        let mut stdout = MockStdout::new();
         let input = command_launcher::input::get_input(stdin, &mut stdout);
         let keymaps = get_keymaps();
 
@@ -261,7 +261,7 @@ mod tests {
             Ok(Key::Char('\n')),
         ];
 
-        let mut stdout = Stdout::new();
+        let mut stdout = MockStdout::new();
         let input = command_launcher::input::get_input(stdin.into_iter(), &mut stdout);
         let keymaps = get_keymaps();
 
