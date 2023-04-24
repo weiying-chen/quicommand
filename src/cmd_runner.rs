@@ -5,13 +5,18 @@ pub struct CmdRunner {
 }
 
 impl CmdRunner {
-    pub fn new(command_string: &str, input: &str) -> CmdRunner {
+    pub fn new(command_string: &str, input: Option<&str>) -> CmdRunner {
         let mut command = Command::new("script");
 
-        command
-            .arg("-qec")
-            .arg(command_string.replace("{}", input))
-            .arg("/dev/null");
+        if let Some(input_str) = input {
+            command
+                .arg("-qec")
+                .arg(command_string.replace("{}", input_str));
+        } else {
+            command.arg("-qec").arg(command_string);
+        }
+
+        command.arg("/dev/null");
 
         CmdRunner { command }
     }
@@ -54,7 +59,7 @@ mod tests {
 
     #[test]
     fn test_execute_ok() {
-        let mut cmd_runner = CmdRunner::new("echo {}", "hello");
+        let mut cmd_runner = CmdRunner::new("echo {}", Some("hello"));
         let mut stdout = Vec::new();
 
         cmd_runner.execute(&mut stdout);
@@ -66,7 +71,7 @@ mod tests {
 
     #[test]
     fn test_execute_status() {
-        let mut cmd_runner = CmdRunner::new("exit 1", "");
+        let mut cmd_runner = CmdRunner::new("exit 1", Some(""));
         let mut stdout = Vec::new();
 
         cmd_runner.execute(&mut stdout);
@@ -78,7 +83,7 @@ mod tests {
 
     #[test]
     fn test_execute_err() {
-        let mut cmd_runner = CmdRunner::new("non-existent-command", "");
+        let mut cmd_runner = CmdRunner::new("non-existent-command", Some(""));
         let mut stdout = Vec::new();
 
         cmd_runner.execute(&mut stdout);

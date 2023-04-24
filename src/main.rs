@@ -62,7 +62,7 @@ fn handle_input_result<T: TermCursor + Write>(
     match result {
         Ok(Input::Text(i)) => {
             // To-do `command should` return a result.
-            let mut command = CmdRunner::new(keymap.command, &i);
+            let mut command = CmdRunner::new(keymap.command, Some(&i));
             command.execute(stdout);
         }
         Ok(Input::Exit) => {
@@ -84,6 +84,10 @@ fn handle_input<T: TermCursor + Write>(
     stdout: &mut T,
 ) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
+        if (keymap.command).contains("{}") {
+            println!("THERE's INPUT!")
+        }
+
         let message = "Enter commit message";
 
         prompt_input(message, stdout);
