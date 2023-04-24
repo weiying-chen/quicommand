@@ -11,6 +11,7 @@ use crate::term_writer::TermWriter;
 #[derive(Debug, PartialEq)]
 pub enum Input {
     Text(String),
+    None,
     Exit,
 }
 

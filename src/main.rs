@@ -61,9 +61,17 @@ fn handle_input_result<T: TermCursor + Write>(
 ) {
     match result {
         Ok(Input::Text(i)) => {
-            // To-do `command should` return a result.
+            // To-do: `command should` return a result.
+            // To-do: The cursor is shown previously in prompt_input.
             let mut command = CmdRunner::new(keymap.command, Some(&i));
             command.execute(stdout);
+        }
+        Ok(Input::None) => {
+            let mut command = CmdRunner::new(keymap.command, None);
+            command.execute(stdout);
+            stdout
+                .write_term(format_args!("{}", termion::cursor::Show))
+                .unwrap();
         }
         Ok(Input::Exit) => {
             stdout.write_term(format_args!("\r\n")).unwrap();
@@ -85,16 +93,16 @@ fn handle_input<T: TermCursor + Write>(
 ) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
         if (keymap.command).contains("{}") {
-            println!("THERE's INPUT!")
+            let message = "Enter commit message";
+
+            prompt_input(message, stdout);
+
+            let input = command_launcher::input::get_input(stdin, stdout);
+
+            handle_input_result(input, &keymap, stdout);
+        } else {
+            handle_input_result(Ok(Input::None), &keymap, stdout);
         }
-
-        let message = "Enter commit message";
-
-        prompt_input(message, stdout);
-
-        let input = command_launcher::input::get_input(stdin, stdout);
-
-        handle_input_result(input, &keymap, stdout);
     }
 }
 
