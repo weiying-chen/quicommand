@@ -80,7 +80,7 @@ fn handle_input_result<T: TermCursor + Write>(
             stdout
                 .write_term(format_args!("\r\nInvalid input: {}\r\n", e))
                 .unwrap();
-            stdout.write_term(format_args!("\r\n")).unwrap();
+            // stdout.write_term(format_args!("\r\n")).unwrap();
         }
     };
 }
@@ -93,7 +93,7 @@ fn handle_input<T: TermCursor + Write>(
 ) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
         if (keymap.command).contains("{}") {
-            let message = "Enter commit message";
+            let message = "\r\nEnter commit message";
 
             prompt_input(message, stdout);
 
@@ -101,6 +101,17 @@ fn handle_input<T: TermCursor + Write>(
 
             handle_input_result(input, &keymap, stdout);
         } else {
+            // To-do: adding the prompt removes the space before stdout and ~.
+            // Adding just let input = ... also removes the space.
+            // Maybe because the last \r\n is being occupied by the text put by
+            // `prompt_input` and `get_input =``
+
+            // let message = "Enter commit message";
+
+            // prompt_input(message, stdout);
+
+            // let input = command_launcher::input::get_input(stdin, stdout);
+
             handle_input_result(Ok(Input::None), &keymap, stdout);
         }
     }
@@ -116,10 +127,14 @@ fn show_keymap_menu<T: TermCursor + Write>(keymaps: &[Keymap], stdout: &mut T) {
         ))
         .unwrap();
 
-    for keymap in keymaps {
-        stdout
-            .write_term(format_args!("{}  {}\r\n", keymap.key, keymap.description))
-            .unwrap();
+    for (i, keymap) in keymaps.iter().enumerate() {
+        let line = format!("{}  {}", keymap.key, keymap.description);
+
+        if i == keymaps.len() - 1 {
+            stdout.write_term(format_args!("{}", line)).unwrap();
+        } else {
+            stdout.write_term(format_args!("{}\r\n", line)).unwrap();
+        }
     }
 
     stdout.flush().unwrap();
@@ -128,11 +143,19 @@ fn show_keymap_menu<T: TermCursor + Write>(keymaps: &[Keymap], stdout: &mut T) {
 fn main() {
     let mut stdout = RawStdout::new().unwrap();
 
-    let keymaps = vec![Keymap {
-        key: 's',
-        description: "Run echo",
-        command: "echo {}",
-    }];
+    let keymaps = vec![
+        Keymap {
+            key: 's',
+            description: "Run echo",
+            command: "echo {}",
+            // command: "echo 'abc'",
+        },
+        Keymap {
+            key: 'z',
+            description: "Run echo 2",
+            command: "echo 'abc'",
+        },
+    ];
 
     show_keymap_menu(&keymaps, &mut stdout);
     stdout.flush().unwrap();
