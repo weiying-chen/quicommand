@@ -49,7 +49,7 @@ fn handle_quit<T: TermCursor>(stdout: &mut T) {
 
 fn prompt_input<T: TermCursor + Write>(message: &str, stdout: &mut T) {
     stdout
-        .write_term(format_args!("{}{}:", termion::cursor::Show, message))
+        .write_term(format_args!("{}{}", termion::cursor::Show, message))
         .unwrap();
     stdout.flush().unwrap();
 }
@@ -64,6 +64,9 @@ fn handle_input_result<T: TermCursor + Write>(
             // To-do: `command should` return a result.
             // To-do: The cursor is shown previously in prompt_input.
             let mut command = CmdRunner::new(keymap.command, Some(&i));
+
+            // Because the input doesn't start a newline
+            stdout.write_term(format_args!("\r\n")).unwrap();
             command.execute(stdout);
         }
         Ok(Input::None) => {
@@ -78,7 +81,7 @@ fn handle_input_result<T: TermCursor + Write>(
         }
         Err(e) => {
             stdout
-                .write_term(format_args!("\r\nInvalid input: {}\r\n", e))
+                .write_term(format_args!("Invalid input: {}\r\n", e))
                 .unwrap();
             // stdout.write_term(format_args!("\r\n")).unwrap();
         }
@@ -93,7 +96,7 @@ fn handle_input<T: TermCursor + Write>(
 ) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
         if (keymap.command).contains("{}") {
-            let message = "\r\nEnter commit message";
+            let message = "Enter commit message:\r\n";
 
             prompt_input(message, stdout);
 
@@ -127,14 +130,10 @@ fn show_keymap_menu<T: TermCursor + Write>(keymaps: &[Keymap], stdout: &mut T) {
         ))
         .unwrap();
 
-    for (i, keymap) in keymaps.iter().enumerate() {
-        let line = format!("{}  {}", keymap.key, keymap.description);
-
-        if i == keymaps.len() - 1 {
-            stdout.write_term(format_args!("{}", line)).unwrap();
-        } else {
-            stdout.write_term(format_args!("{}\r\n", line)).unwrap();
-        }
+    for keymap in keymaps {
+        stdout
+            .write_term(format_args!("{}  {}\r\n", keymap.key, keymap.description))
+            .unwrap();
     }
 
     stdout.flush().unwrap();
