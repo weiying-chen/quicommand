@@ -104,17 +104,6 @@ fn handle_input<T: TermCursor + Write>(
 
             handle_input_result(input, &keymap, stdout);
         } else {
-            // To-do: adding the prompt removes the space before stdout and ~.
-            // Adding just let input = ... also removes the space.
-            // Maybe because the last \r\n is being occupied by the text put by
-            // `prompt_input` and `get_input =``
-
-            // let message = "Enter commit message";
-
-            // prompt_input(message, stdout);
-
-            // let input = command_launcher::input::get_input(stdin, stdout);
-
             handle_input_result(Ok(Input::None), &keymap, stdout);
         }
     }
