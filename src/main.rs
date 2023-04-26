@@ -133,6 +133,11 @@ fn main() {
 
     let keymaps = vec![
         Keymap {
+            key: 'c',
+            description: "Git add and commit",
+            command: "git add . && git commit -m {}",
+        },
+        Keymap {
             key: 's',
             description: "Run script.sh",
             command: "./script.sh",
