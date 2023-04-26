@@ -1,4 +1,7 @@
-use std::{io::Write, process::Command};
+use std::{
+    io::{BufRead, BufReader, Write},
+    process::{Command, Stdio},
+};
 
 pub struct CmdRunner {
     pub command: std::process::Command,
@@ -22,31 +25,48 @@ impl CmdRunner {
     }
 
     pub fn execute(&mut self, stdout: &mut impl Write) {
-        let output = self.command.output();
+        self.command.stdout(Stdio::piped());
+        self.command.stderr(Stdio::piped());
 
-        match output {
-            Ok(output) => {
-                if output.status.success() {
-                    let stdout_str = String::from_utf8_lossy(&output.stdout);
+        let mut child = self.command.spawn().expect("failed to spawn command");
 
-                    for line in stdout_str.lines() {
-                        write!(stdout, "{}\r\n", line).unwrap();
-                    }
-                } else {
-                    let stdout_str = String::from_utf8_lossy(&output.stdout);
-                    let stderr_str = String::from_utf8_lossy(&output.stderr);
+        let stdout_pipe = child.stdout.take().unwrap();
+        let stderr_pipe = child.stderr.take().unwrap();
 
-                    // To-do: see if this can be removed.
-                    // This places the output on a new line.
-                    write!(stdout, "\r\n").unwrap();
-                    write!(stdout, "Exit status: {}\r\n", output.status).unwrap();
-                    write!(stdout, "Standard error: {}\r\n", stderr_str.trim()).unwrap();
-                    write!(stdout, "Standard output: {}\r\n", stdout_str.trim()).unwrap();
+        let stdout_reader = BufReader::new(stdout_pipe);
+        let stderr_reader = BufReader::new(stderr_pipe);
+
+        let stdout_thread = std::thread::spawn(move || {
+            for line in stdout_reader.lines() {
+                if let Ok(line) = line {
+                    // To-do: Should this be changed to `write!`?
+                    print!("{}\r\n", line);
                 }
             }
-            Err(e) => {
-                write!(stdout, "Error executing command: {:?}\r\n", e).unwrap();
+        });
+
+        let stderr_thread = std::thread::spawn(move || {
+            for line in stderr_reader.lines() {
+                if let Ok(line) = line {
+                    print!("{}\r\n", line);
+                }
             }
+        });
+
+        let status = child.wait().expect("failed to wait for command");
+
+        stdout_thread.join().expect("failed to join stdout thread");
+        stderr_thread.join().expect("failed to join stderr thread");
+
+        if status.success() {
+            write!(stdout, "Command executed successfully\r\n").unwrap();
+        } else {
+            write!(
+                stdout,
+                "Command failed with exit code {}\r\n",
+                status.code().unwrap_or(-1)
+            )
+            .unwrap();
         }
     }
 }
