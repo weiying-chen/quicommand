@@ -29,9 +29,6 @@ impl CmdRunner {
                 if output.status.success() {
                     let stdout_str = String::from_utf8_lossy(&output.stdout);
 
-                    // This places the output on a new line.
-                    // write!(stdout, "\r\n").unwrap();
-
                     for line in stdout_str.lines() {
                         write!(stdout, "{}\r\n", line).unwrap();
                     }
@@ -39,6 +36,7 @@ impl CmdRunner {
                     let stdout_str = String::from_utf8_lossy(&output.stdout);
                     let stderr_str = String::from_utf8_lossy(&output.stderr);
 
+                    // To-do: see if this can be removed.
                     // This places the output on a new line.
                     write!(stdout, "\r\n").unwrap();
                     write!(stdout, "Exit status: {}\r\n", output.status).unwrap();

@@ -134,14 +134,13 @@ fn main() {
     let keymaps = vec![
         Keymap {
             key: 's',
-            description: "Run echo",
-            command: "echo {}",
-            // command: "echo 'abc'",
+            description: "Run script.sh",
+            command: "./script.sh",
         },
         Keymap {
             key: 'z',
-            description: "Run echo 2",
-            command: "echo 'abc'",
+            description: "Run script.py",
+            command: "python3 script.py",
         },
     ];
 
