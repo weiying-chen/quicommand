@@ -88,6 +88,7 @@ impl<'a, C: TermCursor> TermWriter<'a, C> {
 
     pub fn char(&mut self, c: char) -> Result<(), InputError> {
         let bytes = vec![c as u8];
+
         std::str::from_utf8(&bytes)
             .map_err(|_| InputError::NotUTF8(bytes.clone()))
             .and_then(|_| {
@@ -213,6 +214,7 @@ mod tests {
         for _ in 0..3 {
             term_writer.right().unwrap();
         }
+
         term_writer.char('c').unwrap();
         assert_eq!(term_writer.input, "abc");
     }

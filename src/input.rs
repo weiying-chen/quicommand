@@ -98,16 +98,19 @@ mod tests {
     fn test_input_error_display() {
         let not_utf8_bytes = vec![0xFF, 0xFE];
         let err = InputError::NotUTF8(not_utf8_bytes);
+
         assert_eq!(
             format!("{}", err),
             "Input contained non-UTF8 bytes: [\"0xFF\", \"0xFE\"]"
         );
 
         let err = InputError::EmptyString;
+
         assert_eq!(format!("{}", err), "Input was empty.");
 
         let io_err = io::Error::new(io::ErrorKind::Other, "test error");
         let err = InputError::IoError(io_err);
+
         assert_eq!(format!("{}", err), "I/O Error: test error");
     }
 

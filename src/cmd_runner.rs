@@ -31,8 +31,8 @@ impl CmdRunner {
 
         let mut child = self.command.spawn().expect("failed to spawn command");
         let stdout_pipe = child.stdout.take().unwrap();
-        let stderr_pipe = child.stderr.take().unwrap();
         let stdout_reader = BufReader::new(stdout_pipe);
+        let stderr_pipe = child.stderr.take().unwrap();
         let stderr_reader = BufReader::new(stderr_pipe);
 
         let stdout_thread = std::thread::spawn(move || {
