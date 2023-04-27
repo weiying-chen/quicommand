@@ -106,9 +106,9 @@ fn handle_input<T: TermCursor + Write>(
 ) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
         if (keymap.command).contains("{}") {
-            let message = "Enter commit message:\r\n";
-
-            prompt_input(message, stdout);
+            if let Some(prompt_str) = &keymap.prompt {
+                prompt_input(prompt_str, stdout);
+            }
 
             let input = command_launcher::input::get_input(stdin, stdout);
 
@@ -146,21 +146,25 @@ fn main() {
             key: 's',
             description: "Sleep",
             command: "sleep 3 && echo 'test' && sleep 3",
+            prompt: None,
         },
         Keymap {
             key: 'c',
             description: "Git add and commit",
             command: "git add . && git commit -m \"{}\"",
+            prompt: Some("Enter commit message\r\n"),
         },
         Keymap {
             key: 's',
             description: "Run script.sh",
             command: "./script.sh",
+            prompt: None,
         },
         Keymap {
             key: 'z',
             description: "Run script.py",
             command: "python3 script.py",
+            prompt: None,
         },
     ];
 
@@ -238,6 +242,7 @@ mod tests {
             key: 't',
             description: "Test keymap",
             command: "echo {}",
+            prompt: None,
         }]
     }
 
