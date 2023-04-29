@@ -142,30 +142,15 @@ fn main() {
     let mut stdout = RawStdout::new().unwrap();
 
     let keymaps = vec![
-        Keymap {
-            key: 's',
-            description: "Sleep",
-            command: "sleep 3 && echo 'test' && sleep 3",
-            prompt: None,
-        },
-        Keymap {
-            key: 'c',
-            description: "Git add and commit",
-            command: "git add . && git commit -m \"{}\"",
-            prompt: Some("Enter commit message\r\n"),
-        },
-        Keymap {
-            key: 's',
-            description: "Run script.sh",
-            command: "./script.sh",
-            prompt: None,
-        },
-        Keymap {
-            key: 'z',
-            description: "Run script.py",
-            command: "python3 script.py",
-            prompt: None,
-        },
+        Keymap::new('t', "Sleep", "sleep 3 && echo 'test' && sleep 3"),
+        Keymap::with_prompt(
+            'c',
+            "Git add and commit",
+            "git add . && git commit -m \"{}\"",
+            "Enter commit message\r\n",
+        ),
+        Keymap::new('s', "Run script.sh", "./script.sh"),
+        Keymap::new('z', "Run script.py", "python3 script.py"),
     ];
 
     show_keymap_menu(&keymaps, &mut stdout);
