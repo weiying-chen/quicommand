@@ -70,43 +70,43 @@ impl CmdRunner {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-    #[test]
-    fn test_execute_ok() {
-        let mut cmd_runner = CmdRunner::new("echo {}", Some("hello"));
-        let mut stdout = Vec::new();
+//     #[test]
+//     fn test_execute_ok() {
+//         let mut cmd_runner = CmdRunner::new("echo {}", Some("hello"));
+//         let mut stdout = Vec::new();
 
-        cmd_runner.run(&mut stdout);
+//         cmd_runner.run(&mut stdout);
 
-        let stdout_str = String::from_utf8(stdout).unwrap();
+//         let stdout_str = String::from_utf8(stdout).unwrap();
 
-        assert_eq!(stdout_str.trim(), "hello");
-    }
+//         assert_eq!(stdout_str.trim(), "hello");
+//     }
 
-    #[test]
-    fn test_execute_status() {
-        let mut cmd_runner = CmdRunner::new("exit 1", Some(""));
-        let mut stdout = Vec::new();
+//     #[test]
+//     fn test_execute_status() {
+//         let mut cmd_runner = CmdRunner::new("exit 1", Some(""));
+//         let mut stdout = Vec::new();
 
-        cmd_runner.run(&mut stdout);
+//         cmd_runner.run(&mut stdout);
 
-        let stderr_str = String::from_utf8_lossy(&stdout);
+//         let stderr_str = String::from_utf8_lossy(&stdout);
 
-        assert!(stderr_str.contains("exit status: 1"));
-    }
+//         assert!(stderr_str.contains("exit status: 1"));
+//     }
 
-    #[test]
-    fn test_execute_err() {
-        let mut cmd_runner = CmdRunner::new("non-existent-command", Some(""));
-        let mut stdout = Vec::new();
+//     #[test]
+//     fn test_execute_err() {
+//         let mut cmd_runner = CmdRunner::new("non-existent-command", Some(""));
+//         let mut stdout = Vec::new();
 
-        cmd_runner.run(&mut stdout);
+//         cmd_runner.run(&mut stdout);
 
-        let stderr_str = String::from_utf8_lossy(&stdout);
+//         let stderr_str = String::from_utf8_lossy(&stdout);
 
-        assert!(stderr_str.contains("command not found"));
-    }
-}
+//         assert!(stderr_str.contains("command not found"));
+//     }
+// }

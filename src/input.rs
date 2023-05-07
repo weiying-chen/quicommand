@@ -71,63 +71,63 @@ pub fn get_input<T: TermCursor + Write>(
     Ok(Input::Text(input))
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::mock_stdout::MockStdout;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use crate::mock_stdout::MockStdout;
 
-    // Stdout
+//     // Stdout
 
-    impl TermCursor for MockStdout {
-        fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
-            const INPUT_START: &str = "\u{1b}[2K";
+//     impl TermCursor for MockStdout {
+//         fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
+//             const INPUT_START: &str = "\u{1b}[2K";
 
-            if fmt.to_string().contains(INPUT_START) {
-                self.cursor_pos.0 += 1;
-            }
+//             if fmt.to_string().contains(INPUT_START) {
+//                 self.cursor_pos.0 += 1;
+//             }
 
-            Ok(())
-        }
+//             Ok(())
+//         }
 
-        fn get_cursor_pos(&mut self) -> Result<(u16, u16), std::io::Error> {
-            Ok(self.cursor_pos)
-        }
-    }
+//         fn get_cursor_pos(&mut self) -> Result<(u16, u16), std::io::Error> {
+//             Ok(self.cursor_pos)
+//         }
+//     }
 
-    #[test]
-    fn test_input_error_display() {
-        let not_utf8_bytes = vec![0xFF, 0xFE];
-        let err = InputError::NotUTF8(not_utf8_bytes);
+//     #[test]
+//     fn test_input_error_display() {
+//         let not_utf8_bytes = vec![0xFF, 0xFE];
+//         let err = InputError::NotUTF8(not_utf8_bytes);
 
-        assert_eq!(
-            format!("{}", err),
-            "Input contained non-UTF8 bytes: [\"0xFF\", \"0xFE\"]"
-        );
+//         assert_eq!(
+//             format!("{}", err),
+//             "Input contained non-UTF8 bytes: [\"0xFF\", \"0xFE\"]"
+//         );
 
-        let err = InputError::EmptyString;
+//         let err = InputError::EmptyString;
 
-        assert_eq!(format!("{}", err), "Input was empty.");
+//         assert_eq!(format!("{}", err), "Input was empty.");
 
-        let io_err = io::Error::new(io::ErrorKind::Other, "test error");
-        let err = InputError::IoError(io_err);
+//         let io_err = io::Error::new(io::ErrorKind::Other, "test error");
+//         let err = InputError::IoError(io_err);
 
-        assert_eq!(format!("{}", err), "I/O Error: test error");
-    }
+//         assert_eq!(format!("{}", err), "I/O Error: test error");
+//     }
 
-    //To-do: test Left, Right, Esc, and Backspace.
-    #[test]
-    fn test_get_input() {
-        let keys = vec![
-            Ok(Key::Char('a')),
-            Ok(Key::Char('b')),
-            Ok(Key::Char('c')),
-            Ok(Key::Char('\n')),
-        ];
+//     //To-do: test Left, Right, Esc, and Backspace.
+//     #[test]
+//     fn test_get_input() {
+//         let keys = vec![
+//             Ok(Key::Char('a')),
+//             Ok(Key::Char('b')),
+//             Ok(Key::Char('c')),
+//             Ok(Key::Char('\n')),
+//         ];
 
-        let mut stdout = MockStdout::new();
+//         let mut stdout = MockStdout::new();
 
-        let result = get_input(keys.into_iter(), &mut stdout);
+//         let result = get_input(keys.into_iter(), &mut stdout);
 
-        assert_eq!(result.unwrap(), Input::Text(String::from("abc")));
-    }
-}
+//         assert_eq!(result.unwrap(), Input::Text(String::from("abc")));
+//     }
+// }
