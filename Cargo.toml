@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 termion = "2.0.1"
+
+[dev-dependencies]
+assert_cmd = "2.0.11"

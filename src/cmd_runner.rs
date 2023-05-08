@@ -12,6 +12,7 @@ impl CmdRunner {
     pub fn new(command_string: &str, input: Option<&str>) -> CmdRunner {
         let mut command = Command::new("script");
 
+        // To-do: the -qec doesn't have to be repeated.
         if let Some(input_str) = input {
             command
                 .arg("-qec")
