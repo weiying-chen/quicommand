@@ -48,6 +48,10 @@ impl TermCursor for MockStdout {
 }
 
 fn get_keymaps<'a>() -> Vec<Keymap<'a>> {
+    vec![Keymap::new('t', "Test keymap", "echo 'cba'")]
+}
+
+fn get_keymaps_with_prompt<'a>() -> Vec<Keymap<'a>> {
     vec![Keymap::new('t', "Test keymap", "echo {}")]
 }
 
@@ -104,6 +108,26 @@ fn test_exit() {
     assert!(stdout_str.contains("\r\n"));
 }
 
+// #[test]
+// fn test_run_command() {
+//     let stdin = vec![
+//         Ok(Key::Char('a')),
+//         Ok(Key::Char('b')),
+//         Ok(Key::Char('c')),
+//         Ok(Key::Char('\n')),
+//     ];
+
+//     let mut stdout = MockStdout::new();
+//     let input = keymap::input::get_input(stdin.into_iter(), &mut stdout);
+//     let keymaps = get_keymaps();
+
+//     handle_input_result(input, &keymaps[0], &mut stdout);
+
+//     let stdout_str = String::from_utf8(stdout.buffer).unwrap();
+
+//     assert!(stdout_str.contains("abc"));
+// }
+
 #[test]
 fn test_run_command() {
     let stdin = vec![
@@ -114,12 +138,35 @@ fn test_run_command() {
     ];
 
     let mut stdout = MockStdout::new();
-    let input = keymap::input::get_input(stdin.into_iter(), &mut stdout);
+    // let input = keymap::input::get_input(stdin.into_iter(), &mut stdout);
     let keymaps = get_keymaps();
 
-    handle_input_result(input, &keymaps[0], &mut stdout);
+    // handle_input_result(input, &keymaps[0], &mut stdout);
+    handle_input('t', &keymaps, stdin.into_iter(), &mut stdout);
 
     let stdout_str = String::from_utf8(stdout.buffer).unwrap();
+
+    println!("STDOUT_STR: {:?}", stdout_str);
+
+    assert!(stdout_str.contains("test"));
+}
+
+#[test]
+fn test_run_commmand_with_prompt() {
+    let stdin = vec![
+        Ok(Key::Char('a')),
+        Ok(Key::Char('b')),
+        Ok(Key::Char('c')),
+        Ok(Key::Char('\n')),
+    ];
+
+    let mut stdout = MockStdout::new();
+    let keymaps = get_keymaps_with_prompt();
+
+    handle_input('t', &keymaps, stdin.into_iter(), &mut stdout);
+
+    let stdout_str = String::from_utf8(stdout.buffer).unwrap();
+
     println!("STDOUT_STR: {:?}", stdout_str);
 
     assert!(stdout_str.contains("abc"));
