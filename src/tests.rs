@@ -48,7 +48,7 @@ impl TermCursor for MockStdout {
 }
 
 fn get_keymaps<'a>() -> Vec<Keymap<'a>> {
-    vec![Keymap::new('t', "Test keymap", "echo 'cba'")]
+    vec![Keymap::new('t', "Test keymap", "echo 'test'")]
 }
 
 fn get_keymaps_with_prompt<'a>() -> Vec<Keymap<'a>> {
