@@ -152,6 +152,13 @@ fn main() {
         Keymap::new('s', "Run script.sh", "./script.sh"),
         Keymap::new('r', "cargo run --release", "cargon run --release"),
         Keymap::new('z', "Run script.py", "python3 script.py"),
+        Keymap::new(
+            'a',
+            "Run all",
+            "/home/alex/bash/crop/script.sh &&
+            /home/alex/rust/visual-center/target/release/visual_center &&
+            /home/alex/bash/delete/script.sh",
+        ),
     ];
 
     show_keymap_menu(&keymaps, &mut stdout);
