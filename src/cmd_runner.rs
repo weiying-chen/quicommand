@@ -67,6 +67,10 @@ impl CmdRunner {
                     Key::Ctrl('c') => {
                         println!("Ctrl + C\r\n");
                         // write!(stdout, "{}", termion::cursor::Show).unwrap();
+                        // stdout.flush().unwrap();
+
+                        //To-do: think of a way of doing this with Termion
+                        Command::new("reset").output().unwrap();
                         std::process::exit(0);
                     }
                     _ => {}
@@ -74,7 +78,8 @@ impl CmdRunner {
             }
         });
 
-        stdout.flush().unwrap();
+        // To-do: Is this necessary?
+        // stdout.flush().unwrap();
 
         let status = child.wait().expect("failed to wait for command");
 

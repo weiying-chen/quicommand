@@ -142,12 +142,23 @@ fn show_keymap_menu<T: TermCursor + Write>(keymaps: &[Keymap], stdout: &mut T) {
 }
 
 fn main() {
-    // ctrlc::set_handler(move || {
-    //     println!("received Ctrl+C!");
-    // })
-    // .expect("Error setting Ctrl-C handler");
+    // std::thread::spawn(move || {
+    //     for key in stdin().keys() {
+    //         match key.unwrap() {
+    //             // Key::Char(c) => println!("{}\r\n", c),
+    //             Key::Ctrl('c') => {
+    //                 println!("Ctrl + C\r\n");
+    //                 // write!(stdout, "{}", termion::cursor::Show).unwrap();
+    //                 std::process::exit(0);
+    //             }
+    //             _ => {}
+    //         }
+    //     }
+    // });
 
     let mut stdout = RawStdout::new().unwrap();
+
+    stdout.flush().unwrap();
 
     let keymaps = vec![
         Keymap::new('t', "Sleep", "sleep 6 && echo test"),
@@ -180,11 +191,6 @@ fn main() {
             }
             Key::Char(c) => {
                 handle_input(c, &keymaps, stdin().keys(), &mut stdout);
-                break;
-            }
-            Key::Ctrl('c') => {
-                // Handle the Ctrl+C input
-                println!("Ctrl + C triggered!");
                 break;
             }
             _ => {}
