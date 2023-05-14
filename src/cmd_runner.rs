@@ -1,3 +1,5 @@
+// use ctrlc;
+
 use std::{
     io::{BufRead, BufReader, Write},
     process::{Command, Stdio},
@@ -53,6 +55,11 @@ impl CmdRunner {
             }
         });
 
+        // ctrlc::set_handler(move || {
+        //     println!("received Ctrl+C!");
+        // })
+        // .expect("Error setting Ctrl-C handler");
+
         let status = child.wait().expect("failed to wait for command");
 
         stdout_thread.join().expect("failed to join stdout thread");
@@ -67,6 +74,33 @@ impl CmdRunner {
                 status.code().unwrap_or(-1)
             )
             .unwrap();
+        }
+    }
+
+    pub fn run_old(&mut self, stdout: &mut impl Write) {
+        let output = self.command.output();
+
+        match output {
+            Ok(output) => {
+                if output.status.success() {
+                    let stdout_str = String::from_utf8_lossy(&output.stdout);
+
+                    for line in stdout_str.lines() {
+                        write!(stdout, "{}\r\n", line).unwrap();
+                    }
+                } else {
+                    let stdout_str = String::from_utf8_lossy(&output.stdout);
+                    let stderr_str = String::from_utf8_lossy(&output.stderr);
+
+                    write!(stdout, "\r\n").unwrap();
+                    write!(stdout, "Exit status: {}\r\n", output.status).unwrap();
+                    write!(stdout, "Standard error: {}\r\n", stderr_str.trim()).unwrap();
+                    write!(stdout, "Standard output: {}\r\n", stdout_str.trim()).unwrap();
+                }
+            }
+            Err(e) => {
+                write!(stdout, "Error executing command: {:?}\r\n", e).unwrap();
+            }
         }
     }
 }

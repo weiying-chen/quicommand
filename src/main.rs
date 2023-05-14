@@ -1,3 +1,4 @@
+// use ctrlc;
 use keymap::cmd_runner::CmdRunner;
 use keymap::input::{Input, InputError};
 use keymap::keymap::Keymap;
@@ -85,6 +86,7 @@ fn handle_input_result<T: TermCursor + Write>(
 
             let mut command = CmdRunner::new(keymap.command, None);
 
+            // command.run_old(stdout);
             command.run(stdout);
         }
         Ok(Input::Exit) => {
@@ -139,10 +141,15 @@ fn show_keymap_menu<T: TermCursor + Write>(keymaps: &[Keymap], stdout: &mut T) {
 }
 
 fn main() {
+    // ctrlc::set_handler(move || {
+    //     println!("received Ctrl+C!");
+    // })
+    // .expect("Error setting Ctrl-C handler");
+
     let mut stdout = RawStdout::new().unwrap();
 
     let keymaps = vec![
-        Keymap::new('t', "Sleep", "sleep 3 && echo 'test' && sleep 3"),
+        Keymap::new('t', "Sleep", "sleep 6 && echo 'test' && sleep 3"),
         Keymap::with_prompt(
             'c',
             "Git add and commit",
