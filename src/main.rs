@@ -1,9 +1,10 @@
-// use ctrlc;
+use ctrlc;
 use keymap::cmd_runner::CmdRunner;
 use keymap::input::{Input, InputError};
 use keymap::keymap::Keymap;
 use keymap::term_writer::TermCursor;
 use std::io::{stdin, Write};
+use std::sync::mpsc::channel;
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::{IntoRawMode, RawTerminal};
@@ -149,7 +150,7 @@ fn main() {
     let mut stdout = RawStdout::new().unwrap();
 
     let keymaps = vec![
-        Keymap::new('t', "Sleep", "sleep 6 && echo 'test' && sleep 3"),
+        Keymap::new('t', "Sleep", "sleep 6 && echo test"),
         Keymap::with_prompt(
             'c',
             "Git add and commit",
@@ -179,6 +180,11 @@ fn main() {
             }
             Key::Char(c) => {
                 handle_input(c, &keymaps, stdin().keys(), &mut stdout);
+                break;
+            }
+            Key::Ctrl('c') => {
+                // Handle the Ctrl+C input
+                println!("Ctrl + C triggered!");
                 break;
             }
             _ => {}

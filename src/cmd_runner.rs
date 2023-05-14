@@ -1,9 +1,14 @@
 // use ctrlc;
 
 use std::{
-    io::{BufRead, BufReader, Write},
+    io::{stdin, BufRead, BufReader, Write},
     process::{Command, Stdio},
+    // thread,
 };
+
+use termion::{event::Key, input::TermRead};
+
+// use signal_hook::{consts::SIGINT, iterator::Signals};
 
 pub struct CmdRunner {
     pub command: std::process::Command,
@@ -55,10 +60,21 @@ impl CmdRunner {
             }
         });
 
-        // ctrlc::set_handler(move || {
-        //     println!("received Ctrl+C!");
-        // })
-        // .expect("Error setting Ctrl-C handler");
+        std::thread::spawn(move || {
+            for c in stdin().keys() {
+                match c.unwrap() {
+                    // Key::Char(c) => println!("{}\r\n", c),
+                    Key::Ctrl('c') => {
+                        println!("Ctrl + C\r\n");
+                        // write!(stdout, "{}", termion::cursor::Show).unwrap();
+                        std::process::exit(0);
+                    }
+                    _ => {}
+                }
+            }
+        });
+
+        stdout.flush().unwrap();
 
         let status = child.wait().expect("failed to wait for command");
 
