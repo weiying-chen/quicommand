@@ -1,14 +1,10 @@
-// use ctrlc;
-
 use std::{
     io::{stdin, BufRead, BufReader, Write},
     process::{Command, Stdio},
-    // thread,
+    sync::{Arc, Mutex},
 };
 
 use termion::{event::Key, input::TermRead};
-
-// use signal_hook::{consts::SIGINT, iterator::Signals};
 
 pub struct CmdRunner {
     pub command: std::process::Command,
@@ -33,7 +29,7 @@ impl CmdRunner {
         CmdRunner { command }
     }
 
-    pub fn run(&mut self, stdout: &mut impl Write) {
+    pub fn run<W: Write + Send + 'static>(&mut self, stdout_mutex: Arc<Mutex<Option<W>>>) {
         self.command.stdout(Stdio::piped());
         self.command.stderr(Stdio::piped());
 
@@ -60,21 +56,34 @@ impl CmdRunner {
             }
         });
 
+        // let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
+        let stdout_clone = Arc::clone(&stdout_mutex);
+
         std::thread::spawn(move || {
+            let stdout_clone = Arc::clone(&stdout_mutex);
+
             for c in stdin().keys() {
                 match c.unwrap() {
                     // Key::Char(c) => println!("{}\r\n", c),
                     Key::Ctrl('c') => {
-                        println!("Ctrl + C\r\n");
                         // write!(stdout, "{}", termion::cursor::Show).unwrap();
                         // stdout.flush().unwrap();
 
                         //To-do: think of a way of doing this with Termion
-                        Command::new("reset").output().unwrap();
+                        // Command::new("reset").output().unwrap();
+
+                        let mut stdout_lock = stdout_clone.lock().unwrap();
+
+                        // To-do: create a function called drop()
+                        stdout_lock.take();
                         std::process::exit(0);
                     }
                     _ => {}
                 }
+
+                let mut stdout_lock = stdout_clone.lock().unwrap();
+
+                stdout_lock.as_mut().unwrap().flush().unwrap();
             }
         });
 
@@ -86,6 +95,9 @@ impl CmdRunner {
         stdout_thread.join().expect("failed to join stdout thread");
         stderr_thread.join().expect("failed to join stderr thread");
 
+        let mut stdout_lock = stdout_clone.lock().unwrap();
+        let stdout = stdout_lock.as_mut().unwrap();
+
         if status.success() {
             write!(stdout, "Command executed successfully\r\n").unwrap();
         } else {
@@ -96,6 +108,11 @@ impl CmdRunner {
             )
             .unwrap();
         }
+
+        stdout_lock.take();
+        // drop(stdout_lock);
+
+        // spawn_thread.join().unwrap();
     }
 
     pub fn run_old(&mut self, stdout: &mut impl Write) {

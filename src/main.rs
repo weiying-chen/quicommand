@@ -1,10 +1,9 @@
-use ctrlc;
 use keymap::cmd_runner::CmdRunner;
 use keymap::input::{Input, InputError};
 use keymap::keymap::Keymap;
 use keymap::term_writer::TermCursor;
 use std::io::{stdin, Write};
-use std::sync::mpsc::channel;
+use std::sync::{Arc, Mutex};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::{IntoRawMode, RawTerminal};
@@ -43,7 +42,7 @@ impl TermCursor for RawStdout {
 }
 
 //To-do: maybe functions like these should belong to `TermWriter`?
-fn handle_quit<T: TermCursor>(stdout: &mut T) {
+fn handle_quit(stdout: &mut RawStdout) {
     stdout
         .write_term(format_args!("{}", termion::cursor::Show))
         .unwrap();
@@ -56,10 +55,10 @@ fn prompt_input<T: TermCursor + Write>(message: &str, stdout: &mut T) {
     stdout.flush().unwrap();
 }
 
-fn handle_input_result<T: TermCursor + Write>(
+fn handle_input_result<T: TermCursor + Write + std::marker::Send + 'static>(
     result: Result<Input, InputError>,
     keymap: &Keymap,
-    stdout: &mut T,
+    mut stdout: T,
 ) {
     match result {
         Ok(Input::Text(i)) => {
@@ -75,8 +74,9 @@ fn handle_input_result<T: TermCursor + Write>(
             // To-do: `command should` return a result.
             // To-do: The cursor is shown previously in prompt_input.
             let mut command = CmdRunner::new(keymap.command, Some(&i));
+            let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
 
-            command.run(stdout);
+            command.run(stdout_mutex);
         }
         Ok(Input::None) => {
             stdout
@@ -86,9 +86,9 @@ fn handle_input_result<T: TermCursor + Write>(
             stdout.flush().unwrap();
 
             let mut command = CmdRunner::new(keymap.command, None);
+            let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
 
-            // command.run_old(stdout);
-            command.run(stdout);
+            command.run(stdout_mutex);
         }
         Ok(Input::Exit) => {
             stdout.write_term(format_args!("\r\n")).unwrap();
@@ -101,19 +101,19 @@ fn handle_input_result<T: TermCursor + Write>(
     };
 }
 
-fn handle_input<T: TermCursor + Write>(
+fn handle_input<T: TermCursor + Write + std::marker::Send + 'static>(
     key: char,
     keymaps: &[Keymap],
     stdin: impl Iterator<Item = Result<Key, std::io::Error>>,
-    stdout: &mut T,
+    mut stdout: T,
 ) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
         if (keymap.command).contains("{}") {
             if let Some(prompt_str) = &keymap.prompt {
-                prompt_input(prompt_str, stdout);
+                prompt_input(prompt_str, &mut stdout);
             }
 
-            let input = keymap::input::get_input(stdin, stdout);
+            let input = keymap::input::get_input(stdin, &mut stdout);
 
             handle_input_result(input, &keymap, stdout);
         } else {
@@ -142,20 +142,6 @@ fn show_keymap_menu<T: TermCursor + Write>(keymaps: &[Keymap], stdout: &mut T) {
 }
 
 fn main() {
-    // std::thread::spawn(move || {
-    //     for key in stdin().keys() {
-    //         match key.unwrap() {
-    //             // Key::Char(c) => println!("{}\r\n", c),
-    //             Key::Ctrl('c') => {
-    //                 println!("Ctrl + C\r\n");
-    //                 // write!(stdout, "{}", termion::cursor::Show).unwrap();
-    //                 std::process::exit(0);
-    //             }
-    //             _ => {}
-    //         }
-    //     }
-    // });
-
     let mut stdout = RawStdout::new().unwrap();
 
     stdout.flush().unwrap();
@@ -190,7 +176,7 @@ fn main() {
                 break;
             }
             Key::Char(c) => {
-                handle_input(c, &keymaps, stdin().keys(), &mut stdout);
+                handle_input(c, &keymaps, stdin().keys(), stdout);
                 break;
             }
             _ => {}
