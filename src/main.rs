@@ -147,7 +147,7 @@ fn main() {
     stdout.flush().unwrap();
 
     let keymaps = vec![
-        Keymap::new('t', "Sleep", "sleep 6 && echo test"),
+        Keymap::new('t', "Sleep", "sleep 4 && echo test"),
         Keymap::with_prompt(
             'c',
             "Git add and commit",

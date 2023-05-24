@@ -1,7 +1,9 @@
 use std::{
-    io::{stdin, BufRead, BufReader, Write},
+    io::{BufRead, BufReader, Write},
     process::{Command, Stdio},
     sync::{Arc, Mutex},
+    thread,
+    time::Duration,
 };
 
 use termion::{event::Key, input::TermRead};
@@ -56,91 +58,95 @@ impl CmdRunner {
             }
         });
 
-        // let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
-        let stdout_clone = Arc::clone(&stdout_mutex);
+        let should_exit = Arc::new(Mutex::new(false));
+        let should_exit_clone = Arc::clone(&should_exit);
+        let mut stdin = termion::async_stdin().keys();
 
-        std::thread::spawn(move || {
-            let stdout_clone = Arc::clone(&stdout_mutex);
+        let handle = std::thread::spawn(move || {
+            let should_exit_clone = Arc::clone(&should_exit);
 
-            for c in stdin().keys() {
-                match c.unwrap() {
-                    // Key::Char(c) => println!("{}\r\n", c),
-                    Key::Ctrl('c') => {
-                        // write!(stdout, "{}", termion::cursor::Show).unwrap();
-                        // stdout.flush().unwrap();
+            loop {
+                // let stdout_clone = Arc::clone(&stdout_mutex);
 
-                        //To-do: think of a way of doing this with Termion
-                        // Command::new("reset").output().unwrap();
-
-                        let mut stdout_lock = stdout_clone.lock().unwrap();
-
-                        // To-do: create a function called drop()
-                        stdout_lock.take();
-                        std::process::exit(0);
-                    }
-                    _ => {}
+                if *should_exit_clone.lock().unwrap() {
+                    print!("Ctrl+ C loop exited!\r\n");
+                    break;
                 }
 
-                let mut stdout_lock = stdout_clone.lock().unwrap();
+                let input = stdin.next();
 
-                stdout_lock.as_mut().unwrap().flush().unwrap();
+                if let Some(Ok(key)) = input {
+                    match key {
+                        Key::Ctrl('c') => {
+                            *should_exit_clone.lock().unwrap() = true;
+                        }
+                        _ => {}
+                    }
+
+                    // let mut stdout_lock = stdout_clone.lock().unwrap();
+
+                    // stdout_lock.as_mut().unwrap().flush().unwrap();
+                }
+
+                thread::sleep(Duration::from_millis(50));
             }
         });
 
         // To-do: Is this necessary?
         // stdout.flush().unwrap();
 
-        let status = child.wait().expect("failed to wait for command");
+        loop {
+            match child.try_wait() {
+                Ok(Some(_)) => {
+                    print!("Child process has exited\r\n");
+                    *should_exit_clone.lock().unwrap() = true;
+                    break;
+                }
+
+                Ok(None) => {
+                    if *should_exit_clone.lock().unwrap() {
+                        print!("Killing the process...\r\n");
+
+                        if let Err(e) = child.kill() {
+                            eprint!("Failed to kill child process: {}", e);
+                        }
+
+                        print!("Process killed!\r\n");
+
+                        break;
+                    } else {
+                        // print!("Child process is still running\r\n");
+                    }
+                }
+
+                Err(e) => {
+                    eprint!("Error while waiting for child process: {}", e);
+                    break;
+                }
+            }
+
+            // Delay between polling attempts
+            std::thread::sleep(Duration::from_millis(100));
+        }
 
         stdout_thread.join().expect("failed to join stdout thread");
         stderr_thread.join().expect("failed to join stderr thread");
-
-        let mut stdout_lock = stdout_clone.lock().unwrap();
-        let stdout = stdout_lock.as_mut().unwrap();
-
-        if status.success() {
-            write!(stdout, "Command executed successfully\r\n").unwrap();
-        } else {
-            write!(
-                stdout,
-                "Command failed with exit code {}\r\n",
-                status.code().unwrap_or(-1)
-            )
-            .unwrap();
-        }
-
-        stdout_lock.take();
-        // drop(stdout_lock);
-
-        // spawn_thread.join().unwrap();
+        handle.join().unwrap();
     }
 
-    pub fn run_old(&mut self, stdout: &mut impl Write) {
-        let output = self.command.output();
+    // let mut stdout_lock = stdout_clone.lock().unwrap();
+    // let stdout = stdout_lock.as_mut().unwrap();
 
-        match output {
-            Ok(output) => {
-                if output.status.success() {
-                    let stdout_str = String::from_utf8_lossy(&output.stdout);
-
-                    for line in stdout_str.lines() {
-                        write!(stdout, "{}\r\n", line).unwrap();
-                    }
-                } else {
-                    let stdout_str = String::from_utf8_lossy(&output.stdout);
-                    let stderr_str = String::from_utf8_lossy(&output.stderr);
-
-                    write!(stdout, "\r\n").unwrap();
-                    write!(stdout, "Exit status: {}\r\n", output.status).unwrap();
-                    write!(stdout, "Standard error: {}\r\n", stderr_str.trim()).unwrap();
-                    write!(stdout, "Standard output: {}\r\n", stdout_str.trim()).unwrap();
-                }
-            }
-            Err(e) => {
-                write!(stdout, "Error executing command: {:?}\r\n", e).unwrap();
-            }
-        }
-    }
+    // if status.success() {
+    //     write!(stdout, "Command executed successfully\r\n").unwrap();
+    // } else {
+    //     write!(
+    //         stdout,
+    //         "Command failed with exit code {}\r\n",
+    //         status.code().unwrap_or(-1)
+    //     )
+    //     .unwrap();
+    // }
 }
 
 // #[cfg(test)]
