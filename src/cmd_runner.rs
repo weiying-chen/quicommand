@@ -32,68 +32,38 @@ impl CmdRunner {
     }
 
     pub fn run<W: Write + Send + 'static>(&mut self, stdout_mutex: Arc<Mutex<Option<W>>>) {
+        // This prevents the loop from running forever if you press a key other chan Ctrl + C.
+        self.command.stdin(Stdio::null());
         self.command.stdout(Stdio::piped());
         self.command.stderr(Stdio::piped());
 
         let mut child = self.command.spawn().expect("failed to spawn command");
-        let stdout_pipe = child.stdout.take().unwrap();
-        let stdout_reader = BufReader::new(stdout_pipe);
-        let stderr_pipe = child.stderr.take().unwrap();
-        let stderr_reader = BufReader::new(stderr_pipe);
+        // let stdout_pipe = child.stdout.take().unwrap();
+        // let stdout_reader = BufReader::new(stdout_pipe);
+        // let stderr_pipe = child.stderr.take().unwrap();
+        // let stderr_reader = BufReader::new(stderr_pipe);
 
-        let stdout_thread = std::thread::spawn(move || {
-            for line in stdout_reader.lines() {
-                if let Ok(line) = line {
-                    // To-do: Should this be changed to `write!`?
-                    print!("{}\r\n", line);
-                }
-            }
-        });
+        // let stdout_thread = std::thread::spawn(move || {
+        //     for line in stdout_reader.lines() {
+        //         if let Ok(line) = line {
+        //             // To-do: Should this be changed to `write!`?
+        //             print!("{}\r\n", line);
+        //         }
+        //     }
+        // });
 
-        let stderr_thread = std::thread::spawn(move || {
-            for line in stderr_reader.lines() {
-                if let Ok(line) = line {
-                    print!("{}\r\n", line);
-                }
-            }
-        });
+        // let stderr_thread = std::thread::spawn(move || {
+        //     for line in stderr_reader.lines() {
+        //         if let Ok(line) = line {
+        //             print!("{}\r\n", line);
+        //         }
+        //     }
+        // });
 
         let should_exit = Arc::new(Mutex::new(false));
         let should_exit_clone = Arc::clone(&should_exit);
         let mut stdin = termion::async_stdin().keys();
-
-        let handle = std::thread::spawn(move || {
-            let should_exit_clone = Arc::clone(&should_exit);
-
-            loop {
-                // let stdout_clone = Arc::clone(&stdout_mutex);
-
-                if *should_exit_clone.lock().unwrap() {
-                    print!("Ctrl+ C loop exited!\r\n");
-                    break;
-                }
-
-                let input = stdin.next();
-
-                if let Some(Ok(key)) = input {
-                    match key {
-                        Key::Ctrl('c') => {
-                            *should_exit_clone.lock().unwrap() = true;
-                        }
-                        _ => {}
-                    }
-
-                    // let mut stdout_lock = stdout_clone.lock().unwrap();
-
-                    // stdout_lock.as_mut().unwrap().flush().unwrap();
-                }
-
-                thread::sleep(Duration::from_millis(50));
-            }
-        });
-
-        // To-do: Is this necessary?
-        // stdout.flush().unwrap();
+        let stdout_clone = Arc::clone(&stdout_mutex);
 
         loop {
             match child.try_wait() {
@@ -114,9 +84,34 @@ impl CmdRunner {
                         print!("Process killed!\r\n");
 
                         break;
-                    } else {
                         // print!("Child process is still running\r\n");
                     }
+
+                    let input = stdin.next();
+
+                    if let Some(Ok(key)) = input {
+                        println!("KEY PRESSED!\r\n");
+
+                        match key {
+                            Key::Ctrl('c') => {
+                                *should_exit_clone.lock().unwrap() = true;
+                            }
+                            Key::Char(_) => {
+                                continue;
+                            }
+                            _ => {}
+                        }
+
+                        // let mut stdout_lock = stdout_clone.lock().unwrap();
+
+                        // stdout_lock.as_mut().unwrap().flush().unwrap();
+                    }
+
+                    println!("Still running!\r\n");
+
+                    // let mut stdout_lock = stdout_clone.lock().unwrap();
+
+                    // stdout_lock.as_mut().unwrap().flush().unwrap();
                 }
 
                 Err(e) => {
@@ -129,9 +124,11 @@ impl CmdRunner {
             std::thread::sleep(Duration::from_millis(100));
         }
 
-        stdout_thread.join().expect("failed to join stdout thread");
-        stderr_thread.join().expect("failed to join stderr thread");
-        handle.join().unwrap();
+        // println!("Before join!");
+
+        // stdout_thread.join().expect("failed to join stdout thread");
+        // stderr_thread.join().expect("failed to join stderr thread");
+        // handle.join().unwrap();
     }
 
     // let mut stdout_lock = stdout_clone.lock().unwrap();
