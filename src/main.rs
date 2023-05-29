@@ -154,9 +154,9 @@ fn main() {
             "git add . && git commit -m \"{}\"",
             "Enter commit message\r\n",
         ),
+        Keymap::new('o', "Open script", "vi script.mjs"),
         Keymap::new('s', "Run script.sh", "./script.sh"),
         Keymap::new('r', "cargo run --release", "cargon run --release"),
-        Keymap::new('z', "Run script.py", "python3 script.py"),
         Keymap::new(
             'a',
             "Run all",
