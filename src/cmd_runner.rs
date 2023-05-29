@@ -38,27 +38,27 @@ impl CmdRunner {
         self.command.stderr(Stdio::piped());
 
         let mut child = self.command.spawn().expect("failed to spawn command");
-        // let stdout_pipe = child.stdout.take().unwrap();
-        // let stdout_reader = BufReader::new(stdout_pipe);
-        // let stderr_pipe = child.stderr.take().unwrap();
-        // let stderr_reader = BufReader::new(stderr_pipe);
+        let stdout_pipe = child.stdout.take().unwrap();
+        let stdout_reader = BufReader::new(stdout_pipe);
+        let stderr_pipe = child.stderr.take().unwrap();
+        let stderr_reader = BufReader::new(stderr_pipe);
 
-        // let stdout_thread = std::thread::spawn(move || {
-        //     for line in stdout_reader.lines() {
-        //         if let Ok(line) = line {
-        //             // To-do: Should this be changed to `write!`?
-        //             print!("{}\r\n", line);
-        //         }
-        //     }
-        // });
+        let stdout_thread = std::thread::spawn(move || {
+            for line in stdout_reader.lines() {
+                if let Ok(line) = line {
+                    // To-do: Should this be changed to `write!`?
+                    print!("{}\r\n", line);
+                }
+            }
+        });
 
-        // let stderr_thread = std::thread::spawn(move || {
-        //     for line in stderr_reader.lines() {
-        //         if let Ok(line) = line {
-        //             print!("{}\r\n", line);
-        //         }
-        //     }
-        // });
+        let stderr_thread = std::thread::spawn(move || {
+            for line in stderr_reader.lines() {
+                if let Ok(line) = line {
+                    print!("{}\r\n", line);
+                }
+            }
+        });
 
         let should_exit = Arc::new(Mutex::new(false));
         let should_exit_clone = Arc::clone(&should_exit);
@@ -84,13 +84,12 @@ impl CmdRunner {
                         print!("Process killed!\r\n");
 
                         break;
-                        // print!("Child process is still running\r\n");
                     }
 
                     let input = stdin.next();
 
                     if let Some(Ok(key)) = input {
-                        println!("KEY PRESSED!\r\n");
+                        print!("Key pressed!\r\n");
 
                         match key {
                             Key::Ctrl('c') => {
@@ -107,7 +106,7 @@ impl CmdRunner {
                         // stdout_lock.as_mut().unwrap().flush().unwrap();
                     }
 
-                    println!("Still running!\r\n");
+                    print!("Still running...\r\n");
 
                     // let mut stdout_lock = stdout_clone.lock().unwrap();
 
@@ -126,8 +125,8 @@ impl CmdRunner {
 
         // println!("Before join!");
 
-        // stdout_thread.join().expect("failed to join stdout thread");
-        // stderr_thread.join().expect("failed to join stderr thread");
+        stdout_thread.join().expect("failed to join stdout thread");
+        stderr_thread.join().expect("failed to join stderr thread");
         // handle.join().unwrap();
     }
 
