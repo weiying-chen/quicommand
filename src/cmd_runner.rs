@@ -68,7 +68,7 @@ impl CmdRunner {
         loop {
             match child.try_wait() {
                 Ok(Some(_)) => {
-                    print!("Child process has exited\r\n");
+                    // print!("Child process has exited\r\n");
                     *should_exit_clone.lock().unwrap() = true;
                     break;
                 }
@@ -82,14 +82,13 @@ impl CmdRunner {
                         }
 
                         print!("Process killed!\r\n");
-
                         break;
                     }
 
                     let input = stdin.next();
 
                     if let Some(Ok(key)) = input {
-                        print!("Key pressed!\r\n");
+                        // print!("Key pressed!\r\n");
 
                         match key {
                             Key::Ctrl('c') => {
@@ -106,7 +105,7 @@ impl CmdRunner {
                         // stdout_lock.as_mut().unwrap().flush().unwrap();
                     }
 
-                    print!("Still running...\r\n");
+                    // print!("Still running...\r\n");
 
                     // let mut stdout_lock = stdout_clone.lock().unwrap();
 
