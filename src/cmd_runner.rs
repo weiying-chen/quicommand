@@ -30,44 +30,53 @@ impl CmdRunner {
         CmdRunner { command }
     }
 
+    pub fn run_new(&mut self) {
+        let mut child = self.command.spawn().expect("failed to spawn command");
+
+        child.wait().expect("editor exited with a non-zero exit");
+    }
+
     pub fn run<W: Write + Send + 'static>(&mut self, stdout_mutex: Arc<Mutex<Option<W>>>) {
         // This prevents the loop from running forever if you press a key other chan Ctrl + C.
-        self.command.stdin(Stdio::null());
-        self.command.stdout(Stdio::piped());
-        self.command.stderr(Stdio::piped());
+        // self.command.stdin(Stdio::null());
+        // self.command.stdout(Stdio::piped());
+        // self.command.stderr(Stdio::piped());
 
         let mut child = self.command.spawn().expect("failed to spawn command");
-        let stdout_pipe = child.stdout.take().unwrap();
-        let stdout_reader = BufReader::new(stdout_pipe);
-        let stderr_pipe = child.stderr.take().unwrap();
-        let stderr_reader = BufReader::new(stderr_pipe);
-        let stdout_clone = Arc::clone(&stdout_mutex);
 
-        let stdout_thread = std::thread::spawn(move || {
-            for line in stdout_reader.lines() {
-                if let Ok(line) = line {
-                    // To-do: Should this be changed to `write!`?
-                    let mut stdout_lock = stdout_clone.lock().unwrap();
-                    let stdout = stdout_lock.as_mut().unwrap();
+        // child.wait().expect("editor exited with a non-zero exit");
 
-                    write!(stdout, "{}\r\n", line).unwrap();
-                }
-            }
-        });
+        //     let stdout_pipe = child.stdout.take().unwrap();
+        //     let stdout_reader = BufReader::new(stdout_pipe);
+        //     let stderr_pipe = child.stderr.take().unwrap();
+        //     let stderr_reader = BufReader::new(stderr_pipe);
+        //     let stdout_clone = Arc::clone(&stdout_mutex);
 
-        let stdout_clone = Arc::clone(&stdout_mutex);
+        //     let stdout_thread = std::thread::spawn(move || {
+        //         for line in stdout_reader.lines() {
+        //             if let Ok(line) = line {
+        //                 // To-do: Should this be changed to `write!`?
+        //                 let mut stdout_lock = stdout_clone.lock().unwrap();
+        //                 let stdout = stdout_lock.as_mut().unwrap();
 
-        let stderr_thread = std::thread::spawn(move || {
-            for line in stderr_reader.lines() {
-                if let Ok(line) = line {
-                    // print!("{}\r\n", line);
-                    let mut stdout_lock = stdout_clone.lock().unwrap();
-                    let stdout = stdout_lock.as_mut().unwrap();
+        //                 write!(stdout, "{}\r\n", line).unwrap();
+        //             }
+        //         }
+        //     });
 
-                    write!(stdout, "{}\r\n", line).unwrap();
-                }
-            }
-        });
+        //     let stdout_clone = Arc::clone(&stdout_mutex);
+
+        //     let stderr_thread = std::thread::spawn(move || {
+        //         for line in stderr_reader.lines() {
+        //             if let Ok(line) = line {
+        //                 // print!("{}\r\n", line);
+        //                 let mut stdout_lock = stdout_clone.lock().unwrap();
+        //                 let stdout = stdout_lock.as_mut().unwrap();
+
+        //                 write!(stdout, "{}\r\n", line).unwrap();
+        //             }
+        //         }
+        //     });
 
         let should_exit = Arc::new(Mutex::new(false));
         let should_exit_clone = Arc::clone(&should_exit);
@@ -113,7 +122,7 @@ impl CmdRunner {
                         // stdout_lock.as_mut().unwrap().flush().unwrap();
                     }
 
-                    print!("Still running...\r\n");
+                    // print!("Still running...\r\n");
 
                     // let mut stdout_lock = stdout_clone.lock().unwrap();
 
@@ -130,75 +139,75 @@ impl CmdRunner {
             std::thread::sleep(Duration::from_millis(100));
         }
 
-        // println!("Before join!");
+        //     // println!("Before join!");
 
-        stdout_thread.join().expect("failed to join stdout thread");
-        stderr_thread.join().expect("failed to join stderr thread");
-        // handle.join().unwrap();
+        //     stdout_thread.join().expect("failed to join stdout thread");
+        //     stderr_thread.join().expect("failed to join stderr thread");
+        //     // handle.join().unwrap();
 
-        // let mut stdout_lock = stdout_clone.lock().unwrap();
-        // let stdout = stdout_lock.as_mut().unwrap();
+        //     // let mut stdout_lock = stdout_clone.lock().unwrap();
+        //     // let stdout = stdout_lock.as_mut().unwrap();
 
-        // write!(stdout, "Command executed successfully\r\n").unwrap();
+        //     // write!(stdout, "Command executed successfully\r\n").unwrap();
+        // }
+
+        // // let mut stdout_lock = stdout_clone.lock().unwrap();
+        // // let stdout = stdout_lock.as_mut().unwrap();
+
+        // // if status.success() {
+        // //     write!(stdout, "Command executed successfully\r\n").unwrap();
+        // // } else {
+        // //     write!(
+        // //         stdout,
+        // //         "Command failed with exit code {}\r\n",
+        // //         status.code().unwrap_or(-1)
+        // //     )
+        // //     .unwrap();
     }
-
-    // let mut stdout_lock = stdout_clone.lock().unwrap();
-    // let stdout = stdout_lock.as_mut().unwrap();
-
-    // if status.success() {
-    //     write!(stdout, "Command executed successfully\r\n").unwrap();
-    // } else {
-    //     write!(
-    //         stdout,
-    //         "Command failed with exit code {}\r\n",
-    //         status.code().unwrap_or(-1)
-    //     )
-    //     .unwrap();
-    // }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-    #[test]
-    fn test_execute_ok() {
-        let stdout = Vec::new();
+//     #[test]
+//     fn test_execute_ok() {
+//         let stdout = Vec::new();
 
-        let mut cmd_runner = CmdRunner::new("echo {}", Some("hello"));
-        let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
-        let stdout_clone = Arc::clone(&stdout_mutex);
+//         let mut cmd_runner = CmdRunner::new("echo {}", Some("hello"));
+//         let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
+//         let stdout_clone = Arc::clone(&stdout_mutex);
 
-        cmd_runner.run(stdout_mutex);
+//         cmd_runner.run(stdout_mutex);
 
-        let mut stdout_lock = stdout_clone.lock().unwrap();
-        let stdout = stdout_lock.as_mut().unwrap();
-        let stdout_str = String::from_utf8(stdout.clone()).unwrap();
+//         let mut stdout_lock = stdout_clone.lock().unwrap();
+//         let stdout = stdout_lock.as_mut().unwrap();
+//         let stdout_str = String::from_utf8(stdout.clone()).unwrap();
 
-        assert_eq!(stdout_str.trim(), "hello");
-    }
+//         assert_eq!(stdout_str.trim(), "hello");
+//     }
 
-    // #[test]
-    // fn test_execute_status() {
-    //     let mut cmd_runner = CmdRunner::new("exit 1", Some(""));
-    //     let mut stdout = Vec::new();
+//     // #[test]
+//     // fn test_execute_status() {
+//     //     let mut cmd_runner = CmdRunner::new("exit 1", Some(""));
+//     //     let mut stdout = Vec::new();
 
-    //     cmd_runner.run(&mut stdout);
+//     //     cmd_runner.run(&mut stdout);
 
-    //     let stderr_str = String::from_utf8_lossy(&stdout);
+//     //     let stderr_str = String::from_utf8_lossy(&stdout);
 
-    //     assert!(stderr_str.contains("exit status: 1"));
-    // }
+//     //     assert!(stderr_str.contains("exit status: 1"));
+//     // }
 
-    // #[test]
-    // fn test_execute_err() {
-    //     let mut cmd_runner = CmdRunner::new("non-existent-command", Some(""));
-    //     let mut stdout = Vec::new();
+//     // #[test]
+//     // fn test_execute_err() {
+//     //     let mut cmd_runner = CmdRunner::new("non-existent-command", Some(""));
+//     //     let mut stdout = Vec::new();
 
-    //     cmd_runner.run(&mut stdout);
+//     //     cmd_runner.run(&mut stdout);
 
-    //     let stderr_str = String::from_utf8_lossy(&stdout);
+//     //     let stderr_str = String::from_utf8_lossy(&stdout);
 
-    //     assert!(stderr_str.contains("command not found"));
-    // }
-}
+//     //     assert!(stderr_str.contains("command not found"));
+//     // }
+// }

@@ -85,10 +85,14 @@ fn handle_input_result<T: TermCursor + Write + std::marker::Send + 'static>(
 
             stdout.flush().unwrap();
 
-            let mut command = CmdRunner::new(keymap.command, None);
-            let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
+            drop(stdout);
 
-            command.run(stdout_mutex);
+            let mut command = CmdRunner::new(keymap.command, None);
+            // let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
+
+            // command.run(stdout_mutex);
+
+            command.run_new();
         }
         Ok(Input::Exit) => {
             stdout.write_term(format_args!("\r\n")).unwrap();
@@ -147,14 +151,14 @@ fn main() {
     stdout.flush().unwrap();
 
     let keymaps = vec![
-        Keymap::new('t', "Sleep", "sleep 4 && echo test"),
+        Keymap::new('t', "Sleep", "sleep 4 && echo test && sleep 4"),
         Keymap::with_prompt(
             'c',
             "Git add and commit",
             "git add . && git commit -m \"{}\"",
             "Enter commit message\r\n",
         ),
-        Keymap::new('o', "Open script", "vi script.mjs"),
+        Keymap::new('o', "Open script", "vi script.txt"),
         Keymap::new('s', "Run script.sh", "./script.sh"),
         Keymap::new('r', "cargo run --release", "cargon run --release"),
         Keymap::new(
