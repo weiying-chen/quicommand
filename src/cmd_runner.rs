@@ -30,13 +30,36 @@ impl CmdRunner {
         CmdRunner { command }
     }
 
-    pub fn run_new(&mut self) {
+    pub fn run(&mut self) {
         let mut child = self.command.spawn().expect("failed to spawn command");
 
-        child.wait().expect("editor exited with a non-zero exit");
+        // child.wait().expect("editor exited with a non-zero exit");
+
+        loop {
+            match child.try_wait() {
+                Ok(Some(_)) => {
+                    // print!("Child process has exited\r\n");
+
+                    // Pressing Ctrl + C doesn't add a newline if a command is run with `script`.
+                    // print!("\r\n");
+                    break;
+                }
+
+                Ok(None) => {
+                    // print!("Still running...\r\n");
+                }
+
+                Err(e) => {
+                    eprint!("Error while waiting for child process: {}", e);
+                    break;
+                }
+            }
+
+            std::thread::sleep(Duration::from_millis(100));
+        }
     }
 
-    pub fn run<W: Write + Send + 'static>(&mut self, stdout_mutex: Arc<Mutex<Option<W>>>) {
+    pub fn run_old<W: Write + Send + 'static>(&mut self, stdout_mutex: Arc<Mutex<Option<W>>>) {
         // This prevents the loop from running forever if you press a key other chan Ctrl + C.
         // self.command.stdin(Stdio::null());
         // self.command.stdout(Stdio::piped());

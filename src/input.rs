@@ -55,7 +55,7 @@ pub fn get_input<T: TermCursor + Write>(
     for key in input_keys {
         match key.unwrap() {
             Key::Char('\n') => return term_writer.enter(),
-            Key::Esc => return Ok(Input::Exit),
+            // Key::Esc => return Ok(Input::Exit),
             Key::Char(c) => term_writer.char(c)?,
             Key::Left => term_writer.left()?,
             Key::Right => term_writer.right()?,

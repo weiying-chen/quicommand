@@ -71,12 +71,14 @@ fn handle_input_result<T: TermCursor + Write + std::marker::Send + 'static>(
 
             stdout.flush().unwrap();
 
+            drop(stdout);
+
             // To-do: `command should` return a result.
             // To-do: The cursor is shown previously in prompt_input.
             let mut command = CmdRunner::new(keymap.command, Some(&i));
-            let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
+            // let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
 
-            command.run(stdout_mutex);
+            command.run();
         }
         Ok(Input::None) => {
             stdout
@@ -92,7 +94,7 @@ fn handle_input_result<T: TermCursor + Write + std::marker::Send + 'static>(
 
             // command.run(stdout_mutex);
 
-            command.run_new();
+            command.run();
         }
         Ok(Input::Exit) => {
             stdout.write_term(format_args!("\r\n")).unwrap();
