@@ -1,11 +1,4 @@
-use std::{
-    io::{BufRead, BufReader, Write},
-    process::{Command, Stdio},
-    sync::{Arc, Mutex},
-    time::Duration,
-};
-
-use termion::{event::Key, input::TermRead};
+use std::process::{Command, Output};
 
 pub struct CmdRunner {
     pub command: std::process::Command,
@@ -26,211 +19,185 @@ impl CmdRunner {
         }
 
         command.arg("/dev/null");
-
         CmdRunner { command }
     }
 
-    pub fn run(&mut self) {
-        let mut child = self.command.spawn().expect("failed to spawn command");
+    pub fn run(&mut self) -> Result<Output, std::io::Error> {
+        let child = self
+            .command
+            // .stdout(Stdio::piped())
+            .spawn()
+            .expect("failed to spawn command");
 
-        // child.wait().expect("editor exited with a non-zero exit");
+        let output = child.wait_with_output()?;
 
-        loop {
-            match child.try_wait() {
-                Ok(Some(_)) => {
-                    // print!("Child process has exited\r\n");
-
-                    // Pressing Ctrl + C doesn't add a newline if a command is run with `script`.
-                    // print!("\r\n");
-                    break;
-                }
-
-                Ok(None) => {
-                    // print!("Still running...\r\n");
-                }
-
-                Err(e) => {
-                    eprint!("Error while waiting for child process: {}", e);
-                    break;
-                }
-            }
-
-            std::thread::sleep(Duration::from_millis(100));
-        }
+        Ok(output)
     }
 
-    pub fn run_old<W: Write + Send + 'static>(&mut self, stdout_mutex: Arc<Mutex<Option<W>>>) {
-        // This prevents the loop from running forever if you press a key other chan Ctrl + C.
-        // self.command.stdin(Stdio::null());
-        // self.command.stdout(Stdio::piped());
-        // self.command.stderr(Stdio::piped());
+    // pub fn run_old<W: Write + Send + 'static>(&mut self, stdout_mutex: Arc<Mutex<Option<W>>>) {
+    //     // This prevents the loop from running forever if you press a key other chan Ctrl + C.
+    //     // self.command.stdin(Stdio::null());
+    //     // self.command.stdout(Stdio::piped());
+    //     // self.command.stderr(Stdio::piped());
 
-        let mut child = self.command.spawn().expect("failed to spawn command");
+    //     let mut child = self.command.spawn().expect("failed to spawn command");
 
-        // child.wait().expect("editor exited with a non-zero exit");
+    //     // child.wait().expect("editor exited with a non-zero exit");
 
-        //     let stdout_pipe = child.stdout.take().unwrap();
-        //     let stdout_reader = BufReader::new(stdout_pipe);
-        //     let stderr_pipe = child.stderr.take().unwrap();
-        //     let stderr_reader = BufReader::new(stderr_pipe);
-        //     let stdout_clone = Arc::clone(&stdout_mutex);
+    //     //     let stdout_pipe = child.stdout.take().unwrap();
+    //     //     let stdout_reader = BufReader::new(stdout_pipe);
+    //     //     let stderr_pipe = child.stderr.take().unwrap();
+    //     //     let stderr_reader = BufReader::new(stderr_pipe);
+    //     //     let stdout_clone = Arc::clone(&stdout_mutex);
 
-        //     let stdout_thread = std::thread::spawn(move || {
-        //         for line in stdout_reader.lines() {
-        //             if let Ok(line) = line {
-        //                 // To-do: Should this be changed to `write!`?
-        //                 let mut stdout_lock = stdout_clone.lock().unwrap();
-        //                 let stdout = stdout_lock.as_mut().unwrap();
+    //     //     let stdout_thread = std::thread::spawn(move || {
+    //     //         for line in stdout_reader.lines() {
+    //     //             if let Ok(line) = line {
+    //     //                 // To-do: Should this be changed to `write!`?
+    //     //                 let mut stdout_lock = stdout_clone.lock().unwrap();
+    //     //                 let stdout = stdout_lock.as_mut().unwrap();
 
-        //                 write!(stdout, "{}\r\n", line).unwrap();
-        //             }
-        //         }
-        //     });
+    //     //                 write!(stdout, "{}\r\n", line).unwrap();
+    //     //             }
+    //     //         }
+    //     //     });
 
-        //     let stdout_clone = Arc::clone(&stdout_mutex);
+    //     //     let stdout_clone = Arc::clone(&stdout_mutex);
 
-        //     let stderr_thread = std::thread::spawn(move || {
-        //         for line in stderr_reader.lines() {
-        //             if let Ok(line) = line {
-        //                 // print!("{}\r\n", line);
-        //                 let mut stdout_lock = stdout_clone.lock().unwrap();
-        //                 let stdout = stdout_lock.as_mut().unwrap();
+    //     //     let stderr_thread = std::thread::spawn(move || {
+    //     //         for line in stderr_reader.lines() {
+    //     //             if let Ok(line) = line {
+    //     //                 // print!("{}\r\n", line);
+    //     //                 let mut stdout_lock = stdout_clone.lock().unwrap();
+    //     //                 let stdout = stdout_lock.as_mut().unwrap();
 
-        //                 write!(stdout, "{}\r\n", line).unwrap();
-        //             }
-        //         }
-        //     });
+    //     //                 write!(stdout, "{}\r\n", line).unwrap();
+    //     //             }
+    //     //         }
+    //     //     });
 
-        let should_exit = Arc::new(Mutex::new(false));
-        let should_exit_clone = Arc::clone(&should_exit);
-        let mut stdin = termion::async_stdin().keys();
+    //     let should_exit = Arc::new(Mutex::new(false));
+    //     let should_exit_clone = Arc::clone(&should_exit);
+    //     let mut stdin = termion::async_stdin().keys();
 
-        loop {
-            match child.try_wait() {
-                Ok(Some(_)) => {
-                    print!("Child process has exited\r\n");
-                    *should_exit_clone.lock().unwrap() = true;
-                    break;
-                }
+    //     loop {
+    //         match child.try_wait() {
+    //             Ok(Some(_)) => {
+    //                 print!("Child process has exited\r\n");
+    //                 *should_exit_clone.lock().unwrap() = true;
+    //                 break;
+    //             }
 
-                Ok(None) => {
-                    if *should_exit_clone.lock().unwrap() {
-                        print!("Killing the process...\r\n");
+    //             Ok(None) => {
+    //                 if *should_exit_clone.lock().unwrap() {
+    //                     print!("Killing the process...\r\n");
 
-                        if let Err(e) = child.kill() {
-                            eprint!("Failed to kill child process: {}", e);
-                        }
+    //                     if let Err(e) = child.kill() {
+    //                         eprint!("Failed to kill child process: {}", e);
+    //                     }
 
-                        print!("Process killed!\r\n");
-                        break;
-                    }
+    //                     print!("Process killed!\r\n");
+    //                     break;
+    //                 }
 
-                    let input = stdin.next();
+    //                 let input = stdin.next();
 
-                    if let Some(Ok(key)) = input {
-                        // print!("Key pressed!\r\n");
+    //                 if let Some(Ok(key)) = input {
+    //                     // print!("Key pressed!\r\n");
 
-                        match key {
-                            Key::Ctrl('c') => {
-                                *should_exit_clone.lock().unwrap() = true;
-                            }
-                            Key::Char(_) => {
-                                continue;
-                            }
-                            _ => {}
-                        }
+    //                     match key {
+    //                         Key::Ctrl('c') => {
+    //                             *should_exit_clone.lock().unwrap() = true;
+    //                         }
+    //                         Key::Char(_) => {
+    //                             continue;
+    //                         }
+    //                         _ => {}
+    //                     }
 
-                        // let mut stdout_lock = stdout_clone.lock().unwrap();
+    //                     // let mut stdout_lock = stdout_clone.lock().unwrap();
 
-                        // stdout_lock.as_mut().unwrap().flush().unwrap();
-                    }
+    //                     // stdout_lock.as_mut().unwrap().flush().unwrap();
+    //                 }
 
-                    // print!("Still running...\r\n");
+    //                 // print!("Still running...\r\n");
 
-                    // let mut stdout_lock = stdout_clone.lock().unwrap();
+    //                 // let mut stdout_lock = stdout_clone.lock().unwrap();
 
-                    // stdout_lock.as_mut().unwrap().flush().unwrap();
-                }
+    //                 // stdout_lock.as_mut().unwrap().flush().unwrap();
+    //             }
 
-                Err(e) => {
-                    eprint!("Error while waiting for child process: {}", e);
-                    break;
-                }
-            }
+    //             Err(e) => {
+    //                 eprint!("Error while waiting for child process: {}", e);
+    //                 break;
+    //             }
+    //         }
 
-            // Delay between polling attempts
-            std::thread::sleep(Duration::from_millis(100));
-        }
+    //         // Delay between polling attempts
+    //         std::thread::sleep(Duration::from_millis(100));
+    //     }
 
-        //     // println!("Before join!");
+    //     //     // println!("Before join!");
 
-        //     stdout_thread.join().expect("failed to join stdout thread");
-        //     stderr_thread.join().expect("failed to join stderr thread");
-        //     // handle.join().unwrap();
+    //     //     stdout_thread.join().expect("failed to join stdout thread");
+    //     //     stderr_thread.join().expect("failed to join stderr thread");
+    //     //     // handle.join().unwrap();
 
-        //     // let mut stdout_lock = stdout_clone.lock().unwrap();
-        //     // let stdout = stdout_lock.as_mut().unwrap();
+    //     //     // let mut stdout_lock = stdout_clone.lock().unwrap();
+    //     //     // let stdout = stdout_lock.as_mut().unwrap();
 
-        //     // write!(stdout, "Command executed successfully\r\n").unwrap();
-        // }
+    //     //     // write!(stdout, "Command executed successfully\r\n").unwrap();
+    //     // }
 
-        // // let mut stdout_lock = stdout_clone.lock().unwrap();
-        // // let stdout = stdout_lock.as_mut().unwrap();
+    //     // // let mut stdout_lock = stdout_clone.lock().unwrap();
+    //     // // let stdout = stdout_lock.as_mut().unwrap();
 
-        // // if status.success() {
-        // //     write!(stdout, "Command executed successfully\r\n").unwrap();
-        // // } else {
-        // //     write!(
-        // //         stdout,
-        // //         "Command failed with exit code {}\r\n",
-        // //         status.code().unwrap_or(-1)
-        // //     )
-        // //     .unwrap();
-    }
+    //     // // if status.success() {
+    //     // //     write!(stdout, "Command executed successfully\r\n").unwrap();
+    //     // // } else {
+    //     // //     write!(
+    //     // //         stdout,
+    //     // //         "Command failed with exit code {}\r\n",
+    //     // //         status.code().unwrap_or(-1)
+    //     // //     )
+    //     // //     .unwrap();
+    // }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn test_execute_ok() {
-//         let stdout = Vec::new();
+    #[test]
+    fn test_execute_ok() {
+        let mut cmd_runner = CmdRunner::new("echo test", None);
+        let output = cmd_runner.run().unwrap();
+        let status_string = output.status.code().unwrap();
 
-//         let mut cmd_runner = CmdRunner::new("echo {}", Some("hello"));
-//         let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
-//         let stdout_clone = Arc::clone(&stdout_mutex);
+        assert_eq!(status_string, 0);
+    }
 
-//         cmd_runner.run(stdout_mutex);
+    // #[test]
+    // fn test_execute_status() {
+    //     let mut cmd_runner = CmdRunner::new("exit 1", Some(""));
+    //     let mut stdout = Vec::new();
 
-//         let mut stdout_lock = stdout_clone.lock().unwrap();
-//         let stdout = stdout_lock.as_mut().unwrap();
-//         let stdout_str = String::from_utf8(stdout.clone()).unwrap();
+    //     cmd_runner.run(&mut stdout);
 
-//         assert_eq!(stdout_str.trim(), "hello");
-//     }
+    //     let stderr_str = String::from_utf8_lossy(&stdout);
 
-//     // #[test]
-//     // fn test_execute_status() {
-//     //     let mut cmd_runner = CmdRunner::new("exit 1", Some(""));
-//     //     let mut stdout = Vec::new();
+    //     assert!(stderr_str.contains("exit status: 1"));
+    // }
 
-//     //     cmd_runner.run(&mut stdout);
+    // #[test]
+    // fn test_execute_err() {
+    //     let mut cmd_runner = CmdRunner::new("non-existent-command", Some(""));
+    //     let mut stdout = Vec::new();
 
-//     //     let stderr_str = String::from_utf8_lossy(&stdout);
+    //     cmd_runner.run(&mut stdout);
 
-//     //     assert!(stderr_str.contains("exit status: 1"));
-//     // }
+    //     let stderr_str = String::from_utf8_lossy(&stdout);
 
-//     // #[test]
-//     // fn test_execute_err() {
-//     //     let mut cmd_runner = CmdRunner::new("non-existent-command", Some(""));
-//     //     let mut stdout = Vec::new();
-
-//     //     cmd_runner.run(&mut stdout);
-
-//     //     let stderr_str = String::from_utf8_lossy(&stdout);
-
-//     //     assert!(stderr_str.contains("command not found"));
-//     // }
-// }
+    //     assert!(stderr_str.contains("command not found"));
+    // }
+}
