@@ -3,7 +3,7 @@ use keymap::input::{Input, InputError};
 use keymap::keymap::Keymap;
 use keymap::term_writer::TermCursor;
 use std::io::{stdin, Write};
-use std::sync::{Arc, Mutex};
+// use std::sync::{Arc, Mutex};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::{IntoRawMode, RawTerminal};
