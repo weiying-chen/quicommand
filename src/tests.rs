@@ -87,7 +87,7 @@ fn test_empty_input() {
     let input = keymap::input::get_input(stdin, &mut stdout);
     let keymaps = get_keymaps();
 
-    handle_input_result(input, &keymaps[0], &mut stdout);
+    handle_input_result(input, &keymaps[0], stdout);
 
     let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
@@ -101,7 +101,7 @@ fn test_exit() {
     let input = keymap::input::get_input(stdin, &mut stdout);
     let keymaps = get_keymaps();
 
-    handle_input_result(input, &keymaps[0], &mut stdout);
+    handle_input_result(input, &keymaps[0], stdout);
 
     let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
@@ -142,7 +142,7 @@ fn test_run_command() {
     let keymaps = get_keymaps();
 
     // handle_input_result(input, &keymaps[0], &mut stdout);
-    handle_input('t', &keymaps, stdin.into_iter(), &mut stdout);
+    handle_input('t', &keymaps, stdin.into_iter(), stdout);
 
     let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 
@@ -163,7 +163,7 @@ fn test_run_commmand_with_prompt() {
     let mut stdout = MockStdout::new();
     let keymaps = get_keymaps_with_prompt();
 
-    handle_input('t', &keymaps, stdin.into_iter(), &mut stdout);
+    handle_input('t', &keymaps, stdin.into_iter(), stdout);
 
     let stdout_str = String::from_utf8(stdout.buffer).unwrap();
 

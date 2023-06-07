@@ -116,9 +116,10 @@ fn handle_input<T: TermCursor + Write + std::marker::Send + 'static>(
 ) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
         if (keymap.command).contains("{}") {
-            if let Some(prompt_str) = &keymap.prompt {
-                prompt_input(prompt_str, &mut stdout);
-            }
+            // if let Some(prompt_str) = &keymap.prompt {
+            // To-do: if there is a `{}`, a prompt should be required.
+            prompt_input(keymap.prompt.unwrap(), &mut stdout);
+            // }
 
             let input = keymap::input::get_input(stdin, &mut stdout);
 
@@ -192,4 +193,4 @@ fn main() {
 }
 
 // #[cfg(test)]
-// mod tests;
+mod tests;
