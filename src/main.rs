@@ -55,7 +55,7 @@ fn prompt_input<T: TermCursor + Write>(message: &str, stdout: &mut T) {
     stdout.flush().unwrap();
 }
 
-fn handle_input_result<T: TermCursor + Write + std::marker::Send + 'static>(
+fn handle_input_result<T: TermCursor + Write>(
     result: Result<Input, InputError>,
     keymap: &Keymap,
     mut stdout: T,
@@ -108,7 +108,7 @@ fn handle_input_result<T: TermCursor + Write + std::marker::Send + 'static>(
     };
 }
 
-fn handle_input<T: TermCursor + Write + std::marker::Send + 'static>(
+fn handle_input<T: TermCursor + Write>(
     key: char,
     keymaps: &[Keymap],
     stdin: impl Iterator<Item = Result<Key, std::io::Error>>,
