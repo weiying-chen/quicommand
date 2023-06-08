@@ -51,17 +51,58 @@ impl<T: TermCursor + Write> Screen<T> {
         Screen { stdout }
     }
 
-    fn handle_quit(&mut self) {
+    fn show_cursor(&mut self) {
         self.stdout
             .write_term(format_args!("{}", termion::cursor::Show))
             .unwrap();
     }
 
-    fn prompt_input(&mut self, message: &str) {
+    fn show_prompt(&mut self, message: &str) {
         self.stdout
             .write_term(format_args!("{}{}", termion::cursor::Show, message))
             .unwrap();
         self.stdout.flush().unwrap();
+    }
+
+    fn show_keymap_menu(&mut self, keymaps: &[Keymap]) {
+        self.stdout
+            .write_term(format_args!(
+                "{}{}Please select a command:{}\r\n",
+                termion::clear::All,
+                termion::cursor::Goto(1, 1),
+                termion::cursor::Hide,
+            ))
+            .unwrap();
+
+        for keymap in keymaps {
+            self.stdout
+                .write_term(format_args!("{}  {}\r\n", keymap.key, keymap.description))
+                .unwrap();
+        }
+
+        self.stdout.flush().unwrap();
+    }
+
+    fn handle_input(
+        mut self,
+        key: char,
+        keymaps: &[Keymap],
+        stdin: impl Iterator<Item = Result<Key, std::io::Error>>,
+    ) {
+        if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
+            match keymap.prompt {
+                Some(_) => {
+                    self.show_prompt(keymap.prompt.unwrap());
+
+                    let input = keymap::input::get_input(stdin, &mut self.stdout);
+
+                    self.handle_input_result(input, &keymap);
+                }
+                None => {
+                    self.handle_input_result(Ok(Input::None), &keymap);
+                }
+            }
+        }
     }
 
     fn handle_input_result(mut self, result: Result<Input, InputError>, keymap: &Keymap) {
@@ -105,48 +146,7 @@ impl<T: TermCursor + Write> Screen<T> {
                     .write_term(format_args!("Invalid input: {}\r\n", e))
                     .unwrap();
             }
-        };
-    }
-
-    fn handle_input(
-        mut self,
-        key: char,
-        keymaps: &[Keymap],
-        stdin: impl Iterator<Item = Result<Key, std::io::Error>>,
-    ) {
-        if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
-            match keymap.prompt {
-                Some(_) => {
-                    self.prompt_input(keymap.prompt.unwrap());
-
-                    let input = keymap::input::get_input(stdin, &mut self.stdout);
-
-                    self.handle_input_result(input, &keymap);
-                }
-                None => {
-                    self.handle_input_result(Ok(Input::None), &keymap);
-                }
-            }
         }
-    }
-
-    fn show_keymap_menu(&mut self, keymaps: &[Keymap]) {
-        self.stdout
-            .write_term(format_args!(
-                "{}{}Please select a command:{}\r\n",
-                termion::clear::All,
-                termion::cursor::Goto(1, 1),
-                termion::cursor::Hide,
-            ))
-            .unwrap();
-
-        for keymap in keymaps {
-            self.stdout
-                .write_term(format_args!("{}  {}\r\n", keymap.key, keymap.description))
-                .unwrap();
-        }
-
-        self.stdout.flush().unwrap();
     }
 }
 
@@ -182,7 +182,7 @@ fn main() {
     for key in stdin().keys() {
         match key.unwrap() {
             Key::Char('q') => {
-                screen.handle_quit();
+                screen.show_cursor();
                 break;
             }
             Key::Char(c) => {
