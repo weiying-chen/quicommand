@@ -115,17 +115,17 @@ fn handle_input<T: TermCursor + Write>(
     mut stdout: T,
 ) {
     if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
-        if (keymap.command).contains("{}") {
-            // if let Some(prompt_str) = &keymap.prompt {
-            // To-do: if there is a `{}`, a prompt should be required.
-            prompt_input(keymap.prompt.unwrap(), &mut stdout);
-            // }
+        match keymap.prompt {
+            Some(_) => {
+                prompt_input(keymap.prompt.unwrap(), &mut stdout);
 
-            let input = keymap::input::get_input(stdin, &mut stdout);
+                let input = keymap::input::get_input(stdin, &mut stdout);
 
-            handle_input_result(input, &keymap, stdout);
-        } else {
-            handle_input_result(Ok(Input::None), &keymap, stdout);
+                handle_input_result(input, &keymap, stdout);
+            }
+            None => {
+                handle_input_result(Ok(Input::None), &keymap, stdout);
+            }
         }
     }
 }
