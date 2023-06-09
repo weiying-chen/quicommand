@@ -50,16 +50,16 @@
 // fn get_keymaps<'a>() -> Vec<Keymap> {
 //     vec![Keymap::new(
 //         't',
-//         "Test keymap".to_string(),
-//         "echo 'test'".to_string(),
+//         "Test keymap",
+//         "echo 'test'",
 //     )]
 // }
 
 // fn get_keymaps_with_prompt<'a>() -> Vec<Keymap> {
 //     vec![Keymap::new(
 //         't',
-//         "Test keymap".to_string(),
-//         "echo {}".to_string(),
+//         "Test keymap",
+//         "echo {}",
 //     )]
 // }
 

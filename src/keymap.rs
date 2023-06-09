@@ -6,21 +6,21 @@ pub struct Keymap {
 }
 
 impl Keymap {
-    pub fn new(key: char, description: String, command: String) -> Self {
+    pub fn new(key: char, description: &str, command: &str) -> Self {
         Self {
             key,
-            description,
-            command,
+            description: description.to_string(),
+            command: command.to_string(),
             prompt: None,
         }
     }
 
-    pub fn with_prompt(key: char, description: String, command: String, prompt: String) -> Self {
+    pub fn with_prompt(key: char, description: &str, command: &str, prompt: &str) -> Self {
         Self {
             key,
-            description,
-            command,
-            prompt: Some(prompt),
+            description: description.to_string(),
+            command: command.to_string(),
+            prompt: Some(prompt.to_string()),
         }
     }
 }

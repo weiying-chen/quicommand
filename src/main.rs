@@ -158,31 +158,22 @@ fn main() {
     screen.stdout.flush().unwrap();
 
     let mut keymaps = vec![
-        Keymap::new(
-            't',
-            "Sleep".to_string(),
-            "sleep 2 && echo test && sleep 2".to_string(),
-        ),
+        Keymap::new('t', "Sleep", "sleep 2 && echo test && sleep 2"),
         Keymap::with_prompt(
             'c',
-            "Git add and commit".to_string(),
-            "git add . && git commit -m \"{}\"".to_string(),
-            "Enter commit message\r\n".to_string(),
+            "Git add and commit",
+            "git add . && git commit -m \"{}\"",
+            "Enter commit message\r\n",
         ),
-        Keymap::new('o', "Open script".to_string(), "vi script.txt".to_string()),
-        Keymap::new('s', "Run script.sh".to_string(), "./script.sh".to_string()),
-        Keymap::new(
-            'r',
-            "cargo run --release".to_string(),
-            "cargon run --release".to_string(),
-        ),
+        Keymap::new('o', "Open script", "vi script.txt"),
+        Keymap::new('s', "Run script.sh", "./script.sh"),
+        Keymap::new('r', "cargo run --release", "cargon run --release"),
         Keymap::new(
             'a',
-            "Run all".to_string(),
+            "Run all",
             "/home/alex/bash/crop/script.sh &&
             /home/alex/rust/visual-center/target/release/visual_center &&
-            /home/alex/bash/delete/script.sh"
-                .to_string(),
+            /home/alex/bash/delete/script.sh",
         ),
     ];
 
