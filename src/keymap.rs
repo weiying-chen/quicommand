@@ -1,12 +1,12 @@
-pub struct Keymap<'a> {
+pub struct Keymap {
     pub key: char,
-    pub description: &'a str,
-    pub command: &'a str,
-    pub prompt: Option<&'a str>,
+    pub description: String,
+    pub command: String,
+    pub prompt: Option<String>,
 }
 
-impl<'a> Keymap<'a> {
-    pub fn new(key: char, description: &'a str, command: &'a str) -> Self {
+impl Keymap {
+    pub fn new(key: char, description: String, command: String) -> Self {
         Self {
             key,
             description,
@@ -15,7 +15,7 @@ impl<'a> Keymap<'a> {
         }
     }
 
-    pub fn with_prompt(key: char, description: &'a str, command: &'a str, prompt: &'a str) -> Self {
+    pub fn with_prompt(key: char, description: String, command: String, prompt: String) -> Self {
         Self {
             key,
             description,

@@ -64,6 +64,7 @@ impl<T: TermCursor + Write> Screen<T> {
         self.stdout.flush().unwrap();
     }
 
+    // To-do: this should be a generic method that renders any menu.
     fn show_keymap_menu(&mut self, keymaps: &[Keymap]) {
         self.stdout
             .write_term(format_args!(
@@ -86,20 +87,20 @@ impl<T: TermCursor + Write> Screen<T> {
     fn handle_input(
         mut self,
         key: char,
-        keymaps: &[Keymap],
+        keymaps: Vec<Keymap>,
         stdin: impl Iterator<Item = Result<Key, std::io::Error>>,
     ) {
         if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
             match keymap.prompt {
                 Some(_) => {
-                    self.show_prompt(keymap.prompt.unwrap());
+                    self.show_prompt(&keymap.prompt.clone().unwrap());
 
                     let input = keymap::input::get_input(stdin, &mut self.stdout);
 
-                    self.handle_input_result(input, &keymap);
+                    self.handle_input_result(input, keymap);
                 }
                 None => {
-                    self.handle_input_result(Ok(Input::None), &keymap);
+                    self.handle_input_result(Ok(Input::None), keymap);
                 }
             }
         }
@@ -121,7 +122,7 @@ impl<T: TermCursor + Write> Screen<T> {
 
                 // To-do: `command should` return a result.
                 // To-do: The cursor is shown previously in prompt_input.
-                let mut command = CmdRunner::new(keymap.command, Some(&i));
+                let mut command = CmdRunner::new(keymap.command.clone(), Some(i));
                 // let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
 
                 command.run().unwrap();
@@ -134,7 +135,7 @@ impl<T: TermCursor + Write> Screen<T> {
                 self.stdout.flush().unwrap();
                 drop(self.stdout);
 
-                let mut command = CmdRunner::new(keymap.command, None);
+                let mut command = CmdRunner::new(keymap.command.clone(), None);
 
                 command.run().unwrap();
             }
@@ -156,27 +157,36 @@ fn main() {
 
     screen.stdout.flush().unwrap();
 
-    let keymaps = vec![
-        Keymap::new('t', "Sleep", "sleep 2 && echo test && sleep 2"),
+    let mut keymaps = vec![
+        Keymap::new(
+            't',
+            "Sleep".to_string(),
+            "sleep 2 && echo test && sleep 2".to_string(),
+        ),
         Keymap::with_prompt(
             'c',
-            "Git add and commit",
-            "git add . && git commit -m \"{}\"",
-            "Enter commit message\r\n",
+            "Git add and commit".to_string(),
+            "git add . && git commit -m \"{}\"".to_string(),
+            "Enter commit message\r\n".to_string(),
         ),
-        Keymap::new('o', "Open script", "vi script.txt"),
-        Keymap::new('s', "Run script.sh", "./script.sh"),
-        Keymap::new('r', "cargo run --release", "cargon run --release"),
+        Keymap::new('o', "Open script".to_string(), "vi script.txt".to_string()),
+        Keymap::new('s', "Run script.sh".to_string(), "./script.sh".to_string()),
+        Keymap::new(
+            'r',
+            "cargo run --release".to_string(),
+            "cargon run --release".to_string(),
+        ),
         Keymap::new(
             'a',
-            "Run all",
+            "Run all".to_string(),
             "/home/alex/bash/crop/script.sh &&
             /home/alex/rust/visual-center/target/release/visual_center &&
-            /home/alex/bash/delete/script.sh",
+            /home/alex/bash/delete/script.sh"
+                .to_string(),
         ),
     ];
 
-    screen.show_keymap_menu(&keymaps);
+    screen.show_keymap_menu(&mut keymaps);
     screen.stdout.flush().unwrap();
 
     for key in stdin().keys() {
@@ -186,7 +196,7 @@ fn main() {
                 break;
             }
             Key::Char(c) => {
-                screen.handle_input(c, &keymaps, stdin().keys());
+                screen.handle_input(c, keymaps, stdin().keys());
                 break;
             }
             _ => {}

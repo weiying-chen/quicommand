@@ -7,13 +7,13 @@ pub struct CmdRunner {
 impl CmdRunner {
     // To-do: this is actually running the command and `run()` is handling the stdout/output.
 
-    pub fn new(command_string: &str, input: Option<&str>) -> CmdRunner {
+    pub fn new(command_string: String, input: Option<String>) -> CmdRunner {
         let mut command = Command::new("script");
 
         command.arg("-qec");
 
         if let Some(input_str) = input {
-            command.arg(command_string.replace("{}", input_str));
+            command.arg(command_string.replace("{}", &input_str));
         } else {
             command.arg(command_string);
         }
