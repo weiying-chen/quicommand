@@ -65,19 +65,24 @@ impl<T: TermCursor + Write> Screen<T> {
     }
 
     // To-do: this should be a generic method that renders any menu.
-    fn show_keymap_menu(&mut self, keymaps: &[Keymap]) {
+
+    fn show_menu(&mut self, message: &str, items: &[String]) {
         self.stdout
             .write_term(format_args!(
-                "{}{}Please select a command:{}\r\n",
+                "{}{}{}",
                 termion::clear::All,
                 termion::cursor::Goto(1, 1),
                 termion::cursor::Hide,
             ))
             .unwrap();
 
-        for keymap in keymaps {
+        self.stdout
+            .write_term(format_args!("{}\r\n", message))
+            .unwrap();
+
+        for item in items {
             self.stdout
-                .write_term(format_args!("{}  {}\r\n", keymap.key, keymap.description))
+                .write_term(format_args!("{}\r\n", item))
                 .unwrap();
         }
 
@@ -157,7 +162,7 @@ fn main() {
 
     screen.stdout.flush().unwrap();
 
-    let mut keymaps = vec![
+    let keymaps = vec![
         Keymap::new('t', "Sleep", "sleep 2 && echo test && sleep 2"),
         Keymap::with_prompt(
             'c',
@@ -177,7 +182,12 @@ fn main() {
         ),
     ];
 
-    screen.show_keymap_menu(&mut keymaps);
+    let menu_items: Vec<String> = keymaps
+        .iter()
+        .map(|keymap| format!("{}  {}", keymap.key, keymap.description))
+        .collect();
+
+    screen.show_menu("Please select a command:", &menu_items);
     screen.stdout.flush().unwrap();
 
     for key in stdin().keys() {
