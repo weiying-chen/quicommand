@@ -59,14 +59,21 @@ impl<T: TermCursor + Write> Screen<T> {
 
     fn show_prompt(&mut self, message: &str) {
         self.stdout
-            .write_term(format_args!("{}{}", termion::cursor::Show, message))
+            .write_term(format_args!("{}\r\n", message))
             .unwrap();
-        self.stdout.flush().unwrap();
     }
 
     // To-do: this should be a generic method that renders any menu.
 
-    fn show_menu(&mut self, message: &str, items: &[String]) {
+    fn show_menu(&mut self, items: &[String]) {
+        for item in items {
+            self.stdout
+                .write_term(format_args!("{}\r\n", item))
+                .unwrap();
+        }
+    }
+
+    fn clear_all(&mut self) {
         self.stdout
             .write_term(format_args!(
                 "{}{}{}",
@@ -75,18 +82,6 @@ impl<T: TermCursor + Write> Screen<T> {
                 termion::cursor::Hide,
             ))
             .unwrap();
-
-        self.stdout
-            .write_term(format_args!("{}\r\n", message))
-            .unwrap();
-
-        for item in items {
-            self.stdout
-                .write_term(format_args!("{}\r\n", item))
-                .unwrap();
-        }
-
-        self.stdout.flush().unwrap();
     }
 
     fn handle_input(
@@ -99,6 +94,8 @@ impl<T: TermCursor + Write> Screen<T> {
             match keymap.prompt {
                 Some(_) => {
                     self.show_prompt(&keymap.prompt.clone().unwrap());
+                    self.show_cursor();
+                    self.stdout.flush().unwrap();
 
                     let input = keymap::input::get_input(stdin, &mut self.stdout);
 
@@ -116,13 +113,8 @@ impl<T: TermCursor + Write> Screen<T> {
             Ok(Input::Text(i)) => {
                 // Because the input doesn't start a newline
                 self.stdout.write_term(format_args!("\r\n")).unwrap();
-
-                self.stdout
-                    .write_term(format_args!("{}", termion::cursor::Show))
-                    .unwrap();
-
+                self.show_cursor();
                 self.stdout.flush().unwrap();
-
                 drop(self.stdout);
 
                 // To-do: `command should` return a result.
@@ -133,10 +125,7 @@ impl<T: TermCursor + Write> Screen<T> {
                 command.run().unwrap();
             }
             Ok(Input::None) => {
-                self.stdout
-                    .write_term(format_args!("{}", termion::cursor::Show))
-                    .unwrap();
-
+                self.show_cursor();
                 self.stdout.flush().unwrap();
                 drop(self.stdout);
 
@@ -168,7 +157,7 @@ fn main() {
             'c',
             "Git add and commit",
             "git add . && git commit -m \"{}\"",
-            "Enter commit message\r\n",
+            "Enter commit message:",
         ),
         Keymap::new('o', "Open script", "vi script.txt"),
         Keymap::new('s', "Run script.sh", "./script.sh"),
@@ -187,8 +176,10 @@ fn main() {
         .map(|keymap| format!("{}  {}", keymap.key, keymap.description))
         .collect();
 
-    screen.show_menu("Please select a command:", &menu_items);
-    screen.stdout.flush().unwrap();
+    screen.clear_all();
+    screen.show_prompt("Please select a command:");
+    screen.show_menu(&menu_items);
+    // screen.stdout.flush().unwrap();
 
     for key in stdin().keys() {
         match key.unwrap() {
