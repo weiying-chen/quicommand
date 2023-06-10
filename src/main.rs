@@ -51,6 +51,10 @@ impl<T: TermCursor + Write> Screen<T> {
         Screen { stdout }
     }
 
+    fn add_newline(&mut self) {
+        self.stdout.write_term(format_args!("\r\n")).unwrap();
+    }
+
     fn show_cursor(&mut self) {
         self.stdout
             .write_term(format_args!("{}", termion::cursor::Show))
@@ -112,7 +116,7 @@ impl<T: TermCursor + Write> Screen<T> {
         match result {
             Ok(Input::Text(i)) => {
                 // Because the input doesn't start a newline
-                self.stdout.write_term(format_args!("\r\n")).unwrap();
+                self.add_newline();
                 self.show_cursor();
                 self.stdout.flush().unwrap();
                 drop(self.stdout);
@@ -134,7 +138,7 @@ impl<T: TermCursor + Write> Screen<T> {
                 command.run().unwrap();
             }
             Ok(Input::Exit) => {
-                self.stdout.write_term(format_args!("\r\n")).unwrap();
+                self.add_newline();
             }
             Err(e) => {
                 self.stdout
