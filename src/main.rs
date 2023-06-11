@@ -59,6 +59,7 @@ impl<T: TermCursor + Write> Screen<T> {
         self.stdout
             .write_term(format_args!("{}", termion::cursor::Show))
             .unwrap();
+        self.stdout.flush().unwrap();
     }
 
     fn show_prompt(&mut self, message: &str) {
@@ -66,8 +67,6 @@ impl<T: TermCursor + Write> Screen<T> {
             .write_term(format_args!("{}\r\n", message))
             .unwrap();
     }
-
-    // To-do: this should be a generic method that renders any menu.
 
     fn show_menu(&mut self, items: &[String]) {
         for item in items {
@@ -97,7 +96,6 @@ impl<T: TermCursor + Write> Screen<T> {
             Some(_) => {
                 self.show_prompt(&keymap.prompt.clone().unwrap());
                 self.show_cursor();
-                self.stdout.flush().unwrap();
 
                 let input = keymap::input::get_input(stdin, &mut self.stdout)?;
 
@@ -113,7 +111,6 @@ impl<T: TermCursor + Write> Screen<T> {
                 // Because the input doesn't start a newline
                 self.add_newline();
                 self.show_cursor();
-                self.stdout.flush().unwrap();
                 drop(self.stdout);
 
                 // To-do: `command should` return a result.
@@ -125,7 +122,6 @@ impl<T: TermCursor + Write> Screen<T> {
             }
             Ok(Input::None) => {
                 self.show_cursor();
-                self.stdout.flush().unwrap();
                 drop(self.stdout);
 
                 let mut command = CmdRunner::new(keymap.command.clone(), None);
