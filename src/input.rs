@@ -45,7 +45,8 @@ impl fmt::Display for InputError {
     }
 }
 
-pub fn get_input<T: TermCursor + Write>(
+// This function returns input based on keys
+pub fn input_from_keys<T: TermCursor + Write>(
     input_keys: impl Iterator<Item = Result<Key, io::Error>>,
     stdout: &mut T,
 ) -> Result<Input, InputError> {

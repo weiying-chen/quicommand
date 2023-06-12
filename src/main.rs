@@ -87,7 +87,7 @@ impl<T: TermCursor + Write> Screen<T> {
             .unwrap();
     }
 
-    fn handle_input(
+    fn input_from_prompt(
         &mut self,
         keymap: &Keymap,
         stdin: impl Iterator<Item = Result<Key, std::io::Error>>,
@@ -97,7 +97,7 @@ impl<T: TermCursor + Write> Screen<T> {
                 self.show_prompt(&keymap.prompt.clone().unwrap());
                 self.show_cursor();
 
-                let input = keymap::input::get_input(stdin, &mut self.stdout)?;
+                let input = keymap::input::input_from_keys(stdin, &mut self.stdout)?;
 
                 Ok(input)
             }
@@ -184,7 +184,7 @@ fn main() {
             }
             Key::Char(key) => {
                 if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
-                    let input = screen.handle_input(keymap, stdin().keys());
+                    let input = screen.input_from_prompt(keymap, stdin().keys());
 
                     screen.handle_input_result(input, keymap);
                     break;
