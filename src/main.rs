@@ -1,4 +1,6 @@
-// use keymap::input::{Input, InputError};
+use keymap::cmd_runner::CmdRunner;
+use keymap::input;
+use keymap::input::{Input, InputError};
 use keymap::keymap::Keymap;
 use keymap::screen::Screen;
 use keymap::term_writer::TermCursor;
@@ -38,6 +40,69 @@ impl TermCursor for RawStdout {
 
     fn get_cursor_pos(&mut self) -> Result<(u16, u16), std::io::Error> {
         termion::cursor::DetectCursorPos::cursor_pos(self)
+    }
+}
+
+struct InputHandler<T: TermCursor + Write> {
+    screen: Screen<T>,
+}
+
+impl<T: TermCursor + Write> InputHandler<T> {
+    fn new(screen: Screen<T>) -> Self {
+        InputHandler { screen }
+    }
+
+    pub fn input_from_prompt(
+        &mut self,
+        prompt: Option<String>,
+        stdin: impl Iterator<Item = Result<Key, std::io::Error>>,
+    ) -> Result<Input, InputError> {
+        match prompt {
+            Some(_) => {
+                self.screen.show_prompt(&prompt.unwrap());
+                self.screen.show_cursor();
+
+                let input = input::input_from_keys(stdin, &mut self.screen.stdout)?;
+
+                Ok(input)
+            }
+            None => Ok(Input::None),
+        }
+    }
+
+    pub fn process_input(mut self, result: Result<Input, InputError>, keymap: &Keymap) {
+        match result {
+            Ok(Input::Text(i)) => {
+                // Because the input doesn't start a newline
+                self.screen.add_newline();
+                self.screen.show_cursor();
+                drop(self.screen.stdout);
+
+                // To-do: `command should` return a result.
+                // To-do: The cursor is shown previously in prompt_input.
+                let mut command = CmdRunner::new(keymap.command.clone(), Some(i));
+                // let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
+
+                command.run().unwrap();
+            }
+            Ok(Input::None) => {
+                self.screen.show_cursor();
+                drop(self.screen.stdout);
+
+                let mut command = CmdRunner::new(keymap.command.clone(), None);
+
+                command.run().unwrap();
+            }
+            Ok(Input::Exit) => {
+                self.screen.add_newline();
+            }
+            Err(e) => {
+                self.screen
+                    .stdout
+                    .write_term(format_args!("Invalid input: {}\r\n", e))
+                    .unwrap();
+            }
+        }
     }
 }
 
@@ -85,9 +150,11 @@ fn main() {
             }
             Key::Char(key) => {
                 if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
-                    let input = screen.input_from_prompt(keymap, stdin().keys());
+                    let mut input_handler = InputHandler::new(screen);
+                    let input =
+                        input_handler.input_from_prompt(keymap.prompt.clone(), stdin().keys());
 
-                    screen.handle_input_result(input, keymap);
+                    input_handler.process_input(input, keymap);
                     break;
                 }
             }
