@@ -11,11 +11,11 @@ pub struct Screen<T: TermCursor + Write> {
 }
 
 impl<T: TermCursor + Write> Screen<T> {
-    //To-do: maybe functions like these should belong to `TermWriter`?
     pub fn new(stdout: T) -> Self {
         Screen { stdout }
     }
 
+    //To-do: maybe functions like these should belong to `TermWriter`?
     pub fn add_newline(&mut self) {
         self.stdout.write_term(format_args!("\r\n")).unwrap();
     }
@@ -52,6 +52,8 @@ impl<T: TermCursor + Write> Screen<T> {
             .unwrap();
     }
 
+    // To-do: see if this can be moved to `input.rs`.
+    // The argument should be the prompt.
     pub fn input_from_prompt(
         &mut self,
         keymap: &Keymap,
