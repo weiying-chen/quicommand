@@ -1,4 +1,4 @@
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
 
 pub struct CmdRunner {
     pub command: std::process::Command,
@@ -23,9 +23,17 @@ impl CmdRunner {
     }
 
     pub fn run(&mut self) -> Result<Output, std::io::Error> {
+        let child = self.command.spawn().expect("failed to spawn command");
+
+        let output = child.wait_with_output()?;
+
+        Ok(output)
+    }
+
+    pub fn run_with_output(&mut self) -> Result<Output, std::io::Error> {
         let child = self
             .command
-            // .stdout(Stdio::piped())
+            .stdout(Stdio::piped())
             .spawn()
             .expect("failed to spawn command");
 
