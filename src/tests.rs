@@ -52,21 +52,34 @@ fn get_keymaps<'a>() -> Vec<Keymap> {
 }
 
 fn get_keymaps_with_prompt<'a>() -> Vec<Keymap> {
-    vec![Keymap::new('t', "Test keymap", "echo {}")]
+    vec![Keymap::with_prompt(
+        't',
+        "Test keymap",
+        "echo {}",
+        "Test prompt",
+    )]
 }
 
-// #[test]
-// fn test_show_keymap_menu() {
-//     let keymaps = get_keymaps();
-//     let mut stdout = MockStdout::new();
+#[test]
+fn test_show_keymap_menu() {
+    let keymaps = get_keymaps();
 
-//     show_keymap_menu(&keymaps, &mut stdout);
+    let menu_items: Vec<String> = keymaps
+        .iter()
+        .map(|keymap| format!("{}  {}", keymap.key, keymap.description))
+        .collect();
 
-//     let stdout_str = String::from_utf8(stdout.buffer).unwrap();
+    let stdout = MockStdout::new();
+    let mut screen = Screen::new(stdout);
 
-//     assert!(stdout_str.contains("Please select a command"));
-//     assert!(stdout_str.contains("t  Test keymap"));
-// }
+    screen.show_menu(&menu_items);
+
+    let stdout_str = String::from_utf8(screen.stdout.buffer).unwrap();
+
+    println!("{:?}", stdout_str);
+
+    assert!(stdout_str.contains("t  Test keymap"));
+}
 
 // #[test]
 // fn test_show_input_instruction() {
@@ -80,53 +93,31 @@ fn get_keymaps_with_prompt<'a>() -> Vec<Keymap> {
 //     assert!(stdout_str.contains(PROMPT_MESSAGE));
 // }
 
+// To-do: this doesn't have an assertion
 // #[test]
 // fn test_empty_input() {
-//     let stdin = vec![Ok(Key::Char('\n'))].into_iter();
-//     let mut stdout = MockStdout::new();
-//     let input = keymap::input::get_input(stdin, &mut stdout);
 //     let keymaps = get_keymaps();
+//     let stdout = MockStdout::new();
+//     let screen = Screen::new(stdout);
+//     let mut input_handler = InputHandler::new(screen);
+//     let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), stdin().keys());
 
-//     handle_input_result(input, &keymaps[0], stdout);
-
-//     let stdout_str = String::from_utf8(stdout.buffer).unwrap();
-
-//     assert!(stdout_str.contains("Input was empty"));
+//     input_handler.process_input(input, &keymaps[0]);
 // }
 
-// #[test]
-// fn test_exit() {
-//     let stdin = vec![Ok(Key::Esc)].into_iter();
-//     let mut stdout = MockStdout::new();
-//     let input = keymap::input::get_input(stdin, &mut stdout);
-//     let keymaps = get_keymaps();
+// To-do: this doesn't have an assertion
+#[test]
+fn test_exit_proccess() {
+    let keymaps = get_keymaps_with_prompt();
+    let stdout = MockStdout::new();
+    let screen = Screen::new(stdout);
+    let mut input_handler = InputHandler::new(screen);
+    let keys = vec![Ok(Key::Esc)];
+    let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
+    let output = input_handler.process_input(input, &keymaps[0]);
 
-//     handle_input_result(input, &keymaps[0], stdout);
-
-//     let stdout_str = String::from_utf8(stdout.buffer).unwrap();
-
-//     assert!(stdout_str.contains("\r\n"));
-// }
-
-// #[test]
-// fn test_run_command() {
-//     let stdin = vec![
-//         Ok(Key::Char('a')),
-//         Ok(Key::Char('b')),
-//         Ok(Key::Char('c')),
-//         Ok(Key::Char('\n')),
-//     ];
-
-//     let mut stdout = MockStdout::new();
-//     let input = keymap::input::get_input(stdin.into_iter(), &mut stdout);
-//     let keymaps = get_keymaps();
-
-//     handle_input_result(input, &keymaps[0], &mut stdout);
-
-//     let stdout_str = String::from_utf8(stdout.buffer).unwrap();
-
-//     assert!(stdout_str.contains("abc"));
-// }
+    println!("OUTPUT: {:?}", output.unwrap());
+}
 
 #[test]
 fn test_run_command() {
@@ -134,8 +125,6 @@ fn test_run_command() {
     let mut command = CmdRunner::new(keymaps[0].command.clone(), None);
     let output = command.run_with_output().unwrap();
     let stdout_str = String::from_utf8(output.stdout).unwrap();
-
-    println!("STDOUT_STR: {:?}", stdout_str);
 
     assert!(stdout_str.contains("test"));
 }
@@ -146,8 +135,6 @@ fn test_run_commmand_with_prompt() {
     let mut command = CmdRunner::new(keymaps[0].command.clone(), Some("test".to_string()));
     let output = command.run_with_output().unwrap();
     let stdout_str = String::from_utf8(output.stdout).unwrap();
-
-    println!("STDOUT_STR: {:?}", stdout_str);
 
     assert!(stdout_str.contains("test"));
 }

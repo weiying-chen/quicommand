@@ -43,6 +43,12 @@ impl TermCursor for RawStdout {
     }
 }
 
+#[derive(Debug)]
+pub enum Process {
+    Output(std::process::Output),
+    Exit,
+}
+
 struct InputHandler<T: TermCursor + Write> {
     screen: Screen<T>,
 }
@@ -70,7 +76,11 @@ impl<T: TermCursor + Write> InputHandler<T> {
         }
     }
 
-    pub fn process_input(mut self, result: Result<Input, InputError>, keymap: &Keymap) {
+    pub fn process_input(
+        mut self,
+        result: Result<Input, InputError>,
+        keymap: &Keymap,
+    ) -> Result<Process, InputError> {
         match result {
             Ok(Input::Text(i)) => {
                 // Because the input doesn't start a newline
@@ -82,25 +92,29 @@ impl<T: TermCursor + Write> InputHandler<T> {
                 // To-do: The cursor is shown previously in prompt_input.
                 let mut command = CmdRunner::new(keymap.command.clone(), Some(i));
                 // let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
+                let output = command.run().unwrap();
 
-                command.run().unwrap();
+                Ok(Process::Output(output))
             }
             Ok(Input::None) => {
                 self.screen.show_cursor();
                 drop(self.screen.stdout);
 
                 let mut command = CmdRunner::new(keymap.command.clone(), None);
+                let output = command.run().unwrap();
 
-                command.run().unwrap();
+                Ok(Process::Output(output))
             }
-            Ok(Input::Exit) => {
+            Ok(Input::Cancel) => {
                 self.screen.add_newline();
+                Ok(Process::Exit)
             }
             Err(e) => {
                 self.screen
                     .stdout
                     .write_term(format_args!("Invalid input: {}\r\n", e))
                     .unwrap();
+                Err(e)
             }
         }
     }
@@ -154,7 +168,7 @@ fn main() {
                     let input =
                         input_handler.input_from_prompt(keymap.prompt.clone(), stdin().keys());
 
-                    input_handler.process_input(input, keymap);
+                    input_handler.process_input(input, keymap).unwrap();
                     break;
                 }
             }

@@ -12,7 +12,7 @@ use crate::term_writer::TermWriter;
 pub enum Input {
     Text(String),
     None,
-    Exit,
+    Cancel,
 }
 
 #[derive(Debug)]
@@ -56,7 +56,7 @@ pub fn input_from_keys<T: TermCursor + Write>(
     for key in input_keys {
         match key.unwrap() {
             Key::Char('\n') => return term_writer.enter(),
-            Key::Esc => return Ok(Input::Exit),
+            Key::Esc => return Ok(Input::Cancel),
             Key::Char(c) => term_writer.char(c)?,
             Key::Left => term_writer.left()?,
             Key::Right => term_writer.right()?,

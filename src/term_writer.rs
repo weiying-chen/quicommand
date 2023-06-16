@@ -25,7 +25,7 @@ impl<'a, C: TermCursor> TermWriter<'a, C> {
         Self {
             input,
             stdout,
-            cursor_pos: Position { x: 1, y: 3 },
+            cursor_pos: Position { x: 1, y: 1 },
         }
     }
 
