@@ -76,8 +76,6 @@ fn test_show_keymap_menu() {
 
     let stdout_str = String::from_utf8(screen.stdout.buffer).unwrap();
 
-    println!("{:?}", stdout_str);
-
     assert!(stdout_str.contains("t  Test keymap"));
 }
 
@@ -93,17 +91,19 @@ fn test_show_keymap_menu() {
 //     assert!(stdout_str.contains(PROMPT_MESSAGE));
 // }
 
-// To-do: this doesn't have an assertion
-// #[test]
-// fn test_empty_input() {
-//     let keymaps = get_keymaps();
-//     let stdout = MockStdout::new();
-//     let screen = Screen::new(stdout);
-//     let mut input_handler = InputHandler::new(screen);
-//     let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), stdin().keys());
+// Note: This is already testing run command
+#[test]
+fn test_empty_input() {
+    let keymaps = get_keymaps_with_prompt();
+    let stdout = MockStdout::new();
+    let screen = Screen::new(stdout);
+    let mut input_handler = InputHandler::new(screen);
+    let keys = vec![Ok(Key::Char('\n'))];
+    let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
+    let output = input_handler.process_input(input, &keymaps[0]);
 
-//     input_handler.process_input(input, &keymaps[0]);
-// }
+    assert!(matches!(output, Err(InputError::EmptyString)));
+}
 
 // To-do: this doesn't have an assertion
 #[test]
@@ -116,7 +116,7 @@ fn test_exit_proccess() {
     let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
     let output = input_handler.process_input(input, &keymaps[0]);
 
-    println!("OUTPUT: {:?}", output.unwrap());
+    assert_eq!(output.unwrap(), Process::Exit);
 }
 
 #[test]

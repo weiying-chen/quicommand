@@ -43,7 +43,7 @@ impl TermCursor for RawStdout {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Process {
     Output(std::process::Output),
     Exit,
