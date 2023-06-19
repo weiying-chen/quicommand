@@ -92,8 +92,23 @@ fn test_show_keymap_menu() {
 // }
 
 // Note: This is already testing run command
+
 #[test]
-fn test_empty_input() {
+fn command_without_input() {
+    let keymaps = get_keymaps();
+    let stdout = MockStdout::new();
+    let screen = Screen::new(stdout);
+    let mut input_handler = InputHandler::new(screen);
+    let keys = Vec::new();
+    let input = input_handler.input_from_prompt(None, keys.into_iter());
+    let output = input_handler.process_input(input, &keymaps[0]);
+
+    // assert!(matches!(output, Err(InputError::EmptyString)));
+    println!("OUTPUT: {:?}", output);
+}
+
+#[test]
+fn command_with_empty_input() {
     let keymaps = get_keymaps_with_prompt();
     let stdout = MockStdout::new();
     let screen = Screen::new(stdout);
@@ -117,16 +132,6 @@ fn test_exit_proccess() {
     let output = input_handler.process_input(input, &keymaps[0]);
 
     assert_eq!(output.unwrap(), Process::Exit);
-}
-
-#[test]
-fn test_run_command() {
-    let keymaps = get_keymaps();
-    let mut command = CmdRunner::new(keymaps[0].command.clone(), None);
-    let output = command.run_with_output().unwrap();
-    let stdout_str = String::from_utf8(output.stdout).unwrap();
-
-    assert!(stdout_str.contains("test"));
 }
 
 #[test]

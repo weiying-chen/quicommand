@@ -45,7 +45,8 @@ impl TermCursor for RawStdout {
 
 #[derive(Debug, PartialEq)]
 pub enum Process {
-    Output(std::process::Output),
+    // Output(std::process::Output),
+    Output((String, String)),
     Exit,
 }
 
@@ -92,7 +93,7 @@ impl<T: TermCursor + Write> InputHandler<T> {
                 // To-do: The cursor is shown previously in prompt_input.
                 let mut command = CmdRunner::new(keymap.command.clone(), Some(i));
                 // let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
-                let output = command.run().unwrap();
+                let output = command.run_with_output().unwrap();
 
                 Ok(Process::Output(output))
             }
@@ -101,7 +102,8 @@ impl<T: TermCursor + Write> InputHandler<T> {
                 drop(self.screen.stdout);
 
                 let mut command = CmdRunner::new(keymap.command.clone(), None);
-                let output = command.run().unwrap();
+                // let output = command.run().unwrap();
+                let output = command.run_with_output().unwrap();
 
                 Ok(Process::Output(output))
             }

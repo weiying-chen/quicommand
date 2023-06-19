@@ -1,4 +1,7 @@
-use std::process::{Command, Output, Stdio};
+use std::{
+    io::{BufRead, BufReader},
+    process::{Command, Output, Stdio},
+};
 
 pub struct CmdRunner {
     pub command: std::process::Command,
@@ -30,16 +33,52 @@ impl CmdRunner {
         Ok(output)
     }
 
-    pub fn run_with_output(&mut self) -> Result<Output, std::io::Error> {
-        let child = self
-            .command
-            .stdout(Stdio::piped())
-            .spawn()
-            .expect("failed to spawn command");
+    pub fn run_with_output(&mut self) -> Result<(String, String), std::io::Error> {
+        // let child = self
+        //     .command
+        //     .stdout(Stdio::piped())
+        //     .spawn()
+        //     .expect("failed to spawn command");
 
-        let output = child.wait_with_output()?;
+        self.command.stdout(Stdio::piped());
+        self.command.stderr(Stdio::piped());
 
-        Ok(output)
+        let mut child = self.command.spawn().expect("failed to spawn command");
+        let stdout_pipe = child.stdout.take().unwrap();
+
+        let stdout_thread = std::thread::spawn(move || {
+            let mut capture = String::new();
+
+            for line in BufReader::new(stdout_pipe).lines() {
+                let line = line.unwrap();
+
+                capture.push_str(&line);
+                print!("{}\r\n", line);
+            }
+            capture
+        });
+
+        let stderr_pipe = child.stderr.take().unwrap();
+
+        let stderr_thread = std::thread::spawn(move || {
+            let mut capture = String::new();
+
+            for line in BufReader::new(stderr_pipe).lines() {
+                let line = line.unwrap();
+
+                capture.push_str(&line);
+                println!("{line}");
+            }
+            capture
+        });
+
+        let stdout_output = stdout_thread.join().expect("failed to join stdout thread");
+        let stderr_output = stderr_thread.join().expect("failed to join stderr thread");
+
+        println!("stdout_output: {:?}", stdout_output);
+        println!("stderr_output: {:?}", stderr_output);
+
+        Ok((stdout_output, stderr_output))
     }
 
     // pub fn run_old<W: Write + Send + 'static>(&mut self, stdout_mutex: Arc<Mutex<Option<W>>>) {
