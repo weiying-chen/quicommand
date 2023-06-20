@@ -94,13 +94,39 @@ fn test_show_keymap_menu() {
 // Note: This is already testing run command
 
 #[test]
-fn command_without_input() {
+fn command() {
     let keymaps = get_keymaps();
     let stdout = MockStdout::new();
     let screen = Screen::new(stdout);
     let mut input_handler = InputHandler::new(screen);
     let keys = Vec::new();
     let input = input_handler.input_from_prompt(None, keys.into_iter());
+    let output = input_handler.process_input(input, &keymaps[0]);
+    let result = output.unwrap();
+
+    let Process::Output(stdout, _) = result else {
+      panic!();
+    };
+
+    assert_eq!(stdout, "test")
+}
+
+#[test]
+fn command_with_input() {
+    let keymaps = get_keymaps_with_prompt();
+    let stdout = MockStdout::new();
+    let screen = Screen::new(stdout);
+    let mut input_handler = InputHandler::new(screen);
+
+    let keys = vec![
+        Ok(Key::Char('t')),
+        Ok(Key::Char('e')),
+        Ok(Key::Char('s')),
+        Ok(Key::Char('t')),
+        // Ok(Key::Char('\n')),
+    ];
+
+    let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
     let output = input_handler.process_input(input, &keymaps[0]);
     let result = output.unwrap();
 
