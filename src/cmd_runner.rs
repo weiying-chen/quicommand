@@ -34,12 +34,6 @@ impl CmdRunner {
     }
 
     pub fn run_with_output(&mut self) -> Result<(String, String), std::io::Error> {
-        // let child = self
-        //     .command
-        //     .stdout(Stdio::piped())
-        //     .spawn()
-        //     .expect("failed to spawn command");
-
         self.command.stdout(Stdio::piped());
         self.command.stderr(Stdio::piped());
 
@@ -75,8 +69,8 @@ impl CmdRunner {
         let stdout_output = stdout_thread.join().expect("failed to join stdout thread");
         let stderr_output = stderr_thread.join().expect("failed to join stderr thread");
 
-        println!("stdout_output: {:?}", stdout_output);
-        println!("stderr_output: {:?}", stderr_output);
+        // println!("stdout_output: {:?}", stdout_output);
+        // println!("stderr_output: {:?}", stderr_output);
 
         Ok((stdout_output, stderr_output))
     }

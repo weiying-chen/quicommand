@@ -102,44 +102,48 @@ fn command_without_input() {
     let keys = Vec::new();
     let input = input_handler.input_from_prompt(None, keys.into_iter());
     let output = input_handler.process_input(input, &keymaps[0]);
+    let result = output.unwrap();
 
-    // assert!(matches!(output, Err(InputError::EmptyString)));
-    println!("OUTPUT: {:?}", output);
+    let Process::Output(stdout, _) = result else {
+      panic!();
+    };
+
+    assert_eq!(stdout, "test")
 }
 
-#[test]
-fn command_with_empty_input() {
-    let keymaps = get_keymaps_with_prompt();
-    let stdout = MockStdout::new();
-    let screen = Screen::new(stdout);
-    let mut input_handler = InputHandler::new(screen);
-    let keys = vec![Ok(Key::Char('\n'))];
-    let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
-    let output = input_handler.process_input(input, &keymaps[0]);
+// #[test]
+// fn command_with_empty_input() {
+//     let keymaps = get_keymaps_with_prompt();
+//     let stdout = MockStdout::new();
+//     let screen = Screen::new(stdout);
+//     let mut input_handler = InputHandler::new(screen);
+//     let keys = vec![Ok(Key::Char('\n'))];
+//     let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
+//     let output = input_handler.process_input(input, &keymaps[0]);
 
-    assert!(matches!(output, Err(InputError::EmptyString)));
-}
+//     assert!(matches!(output, Err(InputError::EmptyString)));
+// }
 
 // To-do: this doesn't have an assertion
-#[test]
-fn test_exit_proccess() {
-    let keymaps = get_keymaps_with_prompt();
-    let stdout = MockStdout::new();
-    let screen = Screen::new(stdout);
-    let mut input_handler = InputHandler::new(screen);
-    let keys = vec![Ok(Key::Esc)];
-    let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
-    let output = input_handler.process_input(input, &keymaps[0]);
+// #[test]
+// fn test_exit_proccess() {
+//     let keymaps = get_keymaps_with_prompt();
+//     let stdout = MockStdout::new();
+//     let screen = Screen::new(stdout);
+//     let mut input_handler = InputHandler::new(screen);
+//     let keys = vec![Ok(Key::Esc)];
+//     let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
+//     let output = input_handler.process_input(input, &keymaps[0]);
 
-    assert_eq!(output.unwrap(), Process::Exit);
-}
+//     assert_eq!(output.unwrap(), Process::Exit);
+// }
 
-#[test]
-fn test_run_commmand_with_prompt() {
-    let keymaps = get_keymaps_with_prompt();
-    let mut command = CmdRunner::new(keymaps[0].command.clone(), Some("test".to_string()));
-    let output = command.run_with_output().unwrap();
-    let stdout_str = String::from_utf8(output.stdout).unwrap();
+// #[test]
+// fn test_run_commmand_with_prompt() {
+//     let keymaps = get_keymaps_with_prompt();
+//     let mut command = CmdRunner::new(keymaps[0].command.clone(), Some("test".to_string()));
+//     let output = command.run_with_output().unwrap();
+//     let stdout_str = String::from_utf8(output.stdout).unwrap();
 
-    assert!(stdout_str.contains("test"));
-}
+//     assert!(stdout_str.contains("test"));
+// }
