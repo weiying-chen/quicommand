@@ -89,10 +89,7 @@ impl<T: TermCursor + Write> InputHandler<T> {
                 self.screen.show_cursor();
                 drop(self.screen.stdout);
 
-                // To-do: `command should` return a result.
-                // To-do: The cursor is shown previously in prompt_input.
                 let mut command = CmdRunner::new(keymap.command.clone(), Some(i));
-                // let stdout_mutex = Arc::new(Mutex::new(Some(stdout)));
                 let (stdout, stderr) = command.run_with_output().unwrap();
 
                 Ok(Process::Output(stdout, stderr))
@@ -102,7 +99,6 @@ impl<T: TermCursor + Write> InputHandler<T> {
                 drop(self.screen.stdout);
 
                 let mut command = CmdRunner::new(keymap.command.clone(), None);
-                // let output = command.run().unwrap();
                 let (stdout, stderr) = command.run_with_output().unwrap();
 
                 Ok(Process::Output(stdout, stderr))
@@ -170,6 +166,7 @@ fn main() {
                     let input =
                         input_handler.input_from_prompt(keymap.prompt.clone(), stdin().keys());
 
+                    // To-do: this panics because there is a `InputError`.
                     input_handler.process_input(input, keymap).unwrap();
                     break;
                 }

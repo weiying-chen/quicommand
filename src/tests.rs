@@ -108,7 +108,7 @@ fn command() {
       panic!();
     };
 
-    assert_eq!(stdout, "test")
+    assert_eq!(stdout, "test");
 }
 
 #[test]
@@ -123,7 +123,6 @@ fn command_with_input() {
         Ok(Key::Char('e')),
         Ok(Key::Char('s')),
         Ok(Key::Char('t')),
-        // Ok(Key::Char('\n')),
     ];
 
     let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
@@ -134,21 +133,25 @@ fn command_with_input() {
       panic!();
     };
 
-    assert_eq!(stdout, "test")
+    assert_eq!(stdout, "test");
 }
 
-// #[test]
-// fn command_with_empty_input() {
-//     let keymaps = get_keymaps_with_prompt();
-//     let stdout = MockStdout::new();
-//     let screen = Screen::new(stdout);
-//     let mut input_handler = InputHandler::new(screen);
-//     let keys = vec![Ok(Key::Char('\n'))];
-//     let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
-//     let output = input_handler.process_input(input, &keymaps[0]);
+#[test]
+fn command_with_empty_input() {
+    let keymaps = get_keymaps_with_prompt();
+    let stdout = MockStdout::new();
+    let screen = Screen::new(stdout);
+    let mut input_handler = InputHandler::new(screen);
+    let keys = vec![Ok(Key::Char('\n'))];
+    let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
+    let output = input_handler.process_input(input, &keymaps[0]);
 
-//     assert!(matches!(output, Err(InputError::EmptyString)));
-// }
+    let Err(input_error) = output else {
+        panic!();
+    };
+
+    assert_eq!(input_error.to_string(), "Input was empty");
+}
 
 // To-do: this doesn't have an assertion
 // #[test]

@@ -61,7 +61,7 @@ impl CmdRunner {
                 let line = line.unwrap();
 
                 capture.push_str(&line);
-                println!("{line}");
+                print!("{line}");
             }
             capture
         });

@@ -39,7 +39,8 @@ impl fmt::Display for InputError {
                     .map(|b| format!("0x{:X}", b))
                     .collect::<Vec<_>>()
             ),
-            InputError::EmptyString => write!(f, "Input was empty."),
+            // InputError::EmptyString => write!(f, "Input was empty"),
+            InputError::EmptyString => write!(f, "Input was empty"),
             InputError::IoError(e) => write!(f, "I/O Error: {}", e),
         }
     }
