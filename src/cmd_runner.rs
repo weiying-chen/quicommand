@@ -34,6 +34,8 @@ impl CmdRunner {
     }
 
     pub fn run_with_output(&mut self) -> Result<(String, String), std::io::Error> {
+        // This prevents the output from becoming messed up in tests.
+        self.command.stdin(Stdio::null());
         self.command.stdout(Stdio::piped());
         self.command.stderr(Stdio::piped());
 
@@ -68,9 +70,6 @@ impl CmdRunner {
 
         let stdout_output = stdout_thread.join().expect("failed to join stdout thread");
         let stderr_output = stderr_thread.join().expect("failed to join stderr thread");
-
-        // println!("stdout_output: {:?}", stdout_output);
-        // println!("stderr_output: {:?}", stderr_output);
 
         Ok((stdout_output, stderr_output))
     }

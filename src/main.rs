@@ -166,7 +166,6 @@ fn main() {
                     let input =
                         input_handler.input_from_prompt(keymap.prompt.clone(), stdin().keys());
 
-                    // To-do: this panics because there is a `InputError`.
                     input_handler.process_input(input, keymap).unwrap();
                     break;
                 }
