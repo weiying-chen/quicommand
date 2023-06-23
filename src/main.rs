@@ -1,8 +1,6 @@
-use keymap::cmd_runner::CmdRunner;
-use keymap::input;
-use keymap::input::{Input, InputError};
 use keymap::keymap::Keymap;
 use keymap::screen::Screen;
+use keymap::step::Step;
 use keymap::term_writer::TermCursor;
 use std::io::{stdin, Write};
 // use std::sync::{Arc, Mutex};
@@ -43,81 +41,6 @@ impl TermCursor for RawStdout {
     }
 }
 
-#[derive(Debug, PartialEq)]
-pub enum Process {
-    // Output(std::process::Output),
-    Output(String, String),
-    Exit,
-}
-
-struct Step<T: TermCursor + Write> {
-    screen: Screen<T>,
-}
-
-impl<T: TermCursor + Write> Step<T> {
-    fn new(screen: Screen<T>) -> Self {
-        Step { screen }
-    }
-
-    pub fn input_from_prompt(
-        &mut self,
-        prompt: Option<String>,
-        stdin: impl Iterator<Item = Result<Key, std::io::Error>>,
-    ) -> Result<Input, InputError> {
-        match prompt {
-            Some(_) => {
-                self.screen.show_prompt(&prompt.unwrap());
-                self.screen.show_cursor();
-
-                let input = input::input_from_keys(stdin, &mut self.screen.stdout)?;
-
-                Ok(input)
-            }
-            None => Ok(Input::None),
-        }
-    }
-
-    pub fn process_input(
-        mut self,
-        result: Result<Input, InputError>,
-        keymap: &Keymap,
-    ) -> Result<Process, InputError> {
-        match result {
-            Ok(Input::Text(i)) => {
-                // Because the input doesn't start a newline
-                self.screen.add_newline();
-                self.screen.show_cursor();
-                drop(self.screen.stdout);
-
-                let mut command = CmdRunner::new(keymap.command.clone(), Some(i));
-                let (stdout, stderr) = command.run_with_output().unwrap();
-
-                Ok(Process::Output(stdout, stderr))
-            }
-            Ok(Input::None) => {
-                self.screen.show_cursor();
-                drop(self.screen.stdout);
-
-                let mut command = CmdRunner::new(keymap.command.clone(), None);
-                let (stdout, stderr) = command.run_with_output().unwrap();
-
-                Ok(Process::Output(stdout, stderr))
-            }
-            Ok(Input::Cancel) => {
-                self.screen.add_newline();
-                Ok(Process::Exit)
-            }
-            Err(e) => {
-                self.screen
-                    .stdout
-                    .write_term(format_args!("Invalid input: {}\r\n", e))
-                    .unwrap();
-                Err(e)
-            }
-        }
-    }
-}
-
 fn main() {
     let stdout = RawStdout::new().unwrap();
     let mut screen = Screen::new(stdout);
@@ -149,6 +72,7 @@ fn main() {
         .map(|keymap| format!("{}  {}", keymap.key, keymap.description))
         .collect();
 
+    // To-do: maybe this should be a step?
     screen.clear_all();
     screen.show_prompt("Please select a command:");
     screen.show_menu(&menu_items);
