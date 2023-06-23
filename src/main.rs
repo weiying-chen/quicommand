@@ -50,13 +50,13 @@ pub enum Process {
     Exit,
 }
 
-struct InputHandler<T: TermCursor + Write> {
+struct Step<T: TermCursor + Write> {
     screen: Screen<T>,
 }
 
-impl<T: TermCursor + Write> InputHandler<T> {
+impl<T: TermCursor + Write> Step<T> {
     fn new(screen: Screen<T>) -> Self {
-        InputHandler { screen }
+        Step { screen }
     }
 
     pub fn input_from_prompt(
@@ -162,11 +162,10 @@ fn main() {
             }
             Key::Char(key) => {
                 if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
-                    let mut input_handler = InputHandler::new(screen);
-                    let input =
-                        input_handler.input_from_prompt(keymap.prompt.clone(), stdin().keys());
+                    let mut step = Step::new(screen);
+                    let input = step.input_from_prompt(keymap.prompt.clone(), stdin().keys());
 
-                    input_handler.process_input(input, keymap).unwrap();
+                    step.process_input(input, keymap).unwrap();
                     break;
                 }
             }

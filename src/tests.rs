@@ -84,10 +84,10 @@ fn command() {
     let keymaps = get_keymaps();
     let stdout = MockStdout::new();
     let screen = Screen::new(stdout);
-    let mut input_handler = InputHandler::new(screen);
+    let mut step = Step::new(screen);
     let keys = Vec::new();
-    let input = input_handler.input_from_prompt(None, keys.into_iter());
-    let output = input_handler.process_input(input, &keymaps[0]);
+    let input = step.input_from_prompt(None, keys.into_iter());
+    let output = step.process_input(input, &keymaps[0]);
     let result = output.unwrap();
 
     let Process::Output(stdout, _) = result else {
@@ -102,7 +102,7 @@ fn command_with_input() {
     let keymaps = get_keymaps_with_prompt();
     let stdout = MockStdout::new();
     let screen = Screen::new(stdout);
-    let mut input_handler = InputHandler::new(screen);
+    let mut step = Step::new(screen);
 
     let keys = vec![
         Ok(Key::Char('t')),
@@ -111,8 +111,8 @@ fn command_with_input() {
         Ok(Key::Char('t')),
     ];
 
-    let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
-    let output = input_handler.process_input(input, &keymaps[0]);
+    let input = step.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
+    let output = step.process_input(input, &keymaps[0]);
     let result = output.unwrap();
 
     let Process::Output(stdout, _) = result else {
@@ -127,17 +127,17 @@ fn command_with_input_prompt() {
     let keymaps = get_keymaps_with_prompt();
     let stdout = MockStdout::new();
     let screen = Screen::new(stdout);
-    let mut input_handler = InputHandler::new(screen);
+    let mut step = Step::new(screen);
 
     let keys = Vec::new();
 
-    let test = input_handler
+    let test = step
         .input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter())
         .unwrap();
 
     println!("TEST: {:?}", test);
 
-    let stdout_str = String::from_utf8(input_handler.screen.stdout.buffer).unwrap();
+    let stdout_str = String::from_utf8(step.screen.stdout.buffer).unwrap();
 
     assert!(stdout_str.contains("Test prompt"));
 }
@@ -147,10 +147,10 @@ fn command_with_empty_input() {
     let keymaps = get_keymaps_with_prompt();
     let stdout = MockStdout::new();
     let screen = Screen::new(stdout);
-    let mut input_handler = InputHandler::new(screen);
+    let mut step = Step::new(screen);
     let keys = vec![Ok(Key::Char('\n'))];
-    let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
-    let output = input_handler.process_input(input, &keymaps[0]);
+    let input = step.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
+    let output = step.process_input(input, &keymaps[0]);
 
     let Err(input_error) = output else {
         panic!();
@@ -164,10 +164,10 @@ fn command_with_cancelled_input() {
     let keymaps = get_keymaps_with_prompt();
     let stdout = MockStdout::new();
     let screen = Screen::new(stdout);
-    let mut input_handler = InputHandler::new(screen);
+    let mut step = Step::new(screen);
     let keys = vec![Ok(Key::Esc)];
-    let input = input_handler.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
-    let output = input_handler.process_input(input, &keymaps[0]);
+    let input = step.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
+    let output = step.process_input(input, &keymaps[0]);
 
     assert!(matches!(output.unwrap(), Process::Exit));
 }
