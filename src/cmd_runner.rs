@@ -7,6 +7,18 @@ pub struct CmdRunner {
     pub command: std::process::Command,
 }
 
+pub fn escape_backticks(input: &str) -> String {
+    let mut result = String::new();
+
+    for c in input.chars() {
+        if c == '`' {
+            result.push('\\');
+        }
+        result.push(c);
+    }
+    result
+}
+
 impl CmdRunner {
     // To-do: this is actually running the command and `run()` is handling the stdout/output.
 
@@ -16,7 +28,9 @@ impl CmdRunner {
         command.arg("-qec");
 
         if let Some(input_str) = input {
-            command.arg(command_string.replace("{}", &input_str));
+            let escaped_input = escape_backticks(&input_str);
+
+            command.arg(command_string.replace("{}", &escaped_input));
         } else {
             command.arg(command_string);
         }
