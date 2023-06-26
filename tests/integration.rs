@@ -1,6 +1,12 @@
-use super::*;
+use std::io::Write;
 
-// Stdout
+use keymap::{
+    keymap::Keymap,
+    screen::Screen,
+    step::{Process, Step},
+    term_writer::TermCursor,
+};
+use termion::event::Key;
 
 #[derive(Debug)]
 struct MockStdout {
