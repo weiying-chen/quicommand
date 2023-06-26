@@ -28,9 +28,9 @@ impl CmdRunner {
         command.arg("-qec");
 
         if let Some(input_str) = input {
-            let escaped_input = escape_backticks(&input_str);
+            let input_str = escape_backticks(&input_str);
 
-            command.arg(command_string.replace("{}", &escaped_input));
+            command.arg(command_string.replace("{}", &input_str));
         } else {
             command.arg(command_string);
         }
