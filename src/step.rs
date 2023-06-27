@@ -33,6 +33,7 @@ impl<T: TermCursor + Write> Step<T> {
                 self.screen.show_cursor();
 
                 let input = input::input_from_keys(stdin, &mut self.screen.stdout)?;
+                // To-do: move `escape_backtips` to here?
 
                 Ok(input)
             }
