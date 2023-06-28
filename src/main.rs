@@ -43,9 +43,10 @@ impl TermCursor for RawStdout {
 
 fn main() {
     let stdout = RawStdout::new().unwrap();
-    let mut screen = Screen::new(stdout);
+    let screen = Screen::new(stdout);
+    let mut step = Step::new(screen);
 
-    screen.stdout.flush().unwrap();
+    step.screen.stdout.flush().unwrap();
 
     let keymaps = vec![
         Keymap::new('t', "Sleep", "sleep 2 && echo test && sleep 2"),
@@ -72,21 +73,17 @@ fn main() {
         .map(|keymap| format!("{}  {}", keymap.key, keymap.description))
         .collect();
 
-    // To-do: maybe this should be a step?
-    screen.clear_all();
-    screen.show_prompt("Please select a command:");
-    screen.show_menu(&menu_items);
+    step.show_select_command(&menu_items);
     // screen.stdout.flush().unwrap();
 
     for key in stdin().keys() {
         match key.unwrap() {
             Key::Char('q') => {
-                screen.show_cursor();
+                step.screen.show_cursor();
                 break;
             }
             Key::Char(key) => {
                 if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
-                    let mut step = Step::new(screen);
                     let input = step.input_from_prompt(keymap.prompt.clone(), stdin().keys());
 
                     step.process_input(input, keymap).unwrap();

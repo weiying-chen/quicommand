@@ -22,6 +22,12 @@ impl<T: TermCursor + Write> Step<T> {
         Step { screen }
     }
 
+    pub fn show_select_command(&mut self, menu_items: &[String]) {
+        self.screen.clear_all();
+        self.screen.show_prompt("Please select a command:");
+        self.screen.show_menu(&menu_items);
+    }
+
     pub fn input_from_prompt(
         &mut self,
         prompt: Option<String>,

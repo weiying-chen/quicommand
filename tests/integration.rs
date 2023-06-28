@@ -76,13 +76,16 @@ fn test_show_keymap_menu() {
         .collect();
 
     let stdout = MockStdout::new();
-    let mut screen = Screen::new(stdout);
+    let screen = Screen::new(stdout);
+    let mut step = Step::new(screen);
 
-    screen.show_menu(&menu_items);
+    step.show_select_command(&menu_items);
 
-    let stdout_str = String::from_utf8(screen.stdout.buffer).unwrap();
+    let stdout_str = String::from_utf8(step.screen.stdout.buffer).unwrap();
+    let has_prompt = stdout_str.contains("Please select a command:");
+    let has_menu = stdout_str.contains("t  Test keymap");
 
-    assert!(stdout_str.contains("t  Test keymap"));
+    assert!(has_prompt && has_menu);
 }
 
 #[test]
@@ -137,11 +140,8 @@ fn command_with_input_prompt() {
 
     let keys = Vec::new();
 
-    let test = step
-        .input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter())
+    step.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter())
         .unwrap();
-
-    println!("TEST: {:?}", test);
 
     let stdout_str = String::from_utf8(step.screen.stdout.buffer).unwrap();
 
