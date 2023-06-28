@@ -99,11 +99,15 @@ fn command() {
     let output = step.process_input(input, &keymaps[0]);
     let result = output.unwrap();
 
-    let Process::Output(stdout, _) = result else {
+    println!("result: {:?}", result);
+
+    let Process::Output(output) = result else {
       panic!();
     };
 
-    assert_eq!(stdout, "test");
+    let stdout_str = String::from_utf8_lossy(&output.stdout);
+
+    assert_eq!(stdout_str, "test");
 }
 
 #[test]
@@ -124,11 +128,13 @@ fn command_with_input() {
     let output = step.process_input(input, &keymaps[0]);
     let result = output.unwrap();
 
-    let Process::Output(stdout, _) = result else {
+    let Process::Output(output) = result else {
       panic!();
     };
 
-    assert_eq!(stdout, "test");
+    let stdout_str = String::from_utf8_lossy(&output.stdout);
+
+    assert_eq!(stdout_str, "test");
 }
 
 #[test]

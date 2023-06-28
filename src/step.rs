@@ -9,7 +9,7 @@ use termion::event::Key;
 
 #[derive(Debug, PartialEq)]
 pub enum Process {
-    Output(String, String),
+    Output(std::process::Output),
     Exit,
 }
 
@@ -60,18 +60,18 @@ impl<T: TermCursor + Write> Step<T> {
                 drop(self.screen.stdout);
 
                 let mut command = CmdRunner::new(keymap.command.clone(), Some(i));
-                let (stdout, stderr) = command.run_with_output().unwrap();
+                let output = command.run_with_output().unwrap();
 
-                Ok(Process::Output(stdout, stderr))
+                Ok(Process::Output(output))
             }
             Ok(Input::None) => {
                 self.screen.show_cursor();
                 drop(self.screen.stdout);
 
                 let mut command = CmdRunner::new(keymap.command.clone(), None);
-                let (stdout, stderr) = command.run_with_output().unwrap();
+                let output = command.run_with_output().unwrap();
 
-                Ok(Process::Output(stdout, stderr))
+                Ok(Process::Output(output))
             }
             Ok(Input::Cancel) => {
                 self.screen.add_newline();
