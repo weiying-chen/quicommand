@@ -67,7 +67,7 @@ fn get_keymaps_with_prompt<'a>() -> Vec<Keymap> {
 }
 
 #[test]
-fn test_show_keymap_menu() {
+fn show_keymap_menu() {
     let keymaps = get_keymaps();
 
     let menu_items: Vec<String> = keymaps
