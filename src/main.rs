@@ -1,45 +1,11 @@
 use keymap::keymap::Keymap;
+use keymap::raw_stdout::RawStdout;
 use keymap::screen::Screen;
 use keymap::step::Step;
-use keymap::term_writer::TermCursor;
-use std::io::{stdin, Write};
-// use std::sync::{Arc, Mutex};
+use std::io::stdin;
+use std::io::Write;
 use termion::event::Key;
 use termion::input::TermRead;
-use termion::raw::{IntoRawMode, RawTerminal};
-
-//To-do: move this into its own file.
-
-struct RawStdout {
-    buffer: RawTerminal<std::io::Stdout>,
-}
-
-impl RawStdout {
-    pub fn new() -> std::io::Result<Self> {
-        let buffer = std::io::stdout().into_raw_mode()?;
-        Ok(Self { buffer })
-    }
-}
-
-impl Write for RawStdout {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.buffer.write(buf)
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        self.buffer.flush()
-    }
-}
-
-impl TermCursor for RawStdout {
-    fn write_term(&mut self, fmt: std::fmt::Arguments) -> std::io::Result<()> {
-        std::io::Write::write_fmt(self, fmt)
-    }
-
-    fn get_cursor_pos(&mut self) -> Result<(u16, u16), std::io::Error> {
-        termion::cursor::DetectCursorPos::cursor_pos(self)
-    }
-}
 
 fn main() {
     let stdout = RawStdout::new().unwrap();
