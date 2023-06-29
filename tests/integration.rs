@@ -99,8 +99,6 @@ fn command() {
     let output = step.process_input(input, &keymaps[0]);
     let result = output.unwrap();
 
-    println!("result: {:?}", result);
-
     let Process::Output(output) = result else {
       panic!();
     };
