@@ -1,6 +1,7 @@
 pub mod cmd_runner;
 pub mod input;
 pub mod keymap;
+pub mod mock_stdout;
 pub mod raw_stdout;
 pub mod screen;
 pub mod step;
