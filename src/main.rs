@@ -17,14 +17,14 @@ fn main() {
     let keymaps = vec![
         Keymap::new('t', "Sleep", "sleep 2 && echo test && sleep 2"),
         Keymap::with_prompt(
-            'c',
+            'g',
             "Git add and commit",
             "git add . && git commit -m \"{}\"",
             "Enter commit message:",
         ),
-        Keymap::new('o', "Open script", "vi script.txt"),
+        Keymap::new('h', "Open script", "hx script.*"),
         Keymap::new('s', "Run script.sh", "./script.sh"),
-        Keymap::new('r', "cargo run --release", "cargon run --release"),
+        Keymap::new('c', "cargo run --release", "cargon run --release"),
         Keymap::new(
             'a',
             "Run all",

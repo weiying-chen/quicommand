@@ -5,6 +5,8 @@ use crate::keymap::Keymap;
 use crate::screen::Screen;
 use crate::term_writer::TermCursor;
 use std::io::Write;
+use std::os::unix::process::ExitStatusExt;
+use std::process::{ExitStatus, Output};
 use termion::event::Key;
 
 #[derive(Debug, PartialEq)]
@@ -70,7 +72,15 @@ impl<T: TermCursor + Write> Step<T> {
 
                 let mut command = CmdRunner::new(keymap.command.clone(), None);
                 let output = command.run_with_output().unwrap();
+                // command.run().unwrap();
 
+                // let fake_output = Output {
+                //     stdout: "".into(),
+                //     stderr: "".into(),
+                //     status: ExitStatus::from_raw(0),
+                // };
+
+                // Ok(Process::Output(fake_output))
                 Ok(Process::Output(output))
             }
             Ok(Input::Cancel) => {

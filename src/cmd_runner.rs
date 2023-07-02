@@ -10,8 +10,6 @@ pub struct CmdRunner {
 }
 
 impl CmdRunner {
-    // To-do: this is actually running the command and `run()` is handling the stdout/output.
-
     pub fn new(command_string: String, input: Option<String>) -> CmdRunner {
         let mut command = Command::new("script");
 
