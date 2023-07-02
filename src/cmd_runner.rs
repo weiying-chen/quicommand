@@ -5,8 +5,14 @@ use std::{
 
 use crate::utils::escape_backticks;
 
+pub enum CmdType {
+    Interactive,
+    Script,
+}
+
 pub struct CmdRunner {
     pub command: std::process::Command,
+    pub command_type: CmdType,
 }
 
 impl CmdRunner {
@@ -20,16 +26,31 @@ impl CmdRunner {
 
             command.arg(command_string.replace("{}", &input_str));
         } else {
-            command.arg(command_string);
+            command.arg(command_string.clone());
         }
 
         command.arg("/dev/null");
-        CmdRunner { command }
+
+        let interactive_commands = ["hx", "vi"];
+
+        let is_interactive_command = interactive_commands
+            .iter()
+            .any(|cmd| command_string.contains(cmd));
+
+        let command_type = if is_interactive_command {
+            CmdType::Interactive
+        } else {
+            CmdType::Script
+        };
+
+        CmdRunner {
+            command,
+            command_type,
+        }
     }
 
     pub fn run(&mut self) -> Result<Output, std::io::Error> {
         let child = self.command.spawn().expect("failed to spawn command");
-
         let output = child.wait_with_output()?;
 
         Ok(output)
