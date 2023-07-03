@@ -31,7 +31,7 @@ impl CmdRunner {
 
         command.arg("/dev/null");
 
-        let interactive_commands = ["hx", "vi"];
+        let interactive_commands = ["hx", "vi", "fzf"];
 
         let is_interactive_command = interactive_commands
             .iter()

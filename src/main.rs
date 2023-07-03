@@ -15,16 +15,28 @@ fn main() {
     step.screen.stdout.flush().unwrap();
 
     let keymaps = vec![
-        Keymap::new('t', "Sleep", "sleep 2 && echo test && sleep 2"),
+        Keymap::new(
+            't',
+            "To-dos",
+            "hx ~/Dropbox/DropsyncFiles/markdown/to-dos.md",
+            // "hx to-dos.md",
+        ),
+        Keymap::new('x', "Sleep", "sleep 2 && echo test && sleep 2"),
+        Keymap::new('s', "git status", "git status"),
         Keymap::with_prompt(
             'g',
             "Git add and commit",
             "git add . && git commit -m \"{}\"",
             "Enter commit message:",
         ),
-        Keymap::new('h', "Open script", "hx script.*"),
-        Keymap::new('s', "Run script.sh", "./script.sh"),
+        Keymap::new('o', "Open script", "hx script.*"),
+        Keymap::new('r', "Run script", "./script.*"),
         Keymap::new('c', "cargo run --release", "cargon run --release"),
+        Keymap::new(
+            'e',
+            "Realesrgan enlarge",
+            "/home/Downloads/realesrgan/enlarge.sh",
+        ),
         Keymap::new(
             'a',
             "Run all",
