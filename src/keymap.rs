@@ -1,26 +1,31 @@
+#[derive(Debug, Default)]
 pub struct Keymap {
     pub key: char,
-    pub description: String,
     pub command: String,
+    pub description: String,
     pub prompt: Option<String>,
 }
 
 impl Keymap {
-    pub fn new(key: char, description: &str, command: &str) -> Self {
+    pub fn new<S: AsRef<str>>(key: char, command: S) -> Self {
+        let command = command.as_ref().to_owned();
+        let description = command.clone();
+
         Self {
             key,
-            description: description.to_string(),
-            command: command.to_string(),
-            prompt: None,
+            command,
+            description,
+            ..Default::default()
         }
     }
 
-    pub fn with_prompt(key: char, description: &str, command: &str, prompt: &str) -> Self {
-        Self {
-            key,
-            description: description.to_string(),
-            command: command.to_string(),
-            prompt: Some(prompt.to_string()),
-        }
+    pub fn with_prompt<S: AsRef<str>>(mut self, prompt: S) -> Self {
+        self.prompt = Some(prompt.as_ref().to_owned());
+        self
+    }
+
+    pub fn with_description<S: AsRef<str>>(mut self, description: S) -> Self {
+        self.description = description.as_ref().to_owned();
+        self
     }
 }

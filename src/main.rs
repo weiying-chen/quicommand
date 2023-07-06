@@ -15,35 +15,18 @@ fn main() {
     step.screen.stdout.flush().unwrap();
 
     let keymaps = vec![
-        Keymap::new(
-            't',
-            "To-dos",
-            "hx ~/Dropbox/DropsyncFiles/markdown/to-dos.md",
-            // "hx to-dos.md",
-        ),
-        Keymap::new('x', "Sleep", "sleep 2 && echo test && sleep 2"),
-        Keymap::new('s', "git status", "git status"),
-        Keymap::with_prompt(
-            'g',
-            "Git add and commit",
-            "git add . && git commit -m \"{}\"",
-            "Enter commit message:",
-        ),
-        Keymap::new('o', "Open script", "hx script.*"),
-        Keymap::new('r', "Run script", "./script.*"),
-        Keymap::new('c', "cargo run --release", "cargon run --release"),
-        Keymap::new(
-            'e',
-            "Realesrgan enlarge",
-            "/home/Downloads/realesrgan/enlarge.sh",
-        ),
-        Keymap::new(
-            'a',
-            "Run all",
-            "/home/alex/bash/crop/script.sh &&
-            /home/alex/rust/visual-center/target/release/visual_center &&
-            /home/alex/bash/delete/script.sh",
-        ),
+        Keymap::new('a', "sleep 2 && echo test && sleep 2").with_description("Just a test"),
+        Keymap::new('b', "sleep 2 && echo test && sleep 2"),
+        Keymap::new('t', "hx ~/Dropbox/DropsyncFiles/markdown/to-dos.md")
+            .with_description("To-dos"),
+        Keymap::new('x', "sleep 2 && echo test && sleep 2"),
+        Keymap::new('s', "git status"),
+        Keymap::new('g', "git add . && git commit -m \"{}\"")
+            .with_description("Git commit")
+            .with_prompt("Enter commit message:"),
+        Keymap::new('o', "hx script.*"),
+        Keymap::new('r', "./script.*"),
+        Keymap::new('c', "cargon run --release"),
     ];
 
     let menu_items: Vec<String> = keymaps
