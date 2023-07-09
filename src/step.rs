@@ -22,9 +22,15 @@ impl<T: TermCursor + Write> Step<T> {
         Step { screen }
     }
 
-    pub fn show_select_command(&mut self, menu_items: &[String]) {
+    pub fn show_select_command(&mut self, keymaps: &[Keymap]) {
         self.screen.clear_all();
         self.screen.show_prompt("Please select a command:");
+
+        let menu_items: Vec<String> = keymaps
+            .iter()
+            .map(|keymap| format!("{}  {}", keymap.key, keymap.description))
+            .collect();
+
         self.screen.show_menu(&menu_items);
     }
 

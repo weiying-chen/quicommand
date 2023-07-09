@@ -22,17 +22,11 @@ fn get_keymaps_with_prompt<'a>() -> Vec<Keymap> {
 #[test]
 fn keymap() {
     let keymaps = get_keymaps();
-
-    let menu_items: Vec<String> = keymaps
-        .iter()
-        .map(|keymap| format!("{}  {}", keymap.key, keymap.description))
-        .collect();
-
     let stdout = MockStdout::new();
     let screen = Screen::new(stdout);
     let mut step = Step::new(screen);
 
-    step.show_select_command(&menu_items);
+    step.show_select_command(&keymaps);
 
     let stdout_str = String::from_utf8(step.screen.stdout.buffer).unwrap();
     let has_prompt = stdout_str.contains("Please select a command:");
@@ -44,17 +38,11 @@ fn keymap() {
 #[test]
 fn keymap_with_description() {
     let keymaps = get_keymaps_with_description();
-
-    let menu_items: Vec<String> = keymaps
-        .iter()
-        .map(|keymap| format!("{}  {}", keymap.key, keymap.description))
-        .collect();
-
     let stdout = MockStdout::new();
     let screen = Screen::new(stdout);
     let mut step = Step::new(screen);
 
-    step.show_select_command(&menu_items);
+    step.show_select_command(&keymaps);
 
     let stdout_str = String::from_utf8(step.screen.stdout.buffer).unwrap();
     let has_prompt = stdout_str.contains("Please select a command:");
@@ -116,7 +104,6 @@ fn command_with_prompt() {
     let stdout = MockStdout::new();
     let screen = Screen::new(stdout);
     let mut step = Step::new(screen);
-
     let keys = Vec::new();
 
     step.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter())

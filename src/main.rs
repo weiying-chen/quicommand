@@ -29,12 +29,7 @@ fn main() {
         Keymap::new('c', "cargon run --release"),
     ];
 
-    let menu_items: Vec<String> = keymaps
-        .iter()
-        .map(|keymap| format!("{}  {}", keymap.key, keymap.description))
-        .collect();
-
-    step.show_select_command(&menu_items);
+    step.show_select_command(&keymaps);
     // screen.stdout.flush().unwrap();
 
     for key in stdin().keys() {
