@@ -19,12 +19,17 @@ fn get_keymaps_with_prompt<'a>() -> Vec<Keymap> {
     vec![Keymap::new('t', "echo {}").with_prompt("Test prompt")]
 }
 
+fn setup_step() -> Step<MockStdout> {
+    let stdout = MockStdout::new();
+    let screen = Screen::new(stdout);
+    let step = Step::new(screen);
+    step
+}
+
 #[test]
 fn keymap() {
     let keymaps = get_keymaps();
-    let stdout = MockStdout::new();
-    let screen = Screen::new(stdout);
-    let mut step = Step::new(screen);
+    let mut step = setup_step();
 
     step.show_select_command(&keymaps);
 
@@ -38,9 +43,7 @@ fn keymap() {
 #[test]
 fn keymap_with_description() {
     let keymaps = get_keymaps_with_description();
-    let stdout = MockStdout::new();
-    let screen = Screen::new(stdout);
-    let mut step = Step::new(screen);
+    let mut step = setup_step();
 
     step.show_select_command(&keymaps);
 
@@ -54,9 +57,7 @@ fn keymap_with_description() {
 #[test]
 fn command() {
     let keymaps = get_keymaps();
-    let stdout = MockStdout::new();
-    let screen = Screen::new(stdout);
-    let mut step = Step::new(screen);
+    let mut step = setup_step();
     let keys = Vec::new();
     let input = step.input_from_prompt(None, keys.into_iter());
     let output = step.process_input(input, &keymaps[0]);
@@ -74,9 +75,7 @@ fn command() {
 #[test]
 fn command_with_input() {
     let keymaps = get_keymaps_with_prompt();
-    let stdout = MockStdout::new();
-    let screen = Screen::new(stdout);
-    let mut step = Step::new(screen);
+    let mut step = setup_step();
 
     let keys = vec![
         Ok(Key::Char('t')),
@@ -101,9 +100,7 @@ fn command_with_input() {
 #[test]
 fn command_with_prompt() {
     let keymaps = get_keymaps_with_prompt();
-    let stdout = MockStdout::new();
-    let screen = Screen::new(stdout);
-    let mut step = Step::new(screen);
+    let mut step = setup_step();
     let keys = Vec::new();
 
     step.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter())
@@ -117,9 +114,7 @@ fn command_with_prompt() {
 #[test]
 fn command_with_empty_input() {
     let keymaps = get_keymaps_with_prompt();
-    let stdout = MockStdout::new();
-    let screen = Screen::new(stdout);
-    let mut step = Step::new(screen);
+    let mut step = setup_step();
     let keys = vec![Ok(Key::Char('\n'))];
     let input = step.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
     let output = step.process_input(input, &keymaps[0]);
@@ -134,9 +129,7 @@ fn command_with_empty_input() {
 #[test]
 fn command_with_cancelled_input() {
     let keymaps = get_keymaps_with_prompt();
-    let stdout = MockStdout::new();
-    let screen = Screen::new(stdout);
-    let mut step = Step::new(screen);
+    let mut step = setup_step();
     let keys = vec![Ok(Key::Esc)];
     let input = step.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
     let output = step.process_input(input, &keymaps[0]);
