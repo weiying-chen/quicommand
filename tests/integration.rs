@@ -59,8 +59,8 @@ fn command() {
     let mut step = setup_step();
     let keys = Vec::new();
     let input = step.input_from_prompt(None, keys.into_iter());
-    let keymaps = get_keymaps();
-    let output = step.process_input(input, &keymaps[0]);
+    let keymap = get_keymaps().into_iter().next().unwrap();
+    let output = step.process_input(input, &keymap);
     let result = output.unwrap();
 
     let Process::Output(output) = result else {
@@ -75,7 +75,7 @@ fn command() {
 #[test]
 fn command_with_input() {
     let mut step = setup_step();
-    let keymaps = get_keymaps_with_prompt();
+    let keymap = get_keymaps_with_prompt().into_iter().next().unwrap();
 
     let keys = vec![
         Ok(Key::Char('t')),
@@ -84,8 +84,8 @@ fn command_with_input() {
         Ok(Key::Char('t')),
     ];
 
-    let input = step.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
-    let output = step.process_input(input, &keymaps[0]);
+    let input = step.input_from_prompt(keymap.prompt.clone(), keys.into_iter());
+    let output = step.process_input(input, &keymap);
     let result = output.unwrap();
 
     let Process::Output(output) = result else {
@@ -100,10 +100,10 @@ fn command_with_input() {
 #[test]
 fn command_with_prompt() {
     let mut step = setup_step();
-    let keymaps = get_keymaps_with_prompt();
+    let keymap = get_keymaps_with_prompt().into_iter().next().unwrap();
     let keys = Vec::new();
 
-    step.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter())
+    step.input_from_prompt(keymap.prompt, keys.into_iter())
         .unwrap();
 
     let stdout_str = String::from_utf8(step.screen.stdout.buffer).unwrap();
@@ -114,10 +114,10 @@ fn command_with_prompt() {
 #[test]
 fn command_with_empty_input() {
     let mut step = setup_step();
-    let keymaps = get_keymaps_with_prompt();
+    let keymap = get_keymaps_with_prompt().into_iter().next().unwrap();
     let keys = vec![Ok(Key::Char('\n'))];
-    let input = step.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
-    let output = step.process_input(input, &keymaps[0]);
+    let input = step.input_from_prompt(keymap.prompt.clone(), keys.into_iter());
+    let output = step.process_input(input, &keymap);
 
     let Err(input_error) = output else {
         panic!();
@@ -129,10 +129,10 @@ fn command_with_empty_input() {
 #[test]
 fn command_with_cancelled_input() {
     let mut step = setup_step();
-    let keymaps = get_keymaps_with_prompt();
+    let keymap = get_keymaps_with_prompt().into_iter().next().unwrap();
     let keys = vec![Ok(Key::Esc)];
-    let input = step.input_from_prompt(keymaps[0].prompt.clone(), keys.into_iter());
-    let output = step.process_input(input, &keymaps[0]);
+    let input = step.input_from_prompt(keymap.prompt.clone(), keys.into_iter());
+    let output = step.process_input(input, &keymap);
 
     assert!(matches!(output.unwrap(), Process::Exit));
 }
