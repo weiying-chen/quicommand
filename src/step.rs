@@ -36,7 +36,7 @@ impl<T: TermCursor + Write> Step<T> {
 
     pub fn input_from_prompt(
         &mut self,
-        prompt: Option<String>,
+        prompt: Option<&str>,
         stdin: impl Iterator<Item = Result<Key, std::io::Error>>,
     ) -> Result<Input, InputError> {
         match prompt {

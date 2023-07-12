@@ -40,7 +40,7 @@ fn main() {
             }
             Key::Char(key) => {
                 if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
-                    let input = step.input_from_prompt(keymap.prompt.clone(), stdin().keys());
+                    let input = step.input_from_prompt(keymap.prompt.as_deref(), stdin().keys());
 
                     step.process_input(input, keymap).unwrap();
                     break;
