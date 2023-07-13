@@ -39,12 +39,14 @@ fn main() {
                 break;
             }
             Key::Char(key) => {
-                if let Some(keymap) = keymaps.iter().find(|k| k.key == key) {
-                    let input = step.input_from_prompt(keymap.prompt.as_deref(), stdin().keys());
+                let Some(keymap) = keymaps.iter().find(|k| k.key == key) else {
+                   continue;
+                };
 
-                    step.process_input(input, keymap).unwrap();
-                    break;
-                }
+                let input = step.input_from_prompt(keymap.prompt.as_deref(), stdin().keys());
+
+                step.process_input(input, keymap).unwrap();
+                break;
             }
             _ => {}
         }
