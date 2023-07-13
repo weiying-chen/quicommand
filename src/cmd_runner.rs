@@ -3,8 +3,6 @@ use std::{
     process::{Command, Output, Stdio},
 };
 
-use crate::utils::escape_backticks;
-
 pub enum CmdType {
     Interactive,
     Script,
@@ -16,19 +14,12 @@ pub struct CmdRunner {
 }
 
 impl CmdRunner {
-    pub fn new(command_string: String, input: Option<String>) -> CmdRunner {
+    pub fn new(command_string: &str) -> CmdRunner {
         let mut command = Command::new("script");
 
+        // To-do: refractor this
         command.arg("-qec");
-
-        if let Some(input_str) = input {
-            let input_str = escape_backticks(&input_str);
-
-            command.arg(command_string.replace("{}", &input_str));
-        } else {
-            command.arg(command_string.clone());
-        }
-
+        command.arg(command_string);
         command.arg("/dev/null");
 
         let interactive_commands = ["hx", "vi", "fzf"];

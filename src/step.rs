@@ -4,6 +4,7 @@ use crate::input::{Input, InputError};
 use crate::keymap::Keymap;
 use crate::screen::Screen;
 use crate::term_writer::TermCursor;
+use crate::utils::escape_backticks;
 use std::io::Write;
 use termion::event::Key;
 
@@ -65,7 +66,10 @@ impl<T: TermCursor + Write> Step<T> {
                 self.screen.show_cursor();
                 drop(self.screen.stdout);
 
-                let mut command = CmdRunner::new(keymap.command.clone(), Some(i));
+                let input_str = escape_backticks(&i);
+                let keymap_command = keymap.command.replace("{}", &input_str);
+
+                let mut command = CmdRunner::new(&keymap_command);
                 let output = command.run_with_output().unwrap();
 
                 Ok(Process::Output(output))
@@ -74,7 +78,7 @@ impl<T: TermCursor + Write> Step<T> {
                 self.screen.show_cursor();
                 drop(self.screen.stdout);
 
-                let mut command = CmdRunner::new(keymap.command.clone(), None);
+                let mut command = CmdRunner::new(&keymap.command);
 
                 let output = match command.command_type {
                     CmdType::Interactive => command.run().unwrap(),
