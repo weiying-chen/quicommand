@@ -66,11 +66,11 @@ impl<T: TermCursor + Write> Step<T> {
                 self.screen.show_cursor();
                 drop(self.screen.stdout);
 
-                let input_str = escape_backticks(&i);
-                let keymap_command = keymap.command.replace("{}", &input_str);
+                let input = escape_backticks(&i);
+                let keymap_command = keymap.command.replace("{}", &input);
 
-                let mut command = CmdRunner::new(&keymap_command);
-                let output = command.run_with_output().unwrap();
+                let mut cmd_runner = CmdRunner::new(&keymap_command);
+                let output = cmd_runner.run_with_output().unwrap();
 
                 Ok(Process::Output(output))
             }
@@ -78,11 +78,11 @@ impl<T: TermCursor + Write> Step<T> {
                 self.screen.show_cursor();
                 drop(self.screen.stdout);
 
-                let mut command = CmdRunner::new(&keymap.command);
+                let mut cmd_runner = CmdRunner::new(&keymap.command);
 
-                let output = match command.command_type {
-                    CmdType::Interactive => command.run().unwrap(),
-                    CmdType::Script => command.run_with_output().unwrap(),
+                let output = match cmd_runner.command_type {
+                    CmdType::Interactive => cmd_runner.run().unwrap(),
+                    CmdType::Script => cmd_runner.run_with_output().unwrap(),
                 };
 
                 Ok(Process::Output(output))
