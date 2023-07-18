@@ -1,9 +1,10 @@
-use regex::Regex;
-
 use std::{
     io::{BufRead, BufReader},
     process::{Command, Output, Stdio},
+    str::FromStr,
 };
+
+use crate::utils::starts_with_any;
 
 pub enum CmdType {
     Interactive,
@@ -15,20 +16,32 @@ pub struct CmdRunner {
     pub command_type: CmdType,
 }
 
-fn get_command_type(command_string: &str) -> CmdType {
-    let interactive_commands = ["hx", "vi", "fzf"];
+impl FromStr for CmdType {
+    type Err = ();
 
-    let is_interactive_command = interactive_commands.iter().any(|cmd| {
-        let regex = Regex::new(&format!(r"^{}", cmd)).unwrap();
-        regex.is_match(command_string)
-    });
-
-    if is_interactive_command {
-        CmdType::Interactive
-    } else {
-        CmdType::Script
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if starts_with_any(s, &["hx", "vi", "fzf"]) {
+            Ok(CmdType::Interactive)
+        } else {
+            Ok(CmdType::Script)
+        }
     }
 }
+
+// fn get_command_type(command_string: &str) -> CmdType {
+//     let interactive_commands = ["hx", "vi", "fzf"];
+
+//     let is_interactive_command = interactive_commands.iter().any(|cmd| {
+//         let regex = Regex::new(&format!(r"^{}", cmd)).unwrap();
+//         regex.is_match(command_string)
+//     });
+
+//     if is_interactive_command {
+//         CmdType::Interactive
+//     } else {
+//         CmdType::Script
+//     }
+// }
 
 impl CmdRunner {
     pub fn new(command_string: &str) -> CmdRunner {
@@ -36,7 +49,7 @@ impl CmdRunner {
 
         command.arg("-qec").arg(command_string).arg("/dev/null");
 
-        let command_type = get_command_type(command_string);
+        let command_type = CmdType::from_str(command_string).unwrap();
 
         CmdRunner {
             command,

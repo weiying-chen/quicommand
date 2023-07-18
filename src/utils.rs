@@ -9,3 +9,7 @@ pub fn escape_backticks(input: &str) -> String {
     }
     result
 }
+
+pub fn starts_with_any(s: &str, pats: &[&str]) -> bool {
+    pats.iter().any(|pat| s.starts_with(pat))
+}
