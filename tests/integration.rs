@@ -31,7 +31,7 @@ fn keymap() {
     let keymaps = get_keymaps();
     let mut step = setup_step();
 
-    step.show_select_command(&keymaps);
+    step.show_select_cmd(&keymaps);
 
     let stdout_str = String::from_utf8(step.screen.stdout.buffer).unwrap();
     let has_prompt = stdout_str.contains("Please select a command:");
@@ -45,7 +45,7 @@ fn keymap_with_description() {
     let keymaps = get_keymaps_with_description();
     let mut step = setup_step();
 
-    step.show_select_command(&keymaps);
+    step.show_select_cmd(&keymaps);
 
     let stdout_str = String::from_utf8(step.screen.stdout.buffer).unwrap();
     let has_prompt = stdout_str.contains("Please select a command:");
@@ -55,7 +55,7 @@ fn keymap_with_description() {
 }
 
 #[test]
-fn command() {
+fn cmd() {
     let mut step = setup_step();
     let keys = Vec::new();
     let input = step.input_from_prompt(None, keys.into_iter());
@@ -73,7 +73,7 @@ fn command() {
 }
 
 #[test]
-fn command_with_input() {
+fn cmd_with_input() {
     let mut step = setup_step();
     let keymap = get_keymaps_with_prompt().into_iter().next().unwrap();
 
@@ -98,7 +98,7 @@ fn command_with_input() {
 }
 
 #[test]
-fn command_with_prompt() {
+fn cmd_with_prompt() {
     let mut step = setup_step();
     let keymap = get_keymaps_with_prompt().into_iter().next().unwrap();
     let keys = Vec::new();
@@ -112,7 +112,7 @@ fn command_with_prompt() {
 }
 
 #[test]
-fn command_with_empty_input() {
+fn cmd_with_empty_input() {
     let mut step = setup_step();
     let keymap = get_keymaps_with_prompt().into_iter().next().unwrap();
     let keys = vec![Ok(Key::Char('\n'))];
@@ -127,7 +127,7 @@ fn command_with_empty_input() {
 }
 
 #[test]
-fn command_with_cancelled_input() {
+fn cmd_with_cancelled_input() {
     let mut step = setup_step();
     let keymap = get_keymaps_with_prompt().into_iter().next().unwrap();
     let keys = vec![Ok(Key::Esc)];

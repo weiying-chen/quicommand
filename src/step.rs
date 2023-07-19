@@ -23,7 +23,7 @@ impl<T: TermCursor + Write> Step<T> {
         Step { screen }
     }
 
-    pub fn show_select_command(&mut self, keymaps: &[Keymap]) {
+    pub fn show_select_cmd(&mut self, keymaps: &[Keymap]) {
         self.screen.clear_all();
         self.screen.show_prompt("Please select a command:");
 
@@ -67,9 +67,9 @@ impl<T: TermCursor + Write> Step<T> {
                 drop(self.screen.stdout);
 
                 let input = escape_backticks(&i);
-                let keymap_command = keymap.command.replace("{}", &input);
+                let keymap_cmd = keymap.cmd.replace("{}", &input);
 
-                let mut cmd_runner = CmdRunner::new(&keymap_command);
+                let mut cmd_runner = CmdRunner::new(&keymap_cmd);
                 let output = cmd_runner.run_with_output().unwrap();
 
                 Ok(Process::Output(output))
@@ -78,9 +78,9 @@ impl<T: TermCursor + Write> Step<T> {
                 self.screen.show_cursor();
                 drop(self.screen.stdout);
 
-                let mut cmd_runner = CmdRunner::new(&keymap.command);
+                let mut cmd_runner = CmdRunner::new(&keymap.cmd);
 
-                let output = match cmd_runner.command_type {
+                let output = match cmd_runner.cmd_type {
                     CmdType::Interactive => cmd_runner.run().unwrap(),
                     CmdType::Script => cmd_runner.run_with_output().unwrap(),
                 };

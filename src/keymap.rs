@@ -1,19 +1,19 @@
 #[derive(Debug, Default, Clone)]
 pub struct Keymap {
     pub key: char,
-    pub command: String,
+    pub cmd: String,
     pub description: String,
     pub prompt: Option<String>,
 }
 
 impl Keymap {
-    pub fn new<S: AsRef<str>>(key: char, command: S) -> Self {
-        let command = command.as_ref().to_owned();
-        let description = command.clone();
+    pub fn new<S: AsRef<str>>(key: char, cmd: S) -> Self {
+        let cmd = cmd.as_ref().to_owned();
+        let description = cmd.clone();
 
         Self {
             key,
-            command,
+            cmd,
             description,
             ..Default::default()
         }

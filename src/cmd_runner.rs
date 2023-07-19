@@ -12,8 +12,8 @@ pub enum CmdType {
 }
 
 pub struct CmdRunner {
-    pub command: Command,
-    pub command_type: CmdType,
+    pub cmd: Command,
+    pub cmd_type: CmdType,
 }
 
 impl FromStr for CmdType {
@@ -28,37 +28,19 @@ impl FromStr for CmdType {
     }
 }
 
-// fn get_command_type(command_string: &str) -> CmdType {
-//     let interactive_commands = ["hx", "vi", "fzf"];
-
-//     let is_interactive_command = interactive_commands.iter().any(|cmd| {
-//         let regex = Regex::new(&format!(r"^{}", cmd)).unwrap();
-//         regex.is_match(command_string)
-//     });
-
-//     if is_interactive_command {
-//         CmdType::Interactive
-//     } else {
-//         CmdType::Script
-//     }
-// }
-
 impl CmdRunner {
-    pub fn new(command_string: &str) -> CmdRunner {
-        let mut command = Command::new("script");
+    pub fn new(cmd_str: &str) -> CmdRunner {
+        let mut cmd = Command::new("script");
 
-        command.arg("-qec").arg(command_string).arg("/dev/null");
+        cmd.arg("-qec").arg(cmd_str).arg("/dev/null");
 
-        let command_type = CmdType::from_str(command_string).unwrap();
+        let cmd_type = CmdType::from_str(cmd_str).unwrap();
 
-        CmdRunner {
-            command,
-            command_type,
-        }
+        CmdRunner { cmd, cmd_type }
     }
 
     pub fn run(&mut self) -> Result<Output, std::io::Error> {
-        let child = self.command.spawn().expect("failed to spawn command");
+        let child = self.cmd.spawn().expect("failed to spawn command");
         let output = child.wait_with_output()?;
 
         Ok(output)
@@ -66,11 +48,11 @@ impl CmdRunner {
 
     pub fn run_with_output(&mut self) -> Result<Output, std::io::Error> {
         // This prevents the output from becoming messed up in tests.
-        self.command.stdin(Stdio::null());
-        self.command.stdout(Stdio::piped());
-        self.command.stderr(Stdio::piped());
+        self.cmd.stdin(Stdio::null());
+        self.cmd.stdout(Stdio::piped());
+        self.cmd.stderr(Stdio::piped());
 
-        let mut child = self.command.spawn().expect("failed to spawn command");
+        let mut child = self.cmd.spawn().expect("failed to spawn command");
         let stdout_pipe = child.stdout.take().unwrap();
 
         let stdout_thread = std::thread::spawn(move || {

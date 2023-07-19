@@ -29,7 +29,7 @@ fn main() {
         Keymap::new('c', "cargon run --release"),
     ];
 
-    step.show_select_command(&keymaps);
+    step.show_select_cmd(&keymaps);
     // screen.stdout.flush().unwrap();
 
     for key in stdin().keys() {
