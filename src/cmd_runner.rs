@@ -1,7 +1,8 @@
 use std::{
-    io::{BufRead, BufReader},
+    io::{self, stderr, stdout, BufRead, BufReader, Write},
     process::{Command, Output, Stdio},
     str::FromStr,
+    thread::JoinHandle,
 };
 
 use crate::utils::starts_with_any;
@@ -26,6 +27,27 @@ impl FromStr for CmdType {
             Ok(CmdType::Script)
         }
     }
+}
+
+fn tee<R, W>(reader: R, mut writer: W) -> JoinHandle<io::Result<String>>
+where
+    R: BufRead + Send + 'static,
+    W: Write + Send + 'static,
+{
+    std::thread::spawn(move || {
+        let mut capture = String::new();
+
+        for line in reader.lines() {
+            let line = line?;
+
+            capture.push_str(&line);
+            writer.write_all(line.as_bytes())?;
+            writer.write_all(b"\r\n")?;
+            writer.flush()?;
+        }
+
+        Ok(capture)
+    })
 }
 
 impl CmdRunner {
@@ -54,40 +76,16 @@ impl CmdRunner {
 
         let mut child = self.cmd.spawn().expect("failed to spawn command");
         let stdout_pipe = child.stdout.take().unwrap();
-
-        let stdout_thread = std::thread::spawn(move || {
-            let mut capture = String::new();
-
-            for line in BufReader::new(stdout_pipe).lines() {
-                let line = line.unwrap();
-
-                capture.push_str(&line);
-                print!("{}\r\n", line);
-            }
-            capture
-        });
-
+        let stdout_thread = tee(BufReader::new(stdout_pipe), stdout());
         let stderr_pipe = child.stderr.take().unwrap();
-
-        let stderr_thread = std::thread::spawn(move || {
-            let mut capture = String::new();
-
-            for line in BufReader::new(stderr_pipe).lines() {
-                let line = line.unwrap();
-
-                capture.push_str(&line);
-                print!("{line}");
-            }
-            capture
-        });
-
+        let stderr_thread = tee(BufReader::new(stderr_pipe), stderr());
         let stdout_output = stdout_thread.join().expect("failed to join stdout thread");
         let stderr_output = stderr_thread.join().expect("failed to join stderr thread");
         let exit_status = child.wait()?;
 
         Ok(Output {
-            stdout: stdout_output.into(),
-            stderr: stderr_output.into(),
+            stdout: stdout_output?.into(),
+            stderr: stderr_output?.into(),
             status: exit_status,
         })
     }
