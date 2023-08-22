@@ -15,18 +15,19 @@ fn main() {
     step.screen.stdout.flush().unwrap();
 
     let keymaps = vec![
-        Keymap::new('a', "sleep 2 && echo test && sleep 2").with_description("Just a test"),
         Keymap::new('b', "sleep 2 && echo test && sleep 2"),
         Keymap::new('t', "hx ~/Dropbox/DropsyncFiles/markdown/to-dos.md")
             .with_description("To-dos"),
-        Keymap::new('x', "sleep 2 && echo test && sleep 2"),
         Keymap::new('s', "git status"),
         Keymap::new('g', "git add . && git commit -m \"{}\"")
             .with_description("Git commit")
             .with_prompt("Enter commit message:"),
         Keymap::new('o', "hx script.*"),
+        Keymap::new('e', "./enlarge.*"),
         Keymap::new('r', "./script.*"),
-        Keymap::new('c', "cargon run --release"),
+        Keymap::new('m', "hx src/main.*"),
+        Keymap::new('n', "node script.*"),
+        Keymap::new('c', "cargo run --release"),
     ];
 
     step.show_select_cmd(&keymaps);
