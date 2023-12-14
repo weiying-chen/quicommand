@@ -1,7 +1,7 @@
-use keymap::keymap::Keymap;
-use keymap::raw_stdout::RawStdout;
-use keymap::screen::Screen;
-use keymap::step::Step;
+use quicommand::keymap::Keymap;
+use quicommand::raw_stdout::RawStdout;
+use quicommand::screen::Screen;
+use quicommand::step::Step;
 use std::io::stdin;
 use std::io::Write;
 use termion::event::Key;
@@ -15,19 +15,13 @@ fn main() {
     step.screen.stdout.flush().unwrap();
 
     let keymaps = vec![
-        Keymap::new('b', "sleep 2 && echo test && sleep 2"),
-        Keymap::new('t', "hx ~/Dropbox/DropsyncFiles/markdown/to-dos.md")
-            .with_description("To-dos"),
-        Keymap::new('s', "git status"),
-        Keymap::new('g', "git add . && git commit -m \"{}\"")
+        Keymap::new('c', "git add . && git commit -m \"{}\"")
             .with_description("Git commit")
             .with_prompt("Enter commit message:"),
         Keymap::new('o', "hx script.*"),
-        Keymap::new('e', "./enlarge.*"),
-        Keymap::new('r', "./script.*"),
         Keymap::new('m', "hx src/main.*"),
         Keymap::new('n', "node script.*"),
-        Keymap::new('c', "cargo run --release"),
+        Keymap::new('r', "cargo run --release"),
     ];
 
     step.show_select_cmd(&keymaps);
