@@ -18,10 +18,9 @@ fn main() {
         Keymap::new('c', "git add . && git commit -m \"{}\"")
             .with_description("Git commit")
             .with_prompt("Enter commit message:"),
-        Keymap::new('o', "hx script.*"),
         Keymap::new('m', "hx src/main.*"),
         Keymap::new('n', "node script.*"),
-        Keymap::new('r', "cargo run --release"),
+        Keymap::new('b', "cargo build --release"),
     ];
 
     step.show_select_cmd(&keymaps);
