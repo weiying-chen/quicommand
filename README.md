@@ -20,5 +20,5 @@ or
 
 ```shell
 cargo build --release
-./target/release/command-launcher
+./target/release/quicommand
 ```
