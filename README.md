@@ -1,4 +1,4 @@
-# Command Launcher
+# Quicommand
 
 Launch commands from a command palette by pressing a key.
 
