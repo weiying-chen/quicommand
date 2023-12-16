@@ -9,16 +9,12 @@ Launch commands from a command palette by pressing a key.
 
 Only tested on Linux.
 
+## Usage
 
-## Quick start
-
-```shell
+```bash
+# Run app
 cargo run
-```
 
-or
-
-```shell
+# Build app for production
 cargo build --release
-./target/release/quicommand
 ```
