@@ -21,6 +21,10 @@ fn main() {
         Keymap::new('m', "hx src/main.*"),
         Keymap::new('n', "node script.*"),
         Keymap::new('b', "cargo build --release"),
+        Keymap::new(
+            't',
+            "git log --author=\"Alex\" --since=\"midnight\" --no-merges --oneline | wc -l",
+        ),
     ];
 
     step.show_select_cmd(&keymaps);
@@ -34,7 +38,7 @@ fn main() {
             }
             Key::Char(key) => {
                 let Some(keymap) = keymaps.iter().find(|k| k.key == key) else {
-                   continue;
+                    continue;
                 };
 
                 let input = step.input_from_prompt(keymap.prompt.as_deref(), stdin().keys());
