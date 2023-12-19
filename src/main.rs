@@ -20,6 +20,7 @@ fn main() {
             .with_prompt("Enter commit message:"),
         Keymap::new('m', "hx src/main.*"),
         Keymap::new('n', "node script.*"),
+        Keymap::new('p', "git push -u origin main"),
         Keymap::new('b', "cargo build --release"),
         Keymap::new(
             't',
